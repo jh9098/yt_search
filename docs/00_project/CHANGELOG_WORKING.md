@@ -16,6 +16,65 @@
 
 ---
 
+## 2026-02-26 (failure-log 템플릿 작성 및 매핑 규칙 반영)
+### 오늘 목표
+- `docs/04_quality/failure-log.md`를 템플릿으로 작성하고, `api-contracts.md` 에러코드 매핑 규칙을 반영
+
+### 진행 내용 (완료)
+- [x] `docs/04_quality/failure-log.md` 생성
+- [x] incident 필수 필드 표(incident_id, request_id, job_id, error_code, 원인/조치 등) 정의
+- [x] `api-contracts.md` 에러코드(`COMMON_INVALID_REQUEST`, `ANALYSIS_TIMEOUT` 등) 매핑 규칙 추가
+- [x] 복붙용 기록 템플릿 + 가상 샘플 1건 추가
+- [x] `docs/00_project/CHECKLIST.md` 상태 업데이트(C/H/I)
+
+### 진행 내용 (미완료)
+- [ ] D 섹션 2단계(정책 확정) 항목 D-1~D-5 실제 완료 처리
+- [ ] 실제 프론트/백엔드 코드 구현 시작
+
+### 변경/생성 파일
+- `docs/04_quality/failure-log.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. D-1(분석 Job API) 2단계 정책 확정
+2. D-2(모달 상태) 2단계 정책 확정
+3. D-3(에러 코드/메시지) 2단계 정책 확정
+
+### 메모
+- 이번 세션은 문서 작업만 수행했으며 코드 구현/수정은 없음.
+
+---
+
+## 2026-02-25 (CHECKLIST D 섹션 재정리)
+### 오늘 목표
+- `CHECKLIST.md` D 섹션을 구현 착수 가능한 2단계(문서 확인/정책 확정) 단위로 재구성
+
+### 진행 내용 (완료)
+- [x] D 섹션 5개 미완료 항목을 `1단계: 문서 존재/연결 확인` + `2단계: 정책 확정` 구조로 분리
+- [x] 각 항목에 근거 문서 경로(`api-contracts.md`, `data.md`, `ai-analysis.md`, `security.md` 등) 명시
+- [x] 각 `2단계`에 수용 기준 3개 이상을 추가해 1~2시간 단위 작업으로 분해
+- [x] H 섹션 다음 세션 후보를 최신 상태 기준으로 정리
+
+### 진행 내용 (미완료)
+- [ ] `docs/04_quality/failure-log.md` 생성
+- [ ] D 섹션 2단계(정책 확정) 항목 D-1~D-5 실제 완료 처리
+- [ ] 실제 프론트/백엔드 코드 구현 시작
+
+### 변경/생성 파일
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. `docs/04_quality/failure-log.md` 작성
+2. D-1(분석 Job API) 2단계 정책 확정
+3. D-2(모달 상태) 2단계 정책 확정
+
+### 메모
+- 이번 세션은 계획/문서 정리 전용으로 수행했으며, 코드 구현은 진행하지 않음.
+
+---
+
 ## 2026-02-23 (프로젝트 세팅 / 문서 하니스 구축)
 ### 오늘 목표
 - 코딩 전 문서 하니스(매뉴얼/기억/품질검사) 구조 세팅
