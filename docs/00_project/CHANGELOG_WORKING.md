@@ -88,3 +88,29 @@
 
 ### 메모
 - 개발 시작 전이므로 기능 체크 항목은 대부분 미완료 상태가 정상이다.
+
+
+## 2026-02-24 (품질 문서 보강 - 테스트 케이스)
+### 오늘 목표
+- `docs/04_quality/test-cases-mvp.md` 작성 및 계약 정합성 반영
+
+### 진행 내용 (완료)
+- [x] `docs/04_quality/test-cases-mvp.md` 생성
+- [x] 정상/실패/빈데이터/경계값 4분류 케이스 문서화
+- [x] API 계약(`api-contracts.md`)과 스키마(`output-schema-analysis.json`) 필드/에러코드 정합성 반영
+
+### 진행 내용 (미완료)
+- [ ] `docs/04_quality/failure-log.md` 생성
+- [ ] 실제 프론트/백엔드 코드 구현 시작
+
+### 변경/생성 파일
+- `docs/04_quality/test-cases-mvp.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. `docs/04_quality/failure-log.md` 작성
+2. CHECKLIST D 섹션을 구현 착수 가능한 단위로 재정리
+
+### 메모
+- 이번 세션은 단일 작업 원칙에 따라 테스트 케이스 문서 작성만 수행함.

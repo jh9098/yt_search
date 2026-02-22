@@ -43,7 +43,7 @@
 ## C. 품질검사 템플릿 (일부 완료)
 - [x] `docs/04_quality/done-report-template.md` 작성
 - [x] `docs/04_quality/peer-review-template.md` 작성
-- [ ] `docs/04_quality/test-cases-mvp.md` 초안 작성
+- [x] `docs/04_quality/test-cases-mvp.md` 초안 작성
 - [ ] `docs/04_quality/failure-log.md` 생성
 
 ---
@@ -99,6 +99,10 @@
 ### 2026-02-23
 - 완료 항목: 문서 하니스/매뉴얼/핵심 설계 문서 초안 작성
 - 메모: 개발 코드는 아직 시작하지 않음
+
+### 2026-02-24
+- 완료 항목: `docs/04_quality/test-cases-mvp.md` 작성 (정상/실패/빈데이터/경계값)
+- 메모: API 계약/스키마 필드명 및 에러코드 정합성 기준 문서화 완료
 
 ### 2026-02-22
 - 완료 항목: CHECKLIST/CHANGELOG 상태 정합화 업데이트
