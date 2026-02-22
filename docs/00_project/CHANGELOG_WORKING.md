@@ -16,6 +16,39 @@
 
 ---
 
+## 2026-02-28 (D-2 모달 상태 정책 확정 + 계약 정합화 + 구현 체크리스트 고정)
+### 오늘 목표
+- D-2의 2/3/4단계를 한 세션에서 완료하고, 프론트 구현 착수 가능한 기준 문서를 고정
+
+### 진행 내용 (완료)
+- [x] `docs/01_manuals/frontend.md`에 상태별 최소 UI 요소 표(`loading/success/error/empty/partial-success`) 확정
+- [x] 로딩 중 중복 클릭 방지(disabled) 규칙 및 상태별 사용자 문구 정책 고정
+- [x] `docs/01_manuals/api-contracts.md`에 API 응답→프론트 상태 매핑 규칙 고정
+- [x] `progress/step/message` 누락 fallback 처리 규칙 문서화
+- [x] 구현 착수 체크리스트(작업순서) + 최소 QA 시나리오(정상/실패/빈데이터/부분성공) 반영
+- [x] `docs/00_project/CHECKLIST.md` D-2 2단계 완료 처리
+
+### 진행 내용 (미완료)
+- [ ] D-3(에러 코드/메시지) 2단계 정책 확정
+- [ ] D-4(캐시 키 전략) 2단계 정책 확정
+- [ ] D-5(AI 출력 검증/보정) 2단계 정책 확정
+
+### 변경/생성 파일
+- `docs/01_manuals/frontend.md`
+- `docs/01_manuals/api-contracts.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. D-3(에러 코드/메시지) 2단계 정책 확정
+2. D-4(캐시 키 전략) 2단계 정책 확정
+3. D-5(AI 출력 검증/보정) 2단계 정책 확정
+
+### 메모
+- 이번 세션은 문서 정책 확정 작업만 수행했고, React/FastAPI 코드 구현은 의도적으로 수행하지 않음.
+
+---
+
 ## 2026-02-27 (D-1 분석 Job API 정책 확정)
 ### 오늘 목표
 - D-1(분석 Job API `create/status`) 2단계 정책 확정 및 문서 기준 고정
