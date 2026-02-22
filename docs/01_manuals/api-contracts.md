@@ -72,6 +72,12 @@ ANALYSIS_STORAGE_FAILED
 사용자 메시지는 친절하고 재시도 가능하게 작성
 
 분석 기능 API (MVP 기준)
+
+### D-1 정책 확정 (create/status)
+- `POST /api/analysis/jobs`는 요청 유효성 검증 후 `jobId`와 `status`를 반환하는 것을 최소 계약으로 고정합니다.
+- `GET /api/analysis/jobs/{jobId}`는 상태 조회 단일 책임으로 유지하고, 진행률 관련 필드는 선택 필드로 둡니다.
+- `forceRefresh` 기본값은 `false`이며, `true`일 때만 캐시를 무시하고 재분석 경로를 허용합니다.
+
 A. 분석 Job 생성
 POST /api/analysis/jobs
 
@@ -92,6 +98,23 @@ videoId (string, required)
 forceRefresh (boolean, optional, default=false)
 
 캐시 결과가 있어도 재분석을 시도할지 여부
+
+#### Request/Response 필수·선택 필드 표
+
+| API | 위치 | 필드 | 타입 | 필수 여부 | 규칙 |
+|---|---|---|---|---|---|
+| POST /api/analysis/jobs | body | videoId | string | 필수 | 누락/빈값이면 `COMMON_INVALID_REQUEST` |
+| POST /api/analysis/jobs | body | forceRefresh | boolean | 선택 | 기본값 `false` |
+| POST /api/analysis/jobs | data | jobId | string | 필수 | 생성 또는 재사용된 작업 식별자 |
+| POST /api/analysis/jobs | data | status | string | 필수 | `queued / processing / completed / failed` |
+| POST /api/analysis/jobs | data | result | object | 선택 | 캐시 즉시반환 정책에서만 포함 |
+| POST /api/analysis/jobs | meta | requestId | string | 필수 | 요청 추적 |
+| POST /api/analysis/jobs | meta | timestamp | string(date-time) | 필수 | 서버 기록 시각 |
+
+#### forceRefresh 정책 문장 (고정)
+- 서버 기본 정책은 `forceRefresh=false` + 캐시 우선 조회입니다.
+- `forceRefresh=false`이고 유효 캐시가 있으면 캐시 결과를 재사용하며, `status=completed + result` 즉시반환을 허용합니다.
+- `forceRefresh=true`는 (1) 사용자의 명시적 재분석 요청, (2) `analysisVersion` 상향, (3) 직전 실패 작업 재시도 중 하나일 때만 허용합니다.
 
 Success Response (Job 생성됨)
 {
@@ -186,6 +209,26 @@ progress: 0~100 (선택, 없을 수 있음)
 step: 내부 단계 키 (선택)
 
 message: UI 표시용 진행 문구 (선택)
+
+#### Status 조회 필드 필수·선택 표
+
+| API | 위치 | 필드 | 타입 | 필수 여부 | 규칙 |
+|---|---|---|---|---|---|
+| GET /api/analysis/jobs/{jobId} | path | jobId | string | 필수 | 미존재 시 `ANALYSIS_JOB_NOT_FOUND` |
+| GET /api/analysis/jobs/{jobId} | data | jobId | string | 필수 | 상태 조회 대상 식별자 |
+| GET /api/analysis/jobs/{jobId} | data | status | string | 필수 | `queued / processing / completed / failed` |
+| GET /api/analysis/jobs/{jobId} | data | progress | number(0~100) | 선택 | processing 시 권장, 누락 가능 |
+| GET /api/analysis/jobs/{jobId} | data | step | string | 선택 | 내부 단계 키, 프론트 하드 의존 금지 |
+| GET /api/analysis/jobs/{jobId} | data | message | string | 선택 | 사용자 안내 문구, 누락 가능 |
+| GET /api/analysis/jobs/{jobId} | data | result | object | 선택 | `status=completed`일 때 포함 |
+| GET /api/analysis/jobs/{jobId} | data | failure | object | 선택 | `status=failed`일 때 포함 |
+| GET /api/analysis/jobs/{jobId} | meta | requestId | string | 필수 | 요청 추적 |
+| GET /api/analysis/jobs/{jobId} | meta | timestamp | string(date-time) | 필수 | 서버 기록 시각 |
+
+#### progress/step/message 누락 처리 규칙
+- `status=queued` 또는 `status=processing`에서도 `progress/step/message`는 누락될 수 있습니다.
+- 프론트는 이를 에러로 처리하지 않고 기본 문구(예: "분석을 준비 중입니다.", "분석 진행 중입니다.")를 사용합니다.
+- 진행률 바는 `progress` 값이 있을 때만 렌더링하고, `step/message`는 보조 정보로 사용합니다.
 
 Success Response - 완료
 {

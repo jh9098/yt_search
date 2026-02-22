@@ -59,11 +59,11 @@
     - `POST /api/analysis/jobs`, `GET /api/analysis/jobs/{jobId}` 계약이 문서에 존재한다.
     - 상태값(`queued/processing/completed/failed`) 정의가 문서에 존재한다.
     - 공통 성공/실패 응답 포맷(`success`, `data|error`, `meta`)이 문서에 존재한다.
-- [ ] 2단계: 정책 확정 (1~2시간)
+- [x] 2단계: 정책 확정 (1~2시간)
   - 수용 기준:
-    - 요청/응답 필드를 `필수/선택`으로 분리해 CHECKLIST에 체크 가능한 항목으로 기록한다.
-    - `forceRefresh` 사용 조건(기본값/캐시 무시 조건)을 한 줄 정책으로 확정한다.
-    - 상태 조회 응답에서 `progress/step/message`의 선택 필드 규칙(없을 때 처리)을 확정한다.
+    - [x] 요청/응답 필드를 `필수/선택`으로 분리해 문서에 기록했다.
+    - [x] `forceRefresh` 사용 조건(기본값/캐시 무시 조건)을 정책 문장으로 확정했다.
+    - [x] 상태 조회 응답에서 `progress/step/message`의 선택 필드 규칙(없을 때 처리)을 확정했다.
 
 ### D-2. 모달 상태 정의 (`loading/success/error`) 재정리
 - [x] 1단계: 문서 존재/연결 확인
@@ -150,12 +150,16 @@
 
 ## H. 다음 세션용 1~2시간 단위 작업 후보
 - [x] `docs/04_quality/failure-log.md` 생성 및 기록 템플릿 확정
-- [ ] D 섹션 2단계(정책 확정) 항목 중 D-1~D-2 우선 완료
+- [ ] D 섹션 2단계(정책 확정) 항목 중 D-2 우선 완료
 - [ ] D 섹션 2단계(정책 확정) 항목 중 D-3~D-5 순차 완료
 
 ---
 
 ## I. 완료 로그 (요약)
+### 2026-02-27
+- 완료 항목: D-1(분석 Job API) 2단계 정책 확정
+- 메모: `api-contracts.md`에 create/status 필수·선택 필드표, `forceRefresh` 고정 정책, `progress/step/message` 누락 처리 규칙 반영
+
 ### 2026-02-26
 - 완료 항목: `docs/04_quality/failure-log.md` 생성 및 에러코드 매핑 규칙 반영
 - 메모: `api-contracts.md` 코드 기준으로 incident 템플릿/샘플 1건 포함
