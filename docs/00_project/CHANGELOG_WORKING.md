@@ -16,6 +16,38 @@
 
 ---
 
+## 2026-02-27 (D-1 분석 Job API 정책 확정)
+### 오늘 목표
+- D-1(분석 Job API `create/status`) 2단계 정책 확정 및 문서 기준 고정
+
+### 진행 내용 (완료)
+- [x] `docs/01_manuals/api-contracts.md`에 D-1 고정 정책 섹션 추가
+- [x] `POST /api/analysis/jobs`, `GET /api/analysis/jobs/{jobId}` 요청/응답 필드 필수·선택 표 추가
+- [x] `forceRefresh` 기본값/캐시 무시 조건/허용 조건 정책 문장 고정
+- [x] `progress/step/message` 누락 시 프론트 처리 규칙 명시
+- [x] `docs/00_project/CHECKLIST.md` D-1 2단계 완료 처리
+
+### 진행 내용 (미완료)
+- [ ] D-2(모달 상태) 2단계 정책 확정
+- [ ] D-3(에러 코드/메시지) 2단계 정책 확정
+- [ ] D-4(캐시 키 전략) 2단계 정책 확정
+- [ ] D-5(AI 출력 검증/보정) 2단계 정책 확정
+
+### 변경/생성 파일
+- `docs/01_manuals/api-contracts.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. D-2(모달 상태) 2단계 정책 확정
+2. D-3(에러 코드/메시지) 2단계 정책 확정
+3. D-4(캐시 키 전략) 2단계 정책 확정
+
+### 메모
+- 이번 세션은 단일 작업 원칙에 따라 D-1 문서 정책 확정만 수행함.
+
+---
+
 ## 2026-02-26 (failure-log 템플릿 작성 및 매핑 규칙 반영)
 ### 오늘 목표
 - `docs/04_quality/failure-log.md`를 템플릿으로 작성하고, `api-contracts.md` 에러코드 매핑 규칙을 반영
