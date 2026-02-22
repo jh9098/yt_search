@@ -44,18 +44,78 @@
 - [x] `docs/04_quality/done-report-template.md` 작성
 - [x] `docs/04_quality/peer-review-template.md` 작성
 - [x] `docs/04_quality/test-cases-mvp.md` 초안 작성
-- [ ] `docs/04_quality/failure-log.md` 생성
+- [x] `docs/04_quality/failure-log.md` 생성
 
 ---
 
 ## D. AI 소재 분석 설계 (개발 전 문서 기준 정리 단계)
 - [x] 분석 결과 JSON 스키마 초안 정의 (`docs/03_prompts/output-schema-analysis.json`)
 - [x] 분석 결과 샘플(JSON) 작성 (`docs/03_prompts/examples/analysis-output-sample.json`)
-- [ ] 분석 Job API 초안 작성 (`create/status`)를 CHECKLIST 기준 완료 처리 가능한 단위로 재정리
-- [ ] 모달 상태 정의 문서 작성 (`loading/success/error`)를 CHECKLIST 기준 완료 처리 가능한 단위로 재정리
-- [ ] 에러 코드/메시지 정책을 CHECKLIST 기준 완료 처리 가능한 단위로 재정리
-- [ ] 캐시 키 전략 초안(`video_id + analysis_version`)을 CHECKLIST 기준 완료 처리 가능한 단위로 재정리
-- [ ] AI 출력 검증/보정 정책을 CHECKLIST 기준 완료 처리 가능한 단위로 재정리
+
+### D-1. 분석 Job API (`create/status`) 재정리
+- [x] 1단계: 문서 존재/연결 확인
+  - 근거 문서: `docs/01_manuals/api-contracts.md`, `docs/01_manuals/backend.md`, `docs/01_manuals/security.md`
+  - 확인 기준:
+    - `POST /api/analysis/jobs`, `GET /api/analysis/jobs/{jobId}` 계약이 문서에 존재한다.
+    - 상태값(`queued/processing/completed/failed`) 정의가 문서에 존재한다.
+    - 공통 성공/실패 응답 포맷(`success`, `data|error`, `meta`)이 문서에 존재한다.
+- [ ] 2단계: 정책 확정 (1~2시간)
+  - 수용 기준:
+    - 요청/응답 필드를 `필수/선택`으로 분리해 CHECKLIST에 체크 가능한 항목으로 기록한다.
+    - `forceRefresh` 사용 조건(기본값/캐시 무시 조건)을 한 줄 정책으로 확정한다.
+    - 상태 조회 응답에서 `progress/step/message`의 선택 필드 규칙(없을 때 처리)을 확정한다.
+
+### D-2. 모달 상태 정의 (`loading/success/error`) 재정리
+- [x] 1단계: 문서 존재/연결 확인
+  - 근거 문서: `docs/01_manuals/frontend.md`, `docs/01_manuals/api-contracts.md`, `docs/01_manuals/qa-checklist.md`
+  - 확인 기준:
+    - 모달 상태 분리 원칙(`loading/success/error`)이 문서에 존재한다.
+    - 실패 시 안내/재시도 경로 필요 조건이 문서에 존재한다.
+    - null/undefined/빈 데이터 대응 체크 항목이 문서에 존재한다.
+- [ ] 2단계: 정책 확정 (1~2시간)
+  - 수용 기준:
+    - 각 상태의 최소 UI 요소(제목/본문/버튼/재시도 액션)를 표로 확정한다.
+    - 로딩 중 중복 클릭 방지(disabled) 규칙을 명시한다.
+    - 결과 없음/부분 성공/완전 실패를 분리한 사용자 문구 정책을 확정한다.
+
+### D-3. 에러 코드/메시지 정책 재정리
+- [x] 1단계: 문서 존재/연결 확인
+  - 근거 문서: `docs/01_manuals/api-contracts.md`, `docs/01_manuals/security.md`, `docs/01_manuals/backend.md`
+  - 확인 기준:
+    - 에러 코드 규칙(`DOMAIN_REASON`)이 문서에 존재한다.
+    - 사용자 노출 메시지와 내부 로그 메시지 분리 원칙이 문서에 존재한다.
+    - timeout/외부 API 실패/검증 실패 관련 코드 예시가 문서에 존재한다.
+- [ ] 2단계: 정책 확정 (1~2시간)
+  - 수용 기준:
+    - MVP 필수 에러코드 목록(예: `COMMON_INVALID_REQUEST`, `ANALYSIS_TIMEOUT`)을 고정한다.
+    - 코드별 사용자 메시지(재시도 가능/불가)를 1:1로 매핑한다.
+    - 프론트 분기 기준(토스트/인라인/재시도 버튼 표시)을 코드군 단위로 확정한다.
+
+### D-4. 캐시 키 전략 (`video_id + analysis_version`) 재정리
+- [x] 1단계: 문서 존재/연결 확인
+  - 근거 문서: `docs/01_manuals/data.md`, `docs/01_manuals/backend.md`, `docs/01_manuals/security.md`
+  - 확인 기준:
+    - 캐시 키 기본 구조(`video_id + analysis_version`)가 문서에 존재한다.
+    - 캐시 목적(비용 절감/속도 개선) 및 우선 조회 원칙이 문서에 존재한다.
+    - 캐시 무효화/버전 상향 규칙이 문서에 존재한다.
+- [ ] 2단계: 정책 확정 (1~2시간)
+  - 수용 기준:
+    - 캐시 키 포맷 문자열(예: `analysis:{videoId}:{analysisVersion}`)을 확정한다.
+    - TTL 기본값/강제갱신(`forceRefresh`) 예외 규칙을 확정한다.
+    - 응답 `meta.cacheHit` 표기 조건과 로그 기록 기준을 확정한다.
+
+### D-5. AI 출력 검증/보정 정책 재정리
+- [x] 1단계: 문서 존재/연결 확인
+  - 근거 문서: `docs/01_manuals/ai-analysis.md`, `docs/01_manuals/api-contracts.md`, `docs/01_manuals/data.md`, `docs/01_manuals/security.md`
+  - 확인 기준:
+    - JSON 스키마 검증 필수 원칙이 문서에 존재한다.
+    - 필드 누락 시 보정(Fallback) 규칙이 문서에 존재한다.
+    - 분석 메타데이터(`model`, `analyzedAt`, `analysisVersion`, `schemaVersion`) 요구사항이 문서에 존재한다.
+- [ ] 2단계: 정책 확정 (1~2시간)
+  - 수용 기준:
+    - 스키마 검증 실패 시 처리 정책(`failed` vs 부분 성공)을 명시한다.
+    - 누락 허용 필드/기본값 적용 필드 목록을 명시한다.
+    - 결과 저장 전 검증 순서(스키마→보정→재검증→저장)를 체크리스트로 고정한다.
 
 ---
 
@@ -89,13 +149,17 @@
 ---
 
 ## H. 다음 세션용 1~2시간 단위 작업 후보
-- [ ] `docs/04_quality/test-cases-mvp.md` 생성 및 정상/실패/빈데이터/경계값 케이스 작성
-- [ ] `docs/04_quality/failure-log.md` 생성 및 기록 템플릿 확정
-- [ ] `CHECKLIST.md`의 D 섹션 미완료 항목을 "문서 존재 확인" 기준과 "정책 확정" 기준으로 분리
+- [x] `docs/04_quality/failure-log.md` 생성 및 기록 템플릿 확정
+- [ ] D 섹션 2단계(정책 확정) 항목 중 D-1~D-2 우선 완료
+- [ ] D 섹션 2단계(정책 확정) 항목 중 D-3~D-5 순차 완료
 
 ---
 
 ## I. 완료 로그 (요약)
+### 2026-02-26
+- 완료 항목: `docs/04_quality/failure-log.md` 생성 및 에러코드 매핑 규칙 반영
+- 메모: `api-contracts.md` 코드 기준으로 incident 템플릿/샘플 1건 포함
+
 ### 2026-02-23
 - 완료 항목: 문서 하니스/매뉴얼/핵심 설계 문서 초안 작성
 - 메모: 개발 코드는 아직 시작하지 않음
