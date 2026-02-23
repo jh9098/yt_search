@@ -270,6 +270,36 @@ cacheHit: true
 
 analysisVersion: "v1"
 
+## D-5 정책 확정: 저장 전 검증/보정 파이프라인 (고정)
+
+### 처리 순서 체크리스트
+- [ ] JSON 파싱: 파싱 실패 시 즉시 `ANALYSIS_OUTPUT_INVALID` + `status=failed`
+- [ ] 스키마 검증(1차): 필수 필드 누락/타입 오류 확인
+- [ ] 보정 적용: 허용 필드(`summary.weakPoints`, `contentIdeas`, `recommendedKeywords`, `meta.warnings`)만 보정
+- [ ] 스키마 재검증(2차): 보정 후 구조 적합성 재확인
+- [ ] 저장: 검증 성공 결과만 저장
+
+### `failed` vs `partial-success` 백엔드 판정 기준
+- `failed`
+  - JSON 파싱 실패
+  - 필수 필드 누락(보정 불가)
+  - 재검증 실패
+  - 저장 실패
+- `partial-success`
+  - 허용 필드 누락을 보정해 재검증을 통과한 경우
+  - API `status`는 `completed`, 대신 `result.meta.warnings`에 보정 내역 기록
+
+### 로그 필수 필드 (D-5 보강)
+- `requestId`, `jobId`
+- `validationStage` (`parse`, `schema_validate_1`, `fallback`, `schema_validate_2`, `persist`)
+- `failedReason` 또는 `fallbackAppliedFields`
+- `analysisVersion`, `schemaVersion`
+
+### 프론트 정합성 보장 규칙
+- `status=completed` + `meta.warnings` 비어 있지 않음 → 프론트 `partial-success` 분기 가능
+- `status=failed` + `error.code=ANALYSIS_OUTPUT_INVALID` → 재시도 버튼 노출
+- 서버는 보정 사실을 숨기지 않고 `meta.warnings`로 항상 전달
+
 로깅 규칙
 로그에 남길 것
 

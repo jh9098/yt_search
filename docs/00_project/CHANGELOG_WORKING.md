@@ -9,6 +9,37 @@
 
 ---
 
+## 2026-03-03 (D-5 출력 검증/보정 정책 확정)
+### 오늘 목표
+- D-5(출력 검증/보정) 2단계 정책을 완료해 `failed` vs `partial-success` 분기와 저장 전 검증 순서를 고정
+
+### 진행 내용 (완료)
+- [x] `docs/01_manuals/ai-analysis.md`에 누락 허용 필드/기본값 적용 표 추가
+- [x] `failed` vs `partial-success` 분기 기준과 저장 전 처리 체크리스트(스키마→보정→재검증→저장) 고정
+- [x] `docs/01_manuals/api-contracts.md`에 D-5 상태 매핑 보강 규칙 및 `failed` 고정 조건 추가
+- [x] `docs/01_manuals/backend.md`에 D-5 파이프라인/로그 필수 필드/프론트 정합성 규칙 동기화
+- [x] `docs/00_project/CHECKLIST.md` D-5 2단계 완료 처리
+
+### 진행 내용 (미완료)
+- [ ] 프론트 MVP 구현(E 섹션)
+- [ ] 백엔드 MVP 구현(F 섹션)
+
+### 변경/생성 파일
+- `docs/01_manuals/ai-analysis.md`
+- `docs/01_manuals/api-contracts.md`
+- `docs/01_manuals/backend.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. 백엔드 MVP 최소 골격 생성(`main.py`, analysis router/schemas)으로 API 계약을 실행 가능한 상태로 전환
+2. 프론트 작업 전 백엔드 스텁 응답(`create/status`) 기준으로 상태 매핑 검증
+
+### 메모
+- 이번 세션은 단일 작업 원칙에 따라 D-5 문서 정책 확정만 수행했고, 코드 구현은 하지 않음.
+
+---
+
 ## 2026-03-02 (D-4 캐시 키 전략 정책 확정)
 ### 오늘 목표
 - D-4(캐시 키 전략) 2단계 정책을 완료해 캐시 키/TTL/cacheHit 기준을 고정
