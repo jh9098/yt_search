@@ -66,10 +66,10 @@ describe("search api client url contract", () => {
 
     expect(path.startsWith("/search/videos?")).toBe(true);
     expect(path).toContain("q=%EC%B9%B4%EB%A6%AC%EB%82%98");
-    expect(path).toContain("sort=views");
-    expect(path).toContain("period=30d");
     expect(path).toContain("minViews=0");
     expect(path).toContain("resultLimit=50");
+    expect(path).not.toContain("sort=");
+    expect(path).not.toContain("period=");
     expect(path).not.toContain("topic=");
     expect(path).not.toContain("maxSubscribers=");
     expect(path).not.toContain("durationBucket=");

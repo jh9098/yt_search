@@ -66,8 +66,8 @@ function toLegacySearchQueryString(params: SearchApiRequestParams): string {
     searchParams.set("channel", trimmedChannel);
   }
 
-  searchParams.set("sort", params.sort);
-  searchParams.set("period", params.period);
+  // 레거시 백엔드와의 호환을 위해 enum 충돌 가능성이 있는 옵션은 제외한다.
+  // (일부 배포본은 sort/period 허용값이 달라 422를 반환함)
   searchParams.set("minViews", String(params.minViews));
 
   if (params.country.trim().length > 0) {
