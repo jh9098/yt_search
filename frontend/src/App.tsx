@@ -15,6 +15,7 @@ import { ResultSummaryBar } from "./domains/search/components/ResultSummaryBar";
 import { VideoGrid } from "./domains/search/components/VideoGrid";
 import { ViewModeToggle } from "./domains/search/components/ViewModeToggle";
 import { useSearchQueryState } from "./domains/search/hooks/useSearchQueryState";
+import { useVideoSearch } from "./domains/search/hooks/useVideoSearch";
 import type {
   AnalysisErrorState,
   AnalysisLoadingState,
@@ -26,7 +27,6 @@ import type {
   SearchFilterState,
   SearchQueryState,
   SearchResultCard,
-  SearchResultsState,
   SearchSummary,
 } from "./domains/search/types";
 
@@ -65,8 +65,7 @@ const POLLING_INTERVAL_MS = 1200;
 export function App() {
   const { queryState, setQueryState, viewMode, setViewMode, copyShareUrl } = useSearchQueryState();
   const [filters, setFilters] = useState<SearchFilterState>(DEFAULT_FILTERS);
-  const [resultsState, setResultsState] = useState<SearchResultsState>("idle");
-  const [visibleCards, setVisibleCards] = useState<SearchResultCard[]>(SEARCH_RESULT_CARDS);
+  const { resultsState, visibleCards, runSearch } = useVideoSearch(SEARCH_RESULT_CARDS);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [status, setStatus] = useState<AnalysisModalStatus>("loading");
@@ -77,21 +76,12 @@ export function App() {
   });
   const [shareMessage, setShareMessage] = useState<string | null>(null);
   const pollTimerRef = useRef<number | null>(null);
-  const searchTimerRef = useRef<number | null>(null);
   const activeSessionRef = useRef(0);
   const isModalOpenRef = useRef(false);
 
   useEffect(() => {
     isModalOpenRef.current = isModalOpen;
   }, [isModalOpen]);
-
-  useEffect(() => {
-    return () => {
-      if (searchTimerRef.current !== null) {
-        window.clearTimeout(searchTimerRef.current);
-      }
-    };
-  }, []);
 
   const selectedCard = useMemo(
     () => visibleCards.find((card) => card.videoId === selectedVideoId) ?? null,
@@ -191,8 +181,8 @@ export function App() {
       setSelectedVideoId(card.videoId);
       setIsModalOpen(true);
       setStatus("loading");
-      setResult(null);
       setError(null);
+      setResult(null);
       setLoadingState({ message: "분석을 준비 중입니다." });
 
       const sessionId = activeSessionRef.current;
@@ -203,14 +193,18 @@ export function App() {
           forceRefresh,
         });
 
-        if (activeSessionRef.current !== sessionId) {
+        if (!isModalOpenRef.current || activeSessionRef.current !== sessionId) {
           return;
         }
 
         applyStatusData(created);
 
-        const needsPolling = created.status === "queued" || created.status === "processing";
-        if (needsPolling) {
+        const shouldContinuePolling =
+          created.status === "queued" ||
+          created.status === "processing" ||
+          (created.status === "completed" && !created.result);
+
+        if (shouldContinuePolling) {
           clearPollTimer();
           pollTimerRef.current = window.setTimeout(() => {
             void pollJobStatus(created.jobId, sessionId);
@@ -240,55 +234,17 @@ export function App() {
   }, [stopPolling]);
 
   useEffect(() => {
-    runSearch(queryState, filters);
+    void runSearch(queryState, filters);
     // 초기 URL 상태를 화면 결과에 반영하기 위해 마운트 시 1회 실행한다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const filterCards = useCallback((query: SearchQueryState, currentFilters: SearchFilterState) => {
-    const normalizedKeyword = query.keyword.trim().toLowerCase();
-    const normalizedChannel = query.channel.trim().toLowerCase();
-
-    return SEARCH_RESULT_CARDS.filter((card) => {
-      const titleMatched =
-        normalizedKeyword.length === 0 || card.title.toLowerCase().includes(normalizedKeyword);
-      const channelMatched =
-        normalizedChannel.length === 0 || card.channelName.toLowerCase().includes(normalizedChannel);
-      const parsedViews = Number(card.viewCountText.replace(/[^0-9.]/g, ""));
-      const scaledViews = card.viewCountText.includes("만") ? parsedViews * 10000 : parsedViews;
-      const viewsMatched = Number.isFinite(scaledViews) ? scaledViews >= currentFilters.minViews : true;
-      return titleMatched && channelMatched && viewsMatched;
-    });
-  }, []);
-
-  const runSearch = useCallback(
-    (nextQuery: SearchQueryState, nextFilters: SearchFilterState) => {
-      if (searchTimerRef.current !== null) {
-        window.clearTimeout(searchTimerRef.current);
-      }
-
-      setResultsState("loading");
-      searchTimerRef.current = window.setTimeout(() => {
-        if (nextQuery.keyword.trim() === "에러테스트") {
-          setVisibleCards([]);
-          setResultsState("error");
-          return;
-        }
-
-        const filteredCards = filterCards(nextQuery, nextFilters);
-        setVisibleCards(filteredCards);
-        setResultsState(filteredCards.length > 0 ? "success" : "empty");
-      }, 300);
-    },
-    [filterCards],
-  );
-
   const handleKeywordSearch = () => {
-    runSearch(queryState, filters);
+    void runSearch(queryState, filters);
   };
 
   const handleChannelSearch = () => {
-    runSearch(queryState, filters);
+    void runSearch(queryState, filters);
   };
 
   const openAnalysisModal = (card: SearchResultCard) => {
@@ -320,7 +276,7 @@ export function App() {
       keyword,
     };
     setQueryState(nextQuery);
-    runSearch(nextQuery, filters);
+    void runSearch(nextQuery, filters);
   };
 
   const handleResetAll = () => {
@@ -332,7 +288,7 @@ export function App() {
     setViewMode("grid");
     setFilters(DEFAULT_FILTERS);
     setShareMessage(null);
-    runSearch(resetQuery, DEFAULT_FILTERS);
+    void runSearch(resetQuery, DEFAULT_FILTERS);
   };
 
   const handleCopyShareUrl = async () => {
@@ -382,12 +338,10 @@ export function App() {
           isDisabled={isSearchLoading}
           onChange={(nextFilters) => {
             setFilters(nextFilters);
-            runSearch(queryState, nextFilters);
           }}
           onReset={() => {
             setFilters(DEFAULT_FILTERS);
             setShareMessage(null);
-            runSearch(queryState, DEFAULT_FILTERS);
           }}
         />
         <ViewModeToggle

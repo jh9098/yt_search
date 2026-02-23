@@ -24,6 +24,45 @@ export interface SearchResultCard {
   uploadedAtText: string;
 }
 
+export interface SearchApiRequestParams {
+  q: string;
+  channel: string;
+  sort: SearchSortOption;
+  period: SearchPeriodOption;
+  minViews: number;
+}
+
+export interface SearchApiResponseData {
+  items: SearchResultCard[];
+}
+
+export interface SearchApiSuccessResponse<TData> {
+  success: true;
+  data: TData;
+  meta: {
+    requestId: string;
+    timestamp: string;
+  };
+}
+
+export interface SearchApiErrorResponse {
+  success: false;
+  error: {
+    code: string;
+    message: string;
+  };
+  meta: {
+    requestId: string;
+    timestamp: string;
+  };
+}
+
+export interface UseVideoSearchResult {
+  resultsState: SearchResultsState;
+  visibleCards: SearchResultCard[];
+  runSearch: (query: SearchQueryState, filters: SearchFilterState) => Promise<void>;
+}
+
 export interface SearchSummary {
   totalCount: number;
   shownCount: number;

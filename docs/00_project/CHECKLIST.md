@@ -157,6 +157,12 @@
 
 ## I. 완료 로그 (요약)
 
+### 2026-03-12 (FE-3 검색 API 최소 연결)
+- [x] `search/api/client.ts` 추가로 검색 API 요청/에러 파싱 경로 구성 (`VITE_API_BASE_URL`, `VITE_SEARCH_API_PATH` 지원)
+- [x] `useVideoSearch` 훅 추가로 `loading/empty/error/success` 상태 관리 및 동일 파라미터 중복 호출 가드 반영
+- [x] `App.tsx` 검색 흐름을 훅 기반으로 전환하고 버튼/Enter 트리거에서만 API 호출되도록 유지
+- 메모: 필터/보기모드 변경에서는 자동 검색을 실행하지 않아 불필요 네트워크 호출을 줄였고, 동일 파라미터 재호출 차단으로 Firestore 연동 시 read 소모 증가를 완화할 수 있다.
+
 ### 2026-03-12 (FE-2 URL 쿼리 동기화)
 - [x] `useSearchQueryState` 훅 추가로 `q`, `channel`, `view` 파싱/직렬화 + `history.replaceState` 동기화 반영
 - [x] `App.tsx`에서 query/view 상태를 훅으로 이관하고, 초기 마운트 시 URL 기반 검색 복구 반영
