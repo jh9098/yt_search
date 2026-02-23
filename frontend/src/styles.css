@@ -553,3 +553,86 @@ input:disabled {
 .table-video-link:hover {
   text-decoration: underline;
 }
+
+.app-header-title-wrap {
+  flex: 1;
+  min-width: 240px;
+}
+
+.app-header-tools {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.api-key-manager {
+  min-width: 220px;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  background: #0f172a;
+  padding: 10px 12px;
+}
+
+.api-key-manager-header {
+  margin-bottom: 8px;
+}
+
+.api-key-manager-title,
+.api-key-manager-summary,
+.api-key-manager-help {
+  margin: 0;
+}
+
+.api-key-manager-title {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.api-key-manager-summary {
+  margin-top: 4px;
+  font-weight: 700;
+}
+
+.api-key-editor-wrap {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.api-key-editor {
+  width: 100%;
+  border: 1px solid #334155;
+  background: #020617;
+  color: #e2e8f0;
+  border-radius: 8px;
+  padding: 8px;
+  resize: vertical;
+}
+
+.api-key-manager-help {
+  color: #94a3b8;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.api-key-manager-actions {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 767px) {
+  .app-header {
+    flex-direction: column;
+  }
+
+  .app-header-tools {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .quota-indicator,
+  .api-key-manager {
+    width: 100%;
+  }
+}

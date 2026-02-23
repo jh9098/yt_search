@@ -65,6 +65,22 @@ class YouTubeSearchClient:
     def is_configured(self) -> bool:
         return self._api_key != ""
 
+    def _resolve_api_keys(self, user_api_keys: list[str] | None) -> list[str]:
+        deduped: list[str] = []
+        seen: set[str] = set()
+
+        for key in user_api_keys or []:
+            normalized = key.strip()
+            if normalized == "" or normalized in seen:
+                continue
+            seen.add(normalized)
+            deduped.append(normalized)
+
+        if self._api_key != "" and self._api_key not in seen:
+            deduped.append(self._api_key)
+
+        return deduped
+
     def fetch_videos(
         self,
         *,
@@ -73,47 +89,56 @@ class YouTubeSearchClient:
         sort: SearchSortOption,
         period: SearchPeriodOption,
         result_limit: int,
+        api_keys: list[str] | None = None,
     ) -> list[YoutubeVideoRaw]:
-        if not self.is_configured:
+        resolved_api_keys = self._resolve_api_keys(api_keys)
+
+        if len(resolved_api_keys) == 0:
             raise SearchUpstreamUnavailableError(message="YOUTUBE_API_KEY is not configured")
 
         normalized_keyword = keyword.strip()
         normalized_channel = channel.strip()
         effective_query = normalized_keyword if normalized_keyword != "" else normalized_channel
 
-        search_response = self._call_youtube_api(
+        search_response = self._call_youtube_api_with_fallback(
             YOUTUBE_SEARCH_URL,
-            self._build_search_params(keyword=effective_query, sort=sort, period=period, result_limit=result_limit),
+            self._build_search_params(
+                keyword=effective_query,
+                sort=sort,
+                period=period,
+                result_limit=result_limit,
+            ),
+            resolved_api_keys,
         )
         video_ids = self._extract_video_ids(search_response)
 
         if len(video_ids) == 0:
             return []
 
-        videos_response = self._call_youtube_api(
+        videos_response = self._call_youtube_api_with_fallback(
             YOUTUBE_VIDEOS_URL,
             {
                 "part": "snippet,statistics,contentDetails",
                 "id": ",".join(video_ids),
-                "key": self._api_key,
             },
+            resolved_api_keys,
         )
 
         channel_ids = self._extract_channel_ids(videos_response)
-        channel_map = self._fetch_channel_map(channel_ids)
+        channel_map = self._fetch_channel_map(channel_ids, resolved_api_keys)
         return self._to_video_rows(videos_response, channel=channel, channel_map=channel_map)
 
-    def _fetch_channel_map(self, channel_ids: list[str]) -> dict[str, dict[str, Any]]:
+    def _fetch_channel_map(self, channel_ids: list[str], api_keys: list[str]) -> dict[str, dict[str, Any]]:
         if len(channel_ids) == 0:
             return {}
 
-        channels_response = self._call_youtube_api(
+        channels_response = self._call_youtube_api_with_fallback(
             YOUTUBE_CHANNELS_URL,
             {
                 "part": "snippet,statistics",
                 "id": ",".join(channel_ids),
-                "key": self._api_key,
             },
+            api_keys,
         )
 
         items = channels_response.get("items")
@@ -144,7 +169,6 @@ class YouTubeSearchClient:
             "q": keyword,
             "maxResults": str(max(1, min(self._max_results, result_limit, 50))),
             "order": self._to_youtube_sort(sort),
-            "key": self._api_key,
         }
 
         published_after = self._to_published_after(period)
@@ -181,6 +205,31 @@ class YouTubeSearchClient:
         if period == SearchPeriodOption.LAST_730_DAYS:
             return (now - timedelta(days=730)).isoformat().replace("+00:00", "Z")
         return None
+
+
+    def _call_youtube_api_with_fallback(
+        self,
+        url: str,
+        base_params: dict[str, str],
+        api_keys: list[str],
+    ) -> dict[str, Any]:
+        last_error: Exception | None = None
+
+        for index, api_key in enumerate(api_keys):
+            params = {**base_params, "key": api_key}
+            try:
+                return self._call_youtube_api(url, params)
+            except SearchQuotaExceededError as error:
+                last_error = error
+                is_last_key = index == len(api_keys) - 1
+                if is_last_key:
+                    raise
+                continue
+
+        if last_error is not None:
+            raise last_error
+
+        raise SearchUpstreamUnavailableError(message="YOUTUBE_API_KEY is not configured")
 
     def _call_youtube_api(self, url: str, params: dict[str, str]) -> dict[str, Any]:
         query_string = urlencode(params)

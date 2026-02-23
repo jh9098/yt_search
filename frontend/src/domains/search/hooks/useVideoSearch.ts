@@ -11,7 +11,7 @@ import { mapSearchErrorMessage } from "../utils/mapSearchErrorMessage";
 
 const SEARCH_FALLBACK_DELAY_MS = 250;
 
-function buildRequestKey(query: SearchQueryState, filters: SearchFilterState): string {
+function buildRequestKey(query: SearchQueryState, filters: SearchFilterState, apiKeys: string[]): string {
   return [
     query.keyword.trim().toLowerCase(),
     query.channel.trim().toLowerCase(),
@@ -29,6 +29,7 @@ function buildRequestKey(query: SearchQueryState, filters: SearchFilterState): s
     filters.hoverMetric,
     String(filters.minPerformance),
     filters.corePreset,
+    apiKeys.join(","),
   ].join("|");
 }
 
@@ -44,8 +45,8 @@ export function useVideoSearch(initialCards: SearchResultCard[]): UseVideoSearch
   const [searchErrorMessage, setSearchErrorMessage] = useState<string | null>(null);
   const lastRequestKeyRef = useRef<string | null>(null);
 
-  const runSearch = useCallback(async (query: SearchQueryState, filters: SearchFilterState) => {
-    const requestKey = buildRequestKey(query, filters);
+  const runSearch = useCallback(async (query: SearchQueryState, filters: SearchFilterState, apiKeys: string[] = []) => {
+    const requestKey = buildRequestKey(query, filters, apiKeys);
 
     if (requestKey === lastRequestKeyRef.current) {
       return;
@@ -74,6 +75,7 @@ export function useVideoSearch(initialCards: SearchResultCard[]): UseVideoSearch
         hoverMetric: filters.hoverMetric,
         minPerformance: filters.minPerformance,
         corePreset: filters.corePreset,
+        apiKeys,
       });
 
       setVisibleCards(response.items);

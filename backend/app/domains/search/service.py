@@ -208,6 +208,7 @@ def search_videos(
     script_type: SearchScriptType,
     min_performance: int,
     core_preset: SearchCorePreset,
+    user_api_keys: list[str] | None = None,
 ) -> list[SearchVideoRecord]:
     client = YouTubeSearchClient()
     youtube_rows = client.fetch_videos(
@@ -216,6 +217,7 @@ def search_videos(
         sort=sort,
         period=period,
         result_limit=result_limit,
+        api_keys=user_api_keys or [],
     )
 
     normalized_country = country.strip().upper()
