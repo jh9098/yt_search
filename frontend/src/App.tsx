@@ -14,6 +14,7 @@ import { KeywordSearchBar } from "./domains/search/components/KeywordSearchBar";
 import { ResultSummaryBar } from "./domains/search/components/ResultSummaryBar";
 import { VideoGrid } from "./domains/search/components/VideoGrid";
 import { ViewModeToggle } from "./domains/search/components/ViewModeToggle";
+import { useSearchQueryState } from "./domains/search/hooks/useSearchQueryState";
 import type {
   AnalysisErrorState,
   AnalysisLoadingState,
@@ -27,7 +28,6 @@ import type {
   SearchResultCard,
   SearchResultsState,
   SearchSummary,
-  SearchViewMode,
 } from "./domains/search/types";
 
 const SEARCH_RESULT_CARDS: SearchResultCard[] = [
@@ -63,13 +63,9 @@ const DEFAULT_FILTERS: SearchFilterState = {
 const POLLING_INTERVAL_MS = 1200;
 
 export function App() {
-  const [queryState, setQueryState] = useState<SearchQueryState>({
-    keyword: "가족 대화법",
-    channel: "",
-  });
+  const { queryState, setQueryState, viewMode, setViewMode, copyShareUrl } = useSearchQueryState();
   const [filters, setFilters] = useState<SearchFilterState>(DEFAULT_FILTERS);
-  const [viewMode, setViewMode] = useState<SearchViewMode>("grid");
-  const [resultsState, setResultsState] = useState<SearchResultsState>("success");
+  const [resultsState, setResultsState] = useState<SearchResultsState>("idle");
   const [visibleCards, setVisibleCards] = useState<SearchResultCard[]>(SEARCH_RESULT_CARDS);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -79,6 +75,7 @@ export function App() {
   const [loadingState, setLoadingState] = useState<AnalysisLoadingState>({
     message: "분석을 준비 중입니다.",
   });
+  const [shareMessage, setShareMessage] = useState<string | null>(null);
   const pollTimerRef = useRef<number | null>(null);
   const searchTimerRef = useRef<number | null>(null);
   const activeSessionRef = useRef(0);
@@ -242,6 +239,12 @@ export function App() {
     };
   }, [stopPolling]);
 
+  useEffect(() => {
+    runSearch(queryState, filters);
+    // 초기 URL 상태를 화면 결과에 반영하기 위해 마운트 시 1회 실행한다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const filterCards = useCallback((query: SearchQueryState, currentFilters: SearchFilterState) => {
     const normalizedKeyword = query.keyword.trim().toLowerCase();
     const normalizedChannel = query.channel.trim().toLowerCase();
@@ -320,6 +323,23 @@ export function App() {
     runSearch(nextQuery, filters);
   };
 
+  const handleResetAll = () => {
+    const resetQuery: SearchQueryState = {
+      keyword: "가족 대화법",
+      channel: "",
+    };
+    setQueryState(resetQuery);
+    setViewMode("grid");
+    setFilters(DEFAULT_FILTERS);
+    setShareMessage(null);
+    runSearch(resetQuery, DEFAULT_FILTERS);
+  };
+
+  const handleCopyShareUrl = async () => {
+    const copied = await copyShareUrl();
+    setShareMessage(copied ? "URL이 복사되었습니다." : "URL 복사에 실패했습니다.");
+  };
+
   const summary: SearchSummary = {
     totalCount: SEARCH_RESULT_CARDS.length,
     shownCount: visibleCards.length,
@@ -366,6 +386,7 @@ export function App() {
           }}
           onReset={() => {
             setFilters(DEFAULT_FILTERS);
+            setShareMessage(null);
             runSearch(queryState, DEFAULT_FILTERS);
           }}
         />
@@ -379,7 +400,14 @@ export function App() {
       </section>
 
       <section className="search-section" aria-label="검색 결과">
-        <ResultSummaryBar summary={summary} />
+        <ResultSummaryBar
+          summary={summary}
+          onReset={handleResetAll}
+          onCopyShareUrl={() => {
+            void handleCopyShareUrl();
+          }}
+          shareMessage={shareMessage}
+        />
         <VideoGrid
           cards={visibleCards}
           resultsState={resultsState}

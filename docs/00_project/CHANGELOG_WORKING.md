@@ -1,3 +1,37 @@
+## 2026-03-12 (FE-2 URL 쿼리 동기화 + 공유/초기화 정합화)
+### 오늘 목표
+- FRONTEND_UI_MVP_V2의 FE-2 범위에서 `q/channel/view` URL 동기화와 초기 복구, 공유 URL 액션을 연결
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/search/hooks/useSearchQueryState.ts` 생성 (`q`, `channel`, `view` 파싱/직렬화 + `replaceState` 반영)
+- [x] `frontend/src/App.tsx`에서 query/view 상태를 훅으로 이관하고 마운트 시 URL 기준 검색 복구
+- [x] `frontend/src/domains/search/components/ResultSummaryBar.tsx`에 `필터 초기화`, `URL 복사` 액션 추가
+- [x] `frontend/src/styles.css`에 요약 바 액션/복사 메시지 스타일 추가
+- [x] `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] popstate(브라우저 뒤로가기/앞으로가기) 시 결과 목록 자동 재조회 동기화
+- [ ] 검색 API 클라이언트/훅(`useVideoSearch`) 연결
+
+### 변경/생성 파일
+- `frontend/src/domains/search/hooks/useSearchQueryState.ts`
+- `frontend/src/App.tsx`
+- `frontend/src/domains/search/components/ResultSummaryBar.tsx`
+- `frontend/src/styles.css`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. `useVideoSearch` + `search/api/client.ts` 최소 연결로 버튼 트리거 검색을 실제 API 기반으로 전환
+2. popstate 시점에 검색 결과 상태까지 동기화하는 경량 보강(범위 제한)
+
+### 메모
+- 현재는 로컬 데이터 필터 기반이라 Firestore read는 0회다.
+- URL 동기화는 브라우저 history 조작만 수행하므로 read를 유발하지 않는다.
+- 검색은 여전히 버튼 트리거 방식이라 추후 Firestore 연동 시 자동 재조회로 인한 read 급증 위험을 낮춘다.
+
+---
+
 ## 2026-03-12 (FE-1 탐색 화면 뼈대 완성: 필터/보기전환)
 ### 오늘 목표
 - FRONTEND_UI_MVP_V2의 FE-1 범위 내에서 FilterToolbar + Grid/List 토글 + 결과 상태 렌더를 실제 화면에 연결
