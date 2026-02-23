@@ -1,5 +1,35 @@
 # CHANGELOG_WORKING.md
 
+## 2026-03-05 (analysis 저장/캐시 최소 동작 연결)
+### 오늘 목표
+- analysis 결과 저장 구조(in-memory)와 캐시 재사용(`cacheHit`) 분기를 연결해 F 섹션 미완료 항목을 축소
+
+### 진행 내용 (완료)
+- [x] `backend/app/domains/analysis/repository.py` 생성 (in-memory job 상태 + 결과 캐시 저장소)
+- [x] 캐시 키 규칙 `analysis:{videoId}:{analysisVersion}` 구현 및 TTL(24시간) 적용
+- [x] `POST /api/analysis/jobs`에 캐시 hit/miss + `forceRefresh` 분기 연결
+- [x] cache hit 시 `status=completed` + `meta.cacheHit=true`, miss/강제갱신 시 `meta.cacheHit=false` 반영
+- [x] `GET /api/analysis/jobs/{jobId}`를 저장소 기반 조회로 전환
+- [x] `docs/00_project/CHECKLIST.md` F 섹션(결과 저장 구조) 완료 처리
+
+### 진행 내용 (미완료)
+- [ ] 백엔드 timeout/외부 API 예외 처리 추가
+
+### 변경/생성 파일
+- `backend/app/domains/analysis/repository.py`
+- `backend/app/domains/analysis/router.py`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. 백엔드 timeout/외부 API 예외를 문서 코드(`ANALYSIS_TIMEOUT`, `ANALYSIS_UPSTREAM_UNAVAILABLE`)로 매핑
+2. FastAPI/Pydantic 환경을 맞춘 뒤 API 통합 테스트로 cache hit/miss 응답 검증
+
+### 메모
+- 현재 실행 환경에 FastAPI/Pydantic 패키지가 없어 통합 호출 테스트는 제한되었고, 문법 컴파일 중심으로 검증함.
+
+---
+
 ## 목적
 이 문서는 세션 단위 작업 로그입니다.
 - 무엇을 완료했는지

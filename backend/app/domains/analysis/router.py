@@ -4,6 +4,10 @@ from fastapi import APIRouter, Path
 from fastapi.responses import JSONResponse
 
 from backend.app.core.response import error_response, success_response
+from backend.app.domains.analysis.repository import (
+    DEFAULT_ANALYSIS_VERSION,
+    InMemoryAnalysisRepository,
+)
 from backend.app.domains.analysis.schemas import (
     AnalysisCreateSuccessResponse,
     AnalysisErrorResponse,
@@ -14,9 +18,7 @@ from backend.app.domains.analysis.schemas import (
 from backend.app.domains.analysis.service import build_completed_or_failed_status
 
 router = APIRouter(prefix="/api/analysis", tags=["analysis"])
-
-# MVP 스텁 저장소 (프로세스 메모리)
-STUB_JOBS: dict[str, AnalysisStatusData] = {}
+repository = InMemoryAnalysisRepository()
 
 
 def _build_stub_raw_result() -> dict:
@@ -34,10 +36,20 @@ def _build_stub_raw_result() -> dict:
             "commentSampleCount": 320,
             "analysisBasis": ["title", "description", "comments"],
             "languageSummary": ["ko"],
-            "analysisVersion": "v1",
+            "analysisVersion": DEFAULT_ANALYSIS_VERSION,
             "schemaVersion": "analysis-result-v1",
         },
     }
+
+
+def _build_completed_status(job_id: str, cache_hit: bool) -> AnalysisStatusData:
+    outcome = build_completed_or_failed_status(job_id=job_id, raw_result=_build_stub_raw_result())
+    status_data = outcome.status_data
+
+    if status_data.result is not None:
+        status_data.result.meta.cache_hit = cache_hit
+
+    return status_data
 
 
 @router.post(
@@ -55,15 +67,27 @@ def create_analysis_job(payload: AnalysisJobCreateRequest):
         return JSONResponse(status_code=400, content=body)
 
     job_id = f"job_{video_id}_001"
-    data = AnalysisStatusData(jobId=job_id, status=JobStatus.QUEUED)
-    STUB_JOBS[job_id] = data
+    cache_key = repository.build_cache_key(video_id=video_id, analysis_version=DEFAULT_ANALYSIS_VERSION)
 
-    # forceRefresh=true면 즉시 완료 샘플을 생성해 검증/보정 파이프라인이 동작하도록 유지
-    if payload.force_refresh:
-        outcome = build_completed_or_failed_status(job_id=job_id, raw_result=_build_stub_raw_result())
-        STUB_JOBS[job_id] = outcome.status_data
+    if not payload.force_refresh:
+        cached_result = repository.get_cached_result(cache_key=cache_key)
+        if cached_result is not None:
+            cached_status = AnalysisStatusData(
+                jobId=job_id,
+                status=JobStatus.COMPLETED,
+                result=cached_result.model_copy(deep=True),
+            )
+            cached_status.result.meta.cache_hit = True
+            repository.upsert_job_status(cached_status)
+            return success_response(data=cached_status.model_dump(by_alias=True, exclude_none=True))
 
-    return success_response(data=data.model_dump(by_alias=True, exclude_none=True))
+    completed_status = _build_completed_status(job_id=job_id, cache_hit=False)
+    repository.upsert_job_status(completed_status)
+
+    if completed_status.result is not None:
+        repository.save_result(cache_key=cache_key, result=completed_status.result.model_copy(deep=True))
+
+    return success_response(data=completed_status.model_dump(by_alias=True, exclude_none=True))
 
 
 @router.get(
@@ -72,21 +96,12 @@ def create_analysis_job(payload: AnalysisJobCreateRequest):
     responses={404: {"model": AnalysisErrorResponse}},
 )
 def get_analysis_job_status(job_id: str = Path(..., min_length=1)):
-    if job_id not in STUB_JOBS:
+    current = repository.get_job_status(job_id)
+    if current is None:
         body = error_response(
             code="ANALYSIS_JOB_NOT_FOUND",
             message="분석 작업을 찾을 수 없습니다. 새로 분석을 시작해 주세요.",
         )
         return JSONResponse(status_code=404, content=body)
-
-    current = STUB_JOBS[job_id]
-
-    if current.status == JobStatus.QUEUED:
-        current = AnalysisStatusData(
-            jobId=job_id,
-            status=JobStatus.PROCESSING,
-            message="분석 진행 중입니다.",
-        )
-        STUB_JOBS[job_id] = current
 
     return success_response(data=current.model_dump(by_alias=True, exclude_none=True))
