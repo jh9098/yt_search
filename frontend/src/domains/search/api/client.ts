@@ -7,6 +7,7 @@ import type {
 import { API_BASE_URL } from "../../../shared-api-base-url";
 
 const SEARCH_PATH = import.meta.env.VITE_SEARCH_API_PATH ?? "/search/videos";
+const API_SEGMENT = "/api";
 
 export class SearchApiError extends Error {
   readonly code: string;
@@ -42,16 +43,44 @@ async function parseJson<T>(response: Response): Promise<T> {
   return (await response.json()) as T;
 }
 
-export async function searchVideos(params: SearchApiRequestParams): Promise<SearchApiResponseData> {
-  const queryString = toSearchQueryString(params);
-  const requestPath = queryString.length > 0 ? `${SEARCH_PATH}?${queryString}` : SEARCH_PATH;
+function removeApiSuffix(baseUrl: string): string {
+  if (baseUrl.endsWith(API_SEGMENT)) {
+    return baseUrl.slice(0, -API_SEGMENT.length);
+  }
 
-  const response = await fetch(`${API_BASE_URL}${requestPath}`, {
+  return baseUrl;
+}
+
+async function fetchSearchResponse(requestPath: string): Promise<Response> {
+  const primaryResponse = await fetch(`${API_BASE_URL}${requestPath}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
     },
   });
+
+  if (primaryResponse.status !== 404) {
+    return primaryResponse;
+  }
+
+  const fallbackBaseUrl = removeApiSuffix(API_BASE_URL);
+
+  if (fallbackBaseUrl === API_BASE_URL) {
+    return primaryResponse;
+  }
+
+  return fetch(`${fallbackBaseUrl}${requestPath}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+export async function searchVideos(params: SearchApiRequestParams): Promise<SearchApiResponseData> {
+  const queryString = toSearchQueryString(params);
+  const requestPath = queryString.length > 0 ? `${SEARCH_PATH}?${queryString}` : SEARCH_PATH;
+  const response = await fetchSearchResponse(requestPath);
 
   if (!response.ok) {
     let code = "COMMON_INVALID_REQUEST";
