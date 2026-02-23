@@ -122,9 +122,9 @@
 ## E. 프론트 MVP (개발 미시작)
 - [ ] 검색 결과 카드 UI 초안
 - [ ] "AI 소재 분석" 버튼 클릭 동작
-- [ ] 분석 모달 loading 화면 UI
-- [ ] 분석 모달 success 화면 UI
-- [ ] 분석 모달 error 화면 UI
+- [x] 분석 모달 loading 화면 UI
+- [x] 분석 모달 success 화면 UI
+- [x] 분석 모달 error 화면 UI
 - [ ] 추천 키워드 칩 UI + 클릭 동작(임시)
 - [ ] 분석 메타 영역 UI (모델명/분석 기준/시간)
 
@@ -158,6 +158,7 @@
 ## I. 완료 로그 (요약)
 
 ### 2026-03-08
+- [x] analysis 프론트 기초 연결: 타입/모달 loading·success·error/mock 데이터 반영
 - 완료 항목: 외부 SDK 예외 변환 연결 + `ANALYSIS_RATE_LIMITED` `Retry-After`(3초) 정책 반영 + API 계약 테스트 헤더 검증 추가
 - 메모: SDK 미가용 환경은 기존 시뮬레이션 모드로 안전 폴백되며, rate-limited 응답에서 재시도 타이밍을 명시해 불필요한 재호출을 줄일 수 있음
 
