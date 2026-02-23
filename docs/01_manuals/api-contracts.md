@@ -262,6 +262,30 @@
 
 ---
 
+## D-5 정책 확정: 출력 검증/보정 결과의 상태 매핑 (고정)
+
+### 상태 매핑 보강 규칙
+- `status=completed`라도 `result.meta.warnings`에 보정 내역이 있으면 프론트는 `partial-success` 분기를 허용합니다.
+- `status=failed`는 JSON 파싱 실패, 필수 필드 누락(보정 불가), 재검증 실패, 저장 실패에 사용합니다.
+- `status=completed` + `result`가 존재하고 보정 내역이 없으면 `success`로 처리합니다.
+
+### 누락 허용 필드 + API 응답 계약
+| 필드 | 누락 허용 여부 | 서버 보정 규칙 | 프론트 렌더링 규칙 |
+|---|---|---|---|
+| `summary.weakPoints` | 허용 | 기본 문구로 보정 | 보정 문구 그대로 출력 |
+| `contentIdeas` | 허용 | 빈 배열 + warning 추가 | 섹션은 유지하되 "아이디어 준비 중" 문구 가능 |
+| `recommendedKeywords` | 허용 | 빈 배열 | 키워드 칩 영역 숨김 또는 빈 상태 표시 |
+| `meta.warnings` | 허용 | 없으면 빈 배열 생성 | warning 존재 시 상단 안내 배너 표시 |
+
+### `failed` 고정 조건
+아래 중 하나라도 충족하면 `status=failed`로 응답합니다.
+1. JSON 파싱 실패
+2. `summary.majorReactions`, `summary.positivePoints` 등 필수 필드 누락
+3. 보정 후 재검증 실패
+4. 저장 실패
+
+---
+
 ## D-2 정책 확정: 구현 착수 체크리스트 연동
 프론트 구현 전 아래 순서로 착수합니다.
 1. 상태 enum 정의 (`idle/loading/success/error/empty/partial-success`)
