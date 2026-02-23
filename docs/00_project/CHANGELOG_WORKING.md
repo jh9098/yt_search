@@ -1,3 +1,42 @@
+## 2026-03-09 (analysis 프론트 기초 연결: 타입/mock/모달 3상태)
+### 오늘 목표
+- analysis 도메인의 프론트 최소 골격을 생성해 loading/success/error 상태 분기를 mock 데이터로 확인 가능한 상태로 만든다.
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/analysis/types.ts` 생성 (API 계약 기반 타입)
+- [x] `frontend/src/domains/analysis/mocks/analysisResult.mock.ts` 생성 (샘플 JSON 반영)
+- [x] `AnalysisModal/AnalysisLoadingView/AnalysisSuccessView/AnalysisErrorView` 컴포넌트 생성
+- [x] success 화면에서 `summary/contentIdeas/recommendedKeywords/meta` 렌더링 구현
+- [x] loading 상태에서 액션 버튼 disabled 처리
+- [x] null/빈 배열 안전 처리(결과 누락 시 error fallback, 아이디어/키워드 empty 안내)
+- [x] `docs/00_project/CHECKLIST.md` E 섹션 일부 완료 반영
+
+### 진행 내용 (미완료)
+- [ ] 프론트 앱 엔트리 구성 및 실제 화면 라우팅 연결
+- [ ] 검색 카드 UI + 분석 모달 트리거 연결
+- [ ] 키워드 칩 클릭의 재검색 동작 연결
+
+### 변경/생성 파일
+- `frontend/src/domains/analysis/types.ts`
+- `frontend/src/domains/analysis/mocks/analysisResult.mock.ts`
+- `frontend/src/domains/analysis/components/AnalysisModal.tsx`
+- `frontend/src/domains/analysis/components/AnalysisLoadingView.tsx`
+- `frontend/src/domains/analysis/components/AnalysisSuccessView.tsx`
+- `frontend/src/domains/analysis/components/AnalysisErrorView.tsx`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. 검색 카드 목록 UI를 만들고 "AI 소재 분석" 버튼 클릭 시 `AnalysisModal`을 열도록 연결
+2. 추천 키워드 칩 전용 컴포넌트를 분리해 클릭 이벤트(임시 핸들러) 연결
+
+### 메모
+- 현재 작업은 프론트 mock 렌더링만 포함하며 Firestore를 직접 읽지 않는다.
+- 추후 Firestore 연동 시에는 `jobId/videoId` 단위 캐시 결과를 우선 사용해 동일 모달 재오픈마다 재조회(read)하지 않도록 해야 한다.
+- 폴링 도입 시에도 지수 백오프/중단 조건을 넣어 불필요한 반복 read 소모를 제한해야 한다.
+
+---
+
 ## 2026-03-08 (Gemini SDK 예외 매핑 연결 + Retry-After 계약 반영)
 ### 오늘 목표
 - 외부 SDK 예외를 도메인 예외로 연결하고, rate-limited 응답의 Retry-After 계약을 코드/문서/테스트로 동기화
