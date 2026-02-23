@@ -3,7 +3,7 @@ export type SearchResultsState = "idle" | "loading" | "success" | "empty" | "err
 export type SearchViewMode = "grid" | "list";
 
 export type SearchSortOption = "relevance" | "views" | "latest";
-export type SearchPeriodOption = "24h" | "7d" | "30d" | "all";
+export type SearchPeriodOption = "24h" | "7d" | "30d" | "90d" | "180d" | "365d" | "730d" | "all";
 export type SearchDurationBucket = "all" | "under4m" | "4to20m" | "over20m";
 export type SearchShortFormType = "all" | "shorts" | "longform";
 export type SearchScriptType = "all" | "scripted" | "noScript";
@@ -50,7 +50,9 @@ export interface SearchResultCard {
   thumbnailUrl: string;
   durationText: string;
   publishedDateText: string;
+  viewCount: number;
   viewCountText: string;
+  subscriberCount: number;
   subscriberCountText: string;
   channelPublishedDateText: string;
   countryCode: string;

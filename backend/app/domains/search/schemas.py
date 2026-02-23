@@ -17,6 +17,10 @@ class SearchPeriodOption(str, Enum):
     LAST_24_HOURS = "24h"
     LAST_7_DAYS = "7d"
     LAST_30_DAYS = "30d"
+    LAST_90_DAYS = "90d"
+    LAST_180_DAYS = "180d"
+    LAST_365_DAYS = "365d"
+    LAST_730_DAYS = "730d"
     ALL = "all"
 
 
@@ -70,7 +74,9 @@ class SearchResultItem(BaseModel):
     thumbnail_url: str = Field(..., alias="thumbnailUrl")
     duration_text: str = Field(..., alias="durationText")
     published_date_text: str = Field(..., alias="publishedDateText")
+    view_count: int = Field(..., alias="viewCount")
     view_count_text: str = Field(..., alias="viewCountText")
+    subscriber_count: int = Field(..., alias="subscriberCount")
     subscriber_count_text: str = Field(..., alias="subscriberCountText")
     channel_published_date_text: str = Field(..., alias="channelPublishedDateText")
     country_code: str = Field(..., alias="countryCode")

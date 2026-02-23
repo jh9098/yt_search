@@ -27,6 +27,10 @@ const PERIOD_OPTIONS: Array<{ value: SearchPeriodOption; label: string }> = [
   { value: "24h", label: "24시간" },
   { value: "7d", label: "7일" },
   { value: "30d", label: "30일" },
+  { value: "90d", label: "90일" },
+  { value: "180d", label: "180일" },
+  { value: "365d", label: "1년" },
+  { value: "730d", label: "2년" },
   { value: "all", label: "전체" },
 ];
 
