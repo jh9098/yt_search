@@ -205,6 +205,7 @@
 - `cacheHit=true`: 유효 캐시 결과를 반환한 응답
 - `cacheHit=false`: 재분석 결과를 반환한 응답(캐시 miss/강제 갱신 포함)
 - `cacheHit`은 `status=completed` + `result.meta`에서만 표기합니다.
+- `forceRefresh=false` + 동일 `analysis:{videoId}:{analysisVersion}`가 `queued|processing`이면 기존 `jobId`를 반환해 중복 생성을 방지합니다(dedupe).
 - `status=queued|processing|failed`에서는 `cacheHit`를 강제하지 않습니다.
 
 권장 로그 필드:
@@ -213,6 +214,7 @@
 - `cacheKey` (해시/축약 허용)
 - `cacheHit`
 - `forceRefresh`
+- `errorCode`, `retryAfter` (해당 시)
 
 ### Success Response - 작업 실패(status=failed) 예시
 ```json

@@ -257,6 +257,7 @@ step: collecting_comments, extracting_keywords, generating_insights, validating_
 ### forceRefresh + TTL 처리 기준
 - 기본값은 `forceRefresh=false`이며, 유효 TTL(24시간) 캐시가 있으면 즉시 반환합니다.
 - `forceRefresh=true`는 사용자 명시 재분석/버전 상향/직전 실패 재시도에서만 허용합니다.
+- `forceRefresh=false` + 동일 `cacheKey`가 `queued|processing`이면 새 job 생성 대신 기존 `jobId`를 반환(dedupe)합니다.
 - `analysisVersion`이 상향되면 기존 TTL과 무관하게 신규 키로 재분석합니다.
 
 ### 응답 meta 표기 기준
@@ -291,6 +292,7 @@ analysisVersion: "v1"
 
 ### 로그 필수 필드 (D-5 보강)
 - `requestId`, `jobId`
+- `videoId`, `errorCode`, `retryAfter`, `cacheHit`
 - `validationStage` (`parse`, `schema_validate_1`, `fallback`, `schema_validate_2`, `persist`)
 - `failedReason` 또는 `fallbackAppliedFields`
 - `analysisVersion`, `schemaVersion`

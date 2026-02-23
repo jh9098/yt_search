@@ -215,3 +215,10 @@
 ### 2026-02-22
 - 완료 항목: CHECKLIST/CHANGELOG 상태 정합화 업데이트
 - 메모: 실제 파일 존재 여부와 개발 미시작 상태를 분리해 반영
+
+
+### 2026-03-10
+- [x] 완료 항목: 동일 `videoId+analysisVersion` 처리 중 dedupe(진행 중 job 재사용) 반영
+- [x] 완료 항목: 분석 도메인 공통 로깅 필드(`requestId`, `jobId`, `videoId`, `errorCode`, `retryAfter`, `cacheHit`) 표준화
+- [x] 완료 항목: 계약 테스트 보강(중복 요청 재사용, forceRefresh 우회, Retry-After 헤더 유지)
+- 메모: 현재 저장소는 in-memory라 Firestore read는 0회이며, dedupe + cache 우선 전략으로 Firestore 연동 시 동일 분석 요청의 반복 read를 줄일 수 있도록 선제 반영
