@@ -10,6 +10,7 @@ from .schemas import (
     SearchScriptType,
     SearchShortFormType,
     SearchSortOption,
+    SearchTopicOption,
     SearchVideoRecord,
 )
 
@@ -85,12 +86,30 @@ def _match_duration(duration_seconds: int, duration_bucket: SearchDurationBucket
     return True
 
 
-def _match_short_form(is_short_form: bool, short_form_type: SearchShortFormType) -> bool:
-    if short_form_type == SearchShortFormType.SHORTS:
-        return is_short_form
-    if short_form_type == SearchShortFormType.LONGFORM:
-        return not is_short_form
-    return True
+def _match_short_form(title: str, short_form_type: SearchShortFormType) -> bool:
+    if short_form_type == SearchShortFormType.ALL:
+        return True
+
+    lowered = title.lower()
+    keyword_map: dict[SearchShortFormType, tuple[str, ...]] = {
+        SearchShortFormType.SHOPPING: ("공구", "꿀템", "추천템", "리뷰"),
+        SearchShortFormType.CLIP: ("짤", "명장면", "하이라이트"),
+        SearchShortFormType.GAME: ("게임", "플레이", "공략"),
+        SearchShortFormType.FOOD: ("요리", "먹방", "asmr", "레시피"),
+        SearchShortFormType.ANIMAL: ("동물", "강아지", "고양이", "귀요미"),
+        SearchShortFormType.KNOWLEDGE: ("지식", "상식", "1분", "공부"),
+        SearchShortFormType.BEAUTY: ("뷰티", "패션", "ootd", "메이크업"),
+        SearchShortFormType.SPORTS: ("스포츠", "운동", "헬스", "축구"),
+        SearchShortFormType.ENTERTAINMENT: ("연예", "아이돌", "k-pop", "예능"),
+        SearchShortFormType.OTHER: (),
+        SearchShortFormType.ALL: (),
+    }
+
+    if short_form_type == SearchShortFormType.OTHER:
+        known = [word for option, words in keyword_map.items() if option not in {SearchShortFormType.ALL, SearchShortFormType.OTHER} for word in words]
+        return not any(word in lowered for word in known)
+
+    return any(word in lowered for word in keyword_map.get(short_form_type, ()))
 
 
 def _match_script(has_script: bool, script_type: SearchScriptType) -> bool:
@@ -144,12 +163,40 @@ def _match_core_preset(
     return True
 
 
+def _match_topic(topic: SearchTopicOption, title: str) -> bool:
+    if topic == SearchTopicOption.ALL:
+        return True
+
+    lowered = title.lower()
+    topic_keywords: dict[SearchTopicOption, tuple[str, ...]] = {
+        SearchTopicOption.SHOPPING: ("공구", "꿀템", "추천템", "리뷰"),
+        SearchTopicOption.CLIP: ("명장면", "짤", "하이라이트", "웃긴"),
+        SearchTopicOption.GAME: ("게임", "플레이", "공략", "업데이트"),
+        SearchTopicOption.FOOD: ("먹방", "요리", "asmr", "레시피"),
+        SearchTopicOption.ANIMAL: ("동물", "강아지", "고양이", "귀요미"),
+        SearchTopicOption.KNOWLEDGE: ("지식", "상식", "1분", "공부"),
+        SearchTopicOption.BEAUTY: ("뷰티", "패션", "ootd", "메이크업"),
+        SearchTopicOption.SPORTS: ("스포츠", "운동", "헬스", "축구"),
+        SearchTopicOption.ENTERTAINMENT: ("아이돌", "k-pop", "연예", "예능"),
+        SearchTopicOption.OTHER: (),
+    }
+
+    keywords = topic_keywords.get(topic, ())
+    if topic == SearchTopicOption.OTHER:
+        every_known = [word for words in topic_keywords.values() for word in words]
+        return not any(word in lowered for word in every_known)
+
+    return any(word in lowered for word in keywords)
+
+
 def search_videos(
     *,
     keyword: str,
     channel: str,
     sort: SearchSortOption,
     period: SearchPeriodOption,
+    topic: SearchTopicOption,
+    result_limit: int,
     min_views: int,
     country: str,
     max_subscribers: int,
@@ -166,6 +213,7 @@ def search_videos(
         channel=channel,
         sort=sort,
         period=period,
+        result_limit=result_limit,
     )
 
     normalized_country = country.strip().upper()
@@ -175,6 +223,9 @@ def search_videos(
 
     for row in youtube_rows:
         if row.view_count < min_views:
+            continue
+
+        if not _match_topic(topic, row.title):
             continue
 
         if normalized_country and row.country_code.upper() != normalized_country:
@@ -195,7 +246,7 @@ def search_videos(
         if not _match_duration(row.duration_seconds, duration_bucket):
             continue
 
-        if not _match_short_form(is_short_form, short_form_type):
+        if not _match_short_form(row.title, short_form_type):
             continue
 
         if not _match_script(has_script, script_type):
@@ -258,4 +309,5 @@ def search_videos(
             )
         )
 
-    return _sort_records(records, sort)
+    sorted_records = _sort_records(records, sort)
+    return sorted_records[:result_limit]

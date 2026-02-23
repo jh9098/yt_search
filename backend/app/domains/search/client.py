@@ -59,7 +59,7 @@ class YouTubeSearchClient:
     def __init__(self) -> None:
         self._api_key = os.getenv("YOUTUBE_API_KEY", "").strip()
         self._timeout_seconds = float(os.getenv("YOUTUBE_API_TIMEOUT_SECONDS", "10"))
-        self._max_results = int(os.getenv("YOUTUBE_SEARCH_MAX_RESULTS", "12"))
+        self._max_results = int(os.getenv("YOUTUBE_SEARCH_MAX_RESULTS", "50"))
 
     @property
     def is_configured(self) -> bool:
@@ -72,6 +72,7 @@ class YouTubeSearchClient:
         channel: str,
         sort: SearchSortOption,
         period: SearchPeriodOption,
+        result_limit: int,
     ) -> list[YoutubeVideoRaw]:
         if not self.is_configured:
             raise SearchUpstreamUnavailableError(message="YOUTUBE_API_KEY is not configured")
@@ -82,7 +83,7 @@ class YouTubeSearchClient:
 
         search_response = self._call_youtube_api(
             YOUTUBE_SEARCH_URL,
-            self._build_search_params(keyword=effective_query, sort=sort, period=period),
+            self._build_search_params(keyword=effective_query, sort=sort, period=period, result_limit=result_limit),
         )
         video_ids = self._extract_video_ids(search_response)
 
@@ -135,12 +136,13 @@ class YouTubeSearchClient:
         keyword: str,
         sort: SearchSortOption,
         period: SearchPeriodOption,
+        result_limit: int,
     ) -> dict[str, str]:
         params: dict[str, str] = {
             "part": "snippet",
             "type": "video",
             "q": keyword,
-            "maxResults": str(max(1, min(self._max_results, 25))),
+            "maxResults": str(max(1, min(self._max_results, result_limit, 50))),
             "order": self._to_youtube_sort(sort),
             "key": self._api_key,
         }

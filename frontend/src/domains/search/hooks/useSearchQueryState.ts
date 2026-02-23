@@ -5,6 +5,8 @@ import type { SearchQueryState, SearchViewMode } from "../types";
 const DEFAULT_QUERY_STATE: SearchQueryState = {
   keyword: "",
   channel: "",
+  topic: "all",
+  resultLimit: 250,
 };
 
 const DEFAULT_VIEW_MODE: SearchViewMode = "grid";
@@ -29,6 +31,35 @@ function parseViewMode(rawView: string | null): SearchViewMode {
   return DEFAULT_VIEW_MODE;
 }
 
+
+function parseTopic(rawTopic: string | null): SearchQueryState["topic"] {
+  if (
+    rawTopic === "all"
+    || rawTopic === "shopping"
+    || rawTopic === "clip"
+    || rawTopic === "game"
+    || rawTopic === "food"
+    || rawTopic === "animal"
+    || rawTopic === "knowledge"
+    || rawTopic === "beauty"
+    || rawTopic === "sports"
+    || rawTopic === "entertainment"
+    || rawTopic === "other"
+  ) {
+    return rawTopic;
+  }
+
+  return DEFAULT_QUERY_STATE.topic;
+}
+
+function parseLimit(rawLimit: string | null): SearchQueryState["resultLimit"] {
+  if (rawLimit === "50" || rawLimit === "150" || rawLimit === "250") {
+    return Number(rawLimit) as SearchQueryState["resultLimit"];
+  }
+
+  return DEFAULT_QUERY_STATE.resultLimit;
+}
+
 function parseSearchParams(search: string): {
   queryState: SearchQueryState;
   viewMode: SearchViewMode;
@@ -38,6 +69,8 @@ function parseSearchParams(search: string): {
     queryState: {
       keyword: params.get("q") ?? DEFAULT_QUERY_STATE.keyword,
       channel: params.get("channel") ?? DEFAULT_QUERY_STATE.channel,
+      topic: parseTopic(params.get("topic")),
+      resultLimit: parseLimit(params.get("limit")),
     },
     viewMode: parseViewMode(params.get("view")),
   };
@@ -59,6 +92,14 @@ function toSearchString(queryState: SearchQueryState, viewMode: SearchViewMode):
 
   if (viewMode !== DEFAULT_VIEW_MODE) {
     params.set("view", viewMode);
+  }
+
+  if (queryState.topic !== DEFAULT_QUERY_STATE.topic) {
+    params.set("topic", queryState.topic);
+  }
+
+  if (queryState.resultLimit !== DEFAULT_QUERY_STATE.resultLimit) {
+    params.set("limit", String(queryState.resultLimit));
   }
 
   const built = params.toString();

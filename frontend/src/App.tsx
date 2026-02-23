@@ -41,8 +41,8 @@ const DEFAULT_FILTERS: SearchFilterState = {
   durationBucket: "all",
   shortFormType: "all",
   scriptType: "all",
-  hoverMetric: "none",
-  minPerformance: 0,
+  hoverMetric: "vidiqTrend",
+  minPerformance: 100,
   corePreset: "none",
 };
 
@@ -275,6 +275,8 @@ export function App() {
     const resetQuery: SearchQueryState = {
       keyword: "",
       channel: "",
+      topic: "all",
+      resultLimit: 250,
     };
     setQueryState(resetQuery);
     setViewMode("grid");
@@ -296,29 +298,46 @@ export function App() {
 
   const isSearchLoading = resultsState === "loading";
   const isAnalyzeButtonDisabled = isModalOpen && status === "loading";
+  const quotaMax = 10000;
+  const estimatedQuotaLeft = Math.max(0, quotaMax - visibleCards.length * 3);
 
   return (
     <main className="app-container">
       <header className="app-header">
-        <h1>유튜브 소재 채굴기 v2.0</h1>
-        <p className="app-subtitle">검색 결과에서 바로 AI 소재 분석을 실행할 수 있습니다.</p>
+        <div className="quota-indicator" aria-label="추정 할당량 잔량">
+          <p className="quota-title">추정 할당량 잔량</p>
+          <p className="quota-value">{estimatedQuotaLeft.toLocaleString()} / {quotaMax.toLocaleString()} pt</p>
+          <progress value={estimatedQuotaLeft} max={quotaMax} />
+        </div>
+        <div>
+          <h1>유튜브 소재 채굴기 v2.0</h1>
+          <p className="app-subtitle">검색 결과에서 바로 AI 소재 분석을 실행할 수 있습니다.</p>
+        </div>
       </header>
 
       <section className="search-panel" aria-label="탐색 검색 패널">
         <KeywordSearchBar
           keyword={queryState.keyword}
+          resultLimit={queryState.resultLimit}
           isDisabled={isSearchLoading}
           onKeywordChange={(keyword) => {
             setQueryState((previous) => ({ ...previous, keyword }));
+          }}
+          onLimitChange={(resultLimit) => {
+            setQueryState((previous) => ({ ...previous, resultLimit }));
           }}
           onSearch={handleKeywordSearch}
         />
 
         <ChannelSearchBar
           channel={queryState.channel}
+          topic={queryState.topic}
           isDisabled={isSearchLoading}
           onChannelChange={(channel) => {
             setQueryState((previous) => ({ ...previous, channel }));
+          }}
+          onTopicChange={(topic) => {
+            setQueryState((previous) => ({ ...previous, topic }));
           }}
           onSearch={handleChannelSearch}
         />

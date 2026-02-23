@@ -6,6 +6,8 @@ describe("search api client url contract", () => {
     const path = buildSearchRequestPath({
       q: "가족 대화법",
       channel: "",
+      topic: "all",
+      resultLimit: 150,
       sort: "relevance",
       period: "7d",
       minViews: 0,
@@ -13,7 +15,7 @@ describe("search api client url contract", () => {
       maxSubscribers: 100000,
       subscriberPublicOnly: true,
       durationBucket: "under4m",
-      shortFormType: "shorts",
+      shortFormType: "shopping",
       scriptType: "all",
       hoverMetric: "estimatedRevenue",
       minPerformance: 0,
@@ -22,6 +24,8 @@ describe("search api client url contract", () => {
 
     expect(path.startsWith("/search/videos?")).toBe(true);
     expect(path).toContain("q=%EA%B0%80%EC%A1%B1+%EB%8C%80%ED%99%94%EB%B2%95");
+    expect(path).toContain("topic=all");
+    expect(path).toContain("resultLimit=150");
     expect(path).toContain("sort=relevance");
     expect(path).toContain("period=7d");
     expect(path).toContain("minViews=0");
@@ -29,7 +33,7 @@ describe("search api client url contract", () => {
     expect(path).toContain("maxSubscribers=100000");
     expect(path).toContain("subscriberPublicOnly=true");
     expect(path).toContain("durationBucket=under4m");
-    expect(path).toContain("shortFormType=shorts");
+    expect(path).toContain("shortFormType=shopping");
     expect(path).toContain("scriptType=all");
     expect(path).toContain("hoverMetric=estimatedRevenue");
     expect(path).toContain("corePreset=none");

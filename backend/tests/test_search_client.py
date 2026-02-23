@@ -38,6 +38,7 @@ class SearchClientTest(unittest.TestCase):
                     channel="연구소",
                     sort=SearchSortOption.RELEVANCE,
                     period=SearchPeriodOption.LAST_7_DAYS,
+                    result_limit=50,
                 )
 
         first_call_params = mocked_call.call_args_list[0].args[1]

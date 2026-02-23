@@ -1,14 +1,24 @@
 interface KeywordSearchBarProps {
   keyword: string;
+  resultLimit: 50 | 150 | 250;
   isDisabled: boolean;
   onKeywordChange: (value: string) => void;
+  onLimitChange: (value: 50 | 150 | 250) => void;
   onSearch: () => void;
 }
 
+const LIMIT_OPTIONS: Array<{ value: 50 | 150 | 250; label: string }> = [
+  { value: 50, label: "50개 (라이트)" },
+  { value: 150, label: "150개 (표준)" },
+  { value: 250, label: "250개 (정밀)" },
+];
+
 export function KeywordSearchBar({
   keyword,
+  resultLimit,
   isDisabled,
   onKeywordChange,
+  onLimitChange,
   onSearch,
 }: KeywordSearchBarProps) {
   return (
@@ -22,12 +32,25 @@ export function KeywordSearchBar({
           className="search-input"
           value={keyword}
           onChange={(event) => onKeywordChange(event.target.value)}
-          placeholder="예: 가족 대화법"
+          placeholder="예: 가족 사연"
           aria-label="키워드 입력"
         />
         <button type="button" onClick={onSearch} disabled={isDisabled} aria-label="키워드 검색 실행">
-          검색
+          키워드 검색
         </button>
+        <select
+          className="search-select"
+          value={resultLimit}
+          disabled={isDisabled}
+          onChange={(event) => onLimitChange(Number(event.target.value) as 50 | 150 | 250)}
+          aria-label="검색 개수 제한"
+        >
+          {LIMIT_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );

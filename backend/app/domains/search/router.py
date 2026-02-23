@@ -24,6 +24,7 @@ from .schemas import (
     SearchShortFormType,
     SearchSortOption,
     SearchSuccessResponse,
+    SearchTopicOption,
 )
 from .service import search_videos
 
@@ -39,6 +40,8 @@ def get_search_videos(
     q: str = Query(default=""),
     channel: str = Query(default=""),
     sort: SearchSortOption = Query(default=SearchSortOption.RELEVANCE),
+    topic: SearchTopicOption = Query(default=SearchTopicOption.ALL),
+    result_limit: int = Query(default=250, alias="resultLimit", ge=1, le=250),
     period: SearchPeriodOption = Query(default=SearchPeriodOption.LAST_7_DAYS),
     min_views: int = Query(default=0, alias="minViews", ge=0),
     country: str = Query(default="", min_length=0, max_length=2),
@@ -47,7 +50,7 @@ def get_search_videos(
     duration_bucket: SearchDurationBucket = Query(default=SearchDurationBucket.ALL, alias="durationBucket"),
     short_form_type: SearchShortFormType = Query(default=SearchShortFormType.ALL, alias="shortFormType"),
     script_type: SearchScriptType = Query(default=SearchScriptType.ALL, alias="scriptType"),
-    hover_metric: SearchHoverMetric = Query(default=SearchHoverMetric.NONE, alias="hoverMetric"),
+    hover_metric: SearchHoverMetric = Query(default=SearchHoverMetric.VIDIQ_TREND, alias="hoverMetric"),
     min_performance: int = Query(default=0, alias="minPerformance", ge=0),
     core_preset: SearchCorePreset = Query(default=SearchCorePreset.NONE, alias="corePreset"),
 ):
@@ -67,6 +70,8 @@ def get_search_videos(
             channel=channel,
             sort=sort,
             period=period,
+            topic=topic,
+            result_limit=result_limit,
             min_views=min_views,
             country=country,
             max_subscribers=max_subscribers,

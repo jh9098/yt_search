@@ -33,8 +33,16 @@ class SearchDurationBucket(str, Enum):
 
 class SearchShortFormType(str, Enum):
     ALL = "all"
-    SHORTS = "shorts"
-    LONGFORM = "longform"
+    SHOPPING = "shopping"
+    CLIP = "clip"
+    GAME = "game"
+    FOOD = "food"
+    ANIMAL = "animal"
+    KNOWLEDGE = "knowledge"
+    BEAUTY = "beauty"
+    SPORTS = "sports"
+    ENTERTAINMENT = "entertainment"
+    OTHER = "other"
 
 
 class SearchScriptType(str, Enum):
@@ -44,9 +52,24 @@ class SearchScriptType(str, Enum):
 
 
 class SearchHoverMetric(str, Enum):
-    NONE = "none"
+    VIDIQ_TREND = "vidiqTrend"
     ESTIMATED_REVENUE = "estimatedRevenue"
 
+
+
+
+class SearchTopicOption(str, Enum):
+    ALL = "all"
+    SHOPPING = "shopping"
+    CLIP = "clip"
+    GAME = "game"
+    FOOD = "food"
+    ANIMAL = "animal"
+    KNOWLEDGE = "knowledge"
+    BEAUTY = "beauty"
+    SPORTS = "sports"
+    ENTERTAINMENT = "entertainment"
+    OTHER = "other"
 
 class SearchCorePreset(str, Enum):
     NONE = "none"
