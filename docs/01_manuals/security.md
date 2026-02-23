@@ -49,6 +49,19 @@
 주의:
 - 프론트 빌드 시 노출 가능한 환경변수와 서버 전용 환경변수를 구분해야 함
 
+
+### Render + YouTube API v3 키 관리 규칙 (MVP 고정)
+- `YOUTUBE_API_KEY`는 Render 백엔드 환경변수로만 관리합니다.
+- 프론트(`VITE_*`)에는 YouTube API 키를 저장하지 않습니다.
+- 로컬 개발 키/운영 키를 분리하고, 키 노출 의심 시 즉시 재발급(rotate)합니다.
+- API 키 값은 로그/에러 응답/스크린샷에 노출하지 않습니다.
+
+운영 체크(요약):
+1. Render 서비스 환경변수에 `YOUTUBE_API_KEY` 등록
+2. 백엔드만 YouTube API 호출 허용
+3. quota/rate-limit 대응 에러코드(`SEARCH_QUOTA_EXCEEDED`, `SEARCH_RATE_LIMITED`) 사용
+4. 요청량 급증 시 요청 제한/쿨다운/캐시 TTL 조정
+
 ---
 
 ## 프론트/백엔드 비밀정보 경계
@@ -156,6 +169,8 @@ AI 분석 기능은 비용이 발생할 수 있으므로 최소한의 보호 장
 ### 초기 권장
 - 동일 영상 분석 요청 dedupe (진행 중 job 재사용)
 - 캐시 재사용 기본값 (`forceRefresh=false`)
+- 검색 API도 동일 파라미터 dedupe + 짧은 TTL 캐시 우선
+- 자동 재조회(popstate/입력중 실시간 검색) 최소화, 명시적 트리거 우선
 - 요청 간 최소 쿨다운(추후)
 - IP/사용자 단위 rate limit(추후)
 - 긴 분석 실패 시 재시도 제한

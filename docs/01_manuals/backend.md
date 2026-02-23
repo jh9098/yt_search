@@ -214,6 +214,40 @@ JSON 검증/보정
 
 저장 + 결과 반환
 
+---
+
+## YouTube API v3 + Render 연동 정책 (MVP 고정)
+
+### 1) 호출 경로 원칙
+- 프론트엔드는 YouTube Data API v3를 직접 호출하지 않습니다.
+- 모든 YouTube 검색/조회 요청은 **Render에 배포된 백엔드 API**를 경유합니다.
+- 백엔드는 `YOUTUBE_API_KEY`를 사용해 YouTube API를 호출하고, 프론트에는 정제된 응답만 반환합니다.
+
+예시 흐름:
+1. Frontend → `GET /api/search/videos?q=...`
+2. Backend(Render) → YouTube Data API v3 호출
+3. Backend → 공통 응답 스키마(`success/data/error/meta`)로 변환 후 반환
+
+### 2) 환경변수 원칙
+- `YOUTUBE_API_KEY`는 Render 백엔드 서비스 환경변수에만 저장합니다.
+- 프론트 환경변수(`VITE_*`)에 API 키를 저장하거나 전달하지 않습니다.
+- 운영/개발 키는 분리하고, 키 회전(재발급) 절차를 문서로 남깁니다.
+
+### 3) timeout / 예외 매핑 원칙
+- YouTube API 호출은 timeout을 필수 적용합니다(예: 8~12초 범위에서 시작).
+- `4xx/5xx`, quota 초과, 네트워크 예외를 공통 에러 코드로 매핑해 프론트가 분기 가능해야 합니다.
+- 사용자 메시지와 내부 로그 메시지는 분리하며, 로그에는 키/토큰/원문 응답 전문을 남기지 않습니다.
+
+### 4) dedupe / 캐시 원칙 (비용 + Firestore read 절감 관점)
+- 동일 검색 파라미터(`q`, `channel`, `sort`, `pageToken`)는 짧은 TTL 캐시를 우선 조회합니다.
+- 동일 키로 진행 중 요청이 있으면 후속 요청은 coalescing(dedupe) 처리해 중복 외부 호출을 막습니다.
+- 프론트는 버튼/Enter 기반 명시적 검색 트리거를 유지하고, 자동 재조회(popstate 포함)는 조건부로 제한합니다.
+
+권장 검색 캐시 키 예시:
+- `yt-search:{q}:{channel}:{sort}:{pageToken}`
+
+> 메모: 현재 저장소의 주 DB는 Firestore로 확정되지 않았지만, 위 dedupe/캐시 정책은 추후 Firestore 연동 시에도 동일하게 read 소모 억제 효과가 있습니다.
+
 AI 분석 Job 처리 원칙 (중요)
 
 초기에는 동기 구현으로 시작 가능하지만, 구조는 Job 확장 가능성을 고려합니다.

@@ -1,3 +1,32 @@
+## 2026-03-13 (DOC-BATCH: YouTube API v3 + Render 연동 정책 확정)
+### 오늘 목표
+- 문서 배치 작업으로 YouTube API v3 백엔드 경유 정책, 검색 API 에러 계약, 보안 가드레일을 확정
+
+### 진행 내용 (완료)
+- [x] `docs/01_manuals/backend.md`에 Render 백엔드 경유 원칙, `YOUTUBE_API_KEY` 환경변수 규칙, timeout/dedupe/캐시 정책 추가
+- [x] `docs/01_manuals/api-contracts.md`에 `GET /api/search/videos` 계약 및 `SEARCH_QUOTA_EXCEEDED`/`SEARCH_RATE_LIMITED`/`SEARCH_UPSTREAM_*` 에러 매핑 추가
+- [x] `docs/01_manuals/security.md`에 Render 키관리 규칙(프론트 키 노출 금지), 운영 체크, 검색 dedupe/자동 재조회 제한 원칙 보강
+- [x] `docs/00_project/CHECKLIST.md` Blocked 항목(유튜브 수집 전략)을 정책 확정 상태로 업데이트
+
+### 진행 내용 (미완료)
+- [ ] popstate(브라우저 뒤로가기/앞으로가기) 시 검색 결과 자동 재조회 동기화
+
+### 변경/생성 파일
+- `docs/01_manuals/backend.md`
+- `docs/01_manuals/api-contracts.md`
+- `docs/01_manuals/security.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. FE-4 범위: popstate 시 URL 상태(`q/channel/view`) 복구 + 조건부 검색 재조회 동기화
+
+### 메모
+- YouTube API 키를 서버 환경변수로만 관리해 프론트 노출 리스크를 차단했다.
+- 검색/분석 모두 dedupe + 캐시 우선 + 명시적 트리거 정책을 유지해 불필요 네트워크 호출 및 추후 Firestore read 소모 증가 위험을 낮췄다.
+
+---
+
 ## 2026-03-12 (FE-2 URL 쿼리 동기화 + 공유/초기화 정합화)
 ### 오늘 목표
 - FRONTEND_UI_MVP_V2의 FE-2 범위에서 `q/channel/view` URL 동기화와 초기 복구, 공유 URL 액션을 연결
