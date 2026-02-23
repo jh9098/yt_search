@@ -57,6 +57,22 @@ class AnalysisApiContractTest(unittest.TestCase):
             "분석 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.",
         )
 
+
+    def test_create_job_rate_limited_error_contract(self) -> None:
+        response = self.client.post(
+            "/api/analysis/jobs",
+            json={"videoId": "video_rate_limited", "forceRefresh": False},
+        )
+
+        self.assertEqual(response.status_code, 503)
+        body = response.json()
+        self.assertFalse(body["success"])
+        self.assertEqual(body["error"]["code"], "ANALYSIS_RATE_LIMITED")
+        self.assertEqual(
+            body["error"]["message"],
+            "분석 요청이 많아 잠시 지연되고 있습니다. 잠시 후 다시 시도해 주세요.",
+        )
+
     def test_create_job_upstream_unavailable_error_contract(self) -> None:
         response = self.client.post(
             "/api/analysis/jobs",

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Path
 from fastapi.responses import JSONResponse
 
 from backend.app.core.response import error_response, success_response
+from backend.app.domains.analysis.client import ExternalAnalysisClient
 from backend.app.domains.analysis.repository import (
     DEFAULT_ANALYSIS_VERSION,
     InMemoryAnalysisRepository,
@@ -15,50 +16,11 @@ from backend.app.domains.analysis.schemas import (
     AnalysisStatusData,
     JobStatus,
 )
-from backend.app.domains.analysis.service import (
-    AnalysisProcessingError,
-    build_completed_or_failed_status,
-    raise_if_simulated_processing_error,
-)
+from backend.app.domains.analysis.service import AnalysisProcessingError, process_analysis_job
 
 router = APIRouter(prefix="/api/analysis", tags=["analysis"])
 repository = InMemoryAnalysisRepository()
-
-
-def _build_stub_raw_result() -> dict:
-    return {
-        "summary": {
-            "majorReactions": "영상 내용에 공감하며 자신의 경험과 연결짓는 댓글이 많습니다.",
-            "positivePoints": "뇌과학/심리학적 설명이 이해에 도움 되었다는 평가가 있습니다.",
-            "weakPoints": "해결책의 구체 사례가 부족하다는 반응이 일부 있습니다.",
-        },
-        "contentIdeas": [
-            {
-                "title": "갈등 완화를 위한 대화 3단계",
-                "description": "감정 고조 구간에서 사용할 수 있는 짧은 문장 전환법을 제안합니다.",
-            }
-        ],
-        "recommendedKeywords": ["가족관계", "심리", "감정조절"],
-        "meta": {
-            "model": "gemini-2.0-flash",
-            "analyzedAt": "2026-02-22T12:00:08Z",
-            "commentSampleCount": 320,
-            "analysisBasis": ["title", "description", "comments"],
-            "languageSummary": ["ko"],
-            "analysisVersion": DEFAULT_ANALYSIS_VERSION,
-            "schemaVersion": "analysis-result-v1",
-        },
-    }
-
-
-def _build_completed_status(job_id: str, cache_hit: bool) -> AnalysisStatusData:
-    outcome = build_completed_or_failed_status(job_id=job_id, raw_result=_build_stub_raw_result())
-    status_data = outcome.status_data
-
-    if status_data.result is not None:
-        status_data.result.meta.cache_hit = cache_hit
-
-    return status_data
+external_analysis_client = ExternalAnalysisClient()
 
 
 @router.post(
@@ -76,13 +38,6 @@ def create_analysis_job(payload: AnalysisJobCreateRequest):
         return JSONResponse(status_code=400, content=body)
 
     job_id = f"job_{video_id}_001"
-
-    try:
-        raise_if_simulated_processing_error(video_id=video_id)
-    except AnalysisProcessingError as processing_error:
-        body = error_response(code=processing_error.code, message=processing_error.message)
-        return JSONResponse(status_code=503, content=body)
-
     cache_key = repository.build_cache_key(video_id=video_id, analysis_version=DEFAULT_ANALYSIS_VERSION)
 
     if not payload.force_refresh:
@@ -97,13 +52,26 @@ def create_analysis_job(payload: AnalysisJobCreateRequest):
             repository.upsert_job_status(cached_status)
             return success_response(data=cached_status.model_dump(by_alias=True, exclude_none=True))
 
-    completed_status = _build_completed_status(job_id=job_id, cache_hit=False)
-    repository.upsert_job_status(completed_status)
+    try:
+        completed_or_failed_status = process_analysis_job(
+            job_id=job_id,
+            video_id=video_id,
+            client=external_analysis_client,
+        ).status_data
+    except AnalysisProcessingError as processing_error:
+        body = error_response(code=processing_error.code, message=processing_error.message)
+        return JSONResponse(status_code=503, content=body)
 
-    if completed_status.result is not None:
-        repository.save_result(cache_key=cache_key, result=completed_status.result.model_copy(deep=True))
+    repository.upsert_job_status(completed_or_failed_status)
 
-    return success_response(data=completed_status.model_dump(by_alias=True, exclude_none=True))
+    if completed_or_failed_status.result is not None:
+        completed_or_failed_status.result.meta.cache_hit = False
+        repository.save_result(
+            cache_key=cache_key,
+            result=completed_or_failed_status.result.model_copy(deep=True),
+        )
+
+    return success_response(data=completed_or_failed_status.model_dump(by_alias=True, exclude_none=True))
 
 
 @router.get(
