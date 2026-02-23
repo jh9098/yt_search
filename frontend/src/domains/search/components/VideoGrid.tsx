@@ -1,14 +1,21 @@
 import { VideoCard } from "./VideoCard";
-import type { SearchResultCard, SearchResultsState } from "../types";
+import type { SearchResultCard, SearchResultsState, SearchViewMode } from "../types";
 
 interface VideoGridProps {
   cards: SearchResultCard[];
   resultsState: SearchResultsState;
+  viewMode: SearchViewMode;
   isAnalyzeDisabled: boolean;
   onAnalyze: (card: SearchResultCard) => void;
 }
 
-export function VideoGrid({ cards, resultsState, isAnalyzeDisabled, onAnalyze }: VideoGridProps) {
+export function VideoGrid({
+  cards,
+  resultsState,
+  viewMode,
+  isAnalyzeDisabled,
+  onAnalyze,
+}: VideoGridProps) {
   if (resultsState === "loading") {
     return (
       <div className="results-placeholder" role="status" aria-live="polite">
@@ -30,7 +37,7 @@ export function VideoGrid({ cards, resultsState, isAnalyzeDisabled, onAnalyze }:
   }
 
   return (
-    <div className="card-grid">
+    <div className={viewMode === "grid" ? "card-grid" : "card-list"}>
       {cards.map((card) => (
         <VideoCard
           key={card.videoId}

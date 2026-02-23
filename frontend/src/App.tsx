@@ -9,21 +9,25 @@ import { analysisErrorMock } from "./domains/analysis/mocks/analysisResult.mock"
 import { mapAnalysisError } from "./domains/analysis/utils/errorMapper";
 import { toLoadingState } from "./domains/analysis/utils/loadingFallback";
 import { ChannelSearchBar } from "./domains/search/components/ChannelSearchBar";
+import { FilterToolbar } from "./domains/search/components/FilterToolbar";
 import { KeywordSearchBar } from "./domains/search/components/KeywordSearchBar";
 import { ResultSummaryBar } from "./domains/search/components/ResultSummaryBar";
 import { VideoGrid } from "./domains/search/components/VideoGrid";
+import { ViewModeToggle } from "./domains/search/components/ViewModeToggle";
 import type {
   AnalysisErrorState,
   AnalysisLoadingState,
   AnalysisModalStatus,
-  AnalysisStatusData,
   AnalysisResult,
+  AnalysisStatusData,
 } from "./domains/analysis/types";
 import type {
+  SearchFilterState,
   SearchQueryState,
   SearchResultCard,
   SearchResultsState,
   SearchSummary,
+  SearchViewMode,
 } from "./domains/search/types";
 
 const SEARCH_RESULT_CARDS: SearchResultCard[] = [
@@ -50,6 +54,12 @@ const SEARCH_RESULT_CARDS: SearchResultCard[] = [
   },
 ];
 
+const DEFAULT_FILTERS: SearchFilterState = {
+  sort: "relevance",
+  period: "7d",
+  minViews: 0,
+};
+
 const POLLING_INTERVAL_MS = 1200;
 
 export function App() {
@@ -57,6 +67,8 @@ export function App() {
     keyword: "가족 대화법",
     channel: "",
   });
+  const [filters, setFilters] = useState<SearchFilterState>(DEFAULT_FILTERS);
+  const [viewMode, setViewMode] = useState<SearchViewMode>("grid");
   const [resultsState, setResultsState] = useState<SearchResultsState>("success");
   const [visibleCards, setVisibleCards] = useState<SearchResultCard[]>(SEARCH_RESULT_CARDS);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
@@ -230,7 +242,7 @@ export function App() {
     };
   }, [stopPolling]);
 
-  const filterCards = useCallback((query: SearchQueryState) => {
+  const filterCards = useCallback((query: SearchQueryState, currentFilters: SearchFilterState) => {
     const normalizedKeyword = query.keyword.trim().toLowerCase();
     const normalizedChannel = query.channel.trim().toLowerCase();
 
@@ -239,12 +251,15 @@ export function App() {
         normalizedKeyword.length === 0 || card.title.toLowerCase().includes(normalizedKeyword);
       const channelMatched =
         normalizedChannel.length === 0 || card.channelName.toLowerCase().includes(normalizedChannel);
-      return titleMatched && channelMatched;
+      const parsedViews = Number(card.viewCountText.replace(/[^0-9.]/g, ""));
+      const scaledViews = card.viewCountText.includes("만") ? parsedViews * 10000 : parsedViews;
+      const viewsMatched = Number.isFinite(scaledViews) ? scaledViews >= currentFilters.minViews : true;
+      return titleMatched && channelMatched && viewsMatched;
     });
   }, []);
 
   const runSearch = useCallback(
-    (nextQuery: SearchQueryState) => {
+    (nextQuery: SearchQueryState, nextFilters: SearchFilterState) => {
       if (searchTimerRef.current !== null) {
         window.clearTimeout(searchTimerRef.current);
       }
@@ -257,7 +272,7 @@ export function App() {
           return;
         }
 
-        const filteredCards = filterCards(nextQuery);
+        const filteredCards = filterCards(nextQuery, nextFilters);
         setVisibleCards(filteredCards);
         setResultsState(filteredCards.length > 0 ? "success" : "empty");
       }, 300);
@@ -266,11 +281,11 @@ export function App() {
   );
 
   const handleKeywordSearch = () => {
-    runSearch(queryState);
+    runSearch(queryState, filters);
   };
 
   const handleChannelSearch = () => {
-    runSearch(queryState);
+    runSearch(queryState, filters);
   };
 
   const openAnalysisModal = (card: SearchResultCard) => {
@@ -302,7 +317,7 @@ export function App() {
       keyword,
     };
     setQueryState(nextQuery);
-    runSearch(nextQuery);
+    runSearch(nextQuery, filters);
   };
 
   const summary: SearchSummary = {
@@ -311,19 +326,20 @@ export function App() {
     resultsState,
   };
 
+  const isSearchLoading = resultsState === "loading";
   const isAnalyzeButtonDisabled = isModalOpen && status === "loading";
 
   return (
     <main className="app-container">
       <header className="app-header">
-        <h1>유튜브 소재 채굴기</h1>
+        <h1>유튜브 소재 채굴기 v2.0</h1>
         <p className="app-subtitle">검색 결과에서 바로 AI 소재 분석을 실행할 수 있습니다.</p>
       </header>
 
       <section className="search-panel" aria-label="탐색 검색 패널">
         <KeywordSearchBar
           keyword={queryState.keyword}
-          isDisabled={resultsState === "loading"}
+          isDisabled={isSearchLoading}
           onKeywordChange={(keyword) => {
             setQueryState((previous) => ({ ...previous, keyword }));
           }}
@@ -332,11 +348,33 @@ export function App() {
 
         <ChannelSearchBar
           channel={queryState.channel}
-          isDisabled={resultsState === "loading"}
+          isDisabled={isSearchLoading}
           onChannelChange={(channel) => {
             setQueryState((previous) => ({ ...previous, channel }));
           }}
           onSearch={handleChannelSearch}
+        />
+      </section>
+
+      <section className="toolbar-row" aria-label="필터 및 보기 모드">
+        <FilterToolbar
+          filters={filters}
+          isDisabled={isSearchLoading}
+          onChange={(nextFilters) => {
+            setFilters(nextFilters);
+            runSearch(queryState, nextFilters);
+          }}
+          onReset={() => {
+            setFilters(DEFAULT_FILTERS);
+            runSearch(queryState, DEFAULT_FILTERS);
+          }}
+        />
+        <ViewModeToggle
+          mode={viewMode}
+          isDisabled={isSearchLoading}
+          onChange={(nextMode) => {
+            setViewMode(nextMode);
+          }}
         />
       </section>
 
@@ -345,6 +383,7 @@ export function App() {
         <VideoGrid
           cards={visibleCards}
           resultsState={resultsState}
+          viewMode={viewMode}
           isAnalyzeDisabled={isAnalyzeButtonDisabled}
           onAnalyze={openAnalysisModal}
         />

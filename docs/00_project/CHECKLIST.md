@@ -157,6 +157,12 @@
 
 ## I. 완료 로그 (요약)
 
+### 2026-03-12 (FE-1 탐색 화면 뼈대 보강)
+- [x] `FilterToolbar`, `ViewModeToggle` 컴포넌트 추가로 필터/보기 전환 UI 연결
+- [x] `App.tsx`에 검색영역-필터-결과상태 연결 및 검색 로딩/분석 로딩 상태 분리 유지
+- [x] `styles.css` 다크 테마 및 grid/list 레이아웃 최소 보강
+- 메모: 현재 구현은 백엔드 API + 로컬 검색 필터 기반으로 Firestore read는 0회이며, 검색 버튼 트리거/디바운스/모달 폴링 중단 조건으로 추후 Firestore 연동 시 불필요 read를 줄이도록 유지
+
 ### 2026-03-11
 - [x] analysis 프론트 실제 API 연결: create/status 어댑터 추가 및 모달 상태를 mock 타이머에서 API 응답 기반으로 전환
 - [x] queued/processing 폴링 + 완료/실패/모달 닫힘 중단 조건 반영
