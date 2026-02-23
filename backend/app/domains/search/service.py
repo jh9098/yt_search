@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 from .client import YouTubeSearchClient
 from .schemas import (
+    SearchCorePreset,
     SearchDurationBucket,
     SearchPeriodOption,
     SearchScriptType,
@@ -44,6 +45,14 @@ def _format_duration_text(duration_seconds: int) -> str:
 
 def _format_published_date_text(published_at: datetime) -> str:
     return published_at.astimezone(timezone.utc).strftime("%Y-%m-%d")
+
+
+def _format_percent_text(value: float) -> str:
+    return f"{value:.2f}%"
+
+
+def _format_uploads_per_week_text(value: float) -> str:
+    return f"주 {value:.2f}개"
 
 
 def _collect_keyword_matches(keyword: str, title: str) -> list[str]:
@@ -92,6 +101,49 @@ def _match_script(has_script: bool, script_type: SearchScriptType) -> bool:
     return True
 
 
+def _compute_channel_grade(subscribers: int) -> str:
+    if subscribers >= 1_000_000:
+        return "A1"
+    if subscribers >= 300_000:
+        return "B1"
+    if subscribers >= 100_000:
+        return "C1"
+    if subscribers >= 30_000:
+        return "C2"
+    return "C3"
+
+
+def _match_core_preset(
+    core_preset: SearchCorePreset,
+    *,
+    channel_age_days: int,
+    subscriber_count: int,
+    total_video_count: int,
+    subscription_rate: float,
+    annual_subscriber_growth: int,
+    country_code: str,
+) -> bool:
+    if core_preset == SearchCorePreset.NONE:
+        return True
+
+    if core_preset == SearchCorePreset.NEW_RAPID_GROWTH:
+        return channel_age_days <= 730 and subscriber_count >= 15000
+
+    if core_preset == SearchCorePreset.EFFICIENCY_MONSTER:
+        return total_video_count > 0 and total_video_count <= 20 and subscription_rate >= 1.0
+
+    if core_preset == SearchCorePreset.FAST_RISING:
+        return annual_subscriber_growth >= 100000
+
+    if core_preset == SearchCorePreset.KR_TREND:
+        return country_code.upper() == "KR"
+
+    if core_preset == SearchCorePreset.GLOBAL_TREND:
+        return country_code.upper() != "KR"
+
+    return True
+
+
 def search_videos(
     *,
     keyword: str,
@@ -106,6 +158,7 @@ def search_videos(
     short_form_type: SearchShortFormType,
     script_type: SearchScriptType,
     min_performance: int,
+    core_preset: SearchCorePreset,
 ) -> list[SearchVideoRecord]:
     client = YouTubeSearchClient()
     youtube_rows = client.fetch_videos(
@@ -118,6 +171,8 @@ def search_videos(
     normalized_country = country.strip().upper()
 
     records: list[SearchVideoRecord] = []
+    now = datetime.now(timezone.utc)
+
     for row in youtube_rows:
         if row.view_count < min_views:
             continue
@@ -125,8 +180,11 @@ def search_videos(
         if normalized_country and row.country_code.upper() != normalized_country:
             continue
 
-        if max_subscribers > 0 and row.subscriber_count > max_subscribers:
-            continue
+        if max_subscribers > 0:
+            if not row.is_subscriber_public:
+                continue
+            if row.subscriber_count > max_subscribers:
+                continue
 
         if subscriber_public_only and not row.is_subscriber_public:
             continue
@@ -141,6 +199,24 @@ def search_videos(
             continue
 
         if not _match_script(has_script, script_type):
+            continue
+
+        channel_age_days = max((now - row.channel_published_at).days, 1)
+        channel_age_years = max(channel_age_days / 365.0, 0.01)
+        subscription_rate = (row.subscriber_count / row.channel_view_count * 100) if row.channel_view_count > 0 else 0.0
+        annual_subscriber_growth = int(row.subscriber_count / channel_age_years)
+        uploads_per_week = row.total_video_count / (channel_age_days / 7)
+        grade = _compute_channel_grade(row.subscriber_count)
+
+        if not _match_core_preset(
+            core_preset,
+            channel_age_days=channel_age_days,
+            subscriber_count=row.subscriber_count,
+            total_video_count=row.total_video_count,
+            subscription_rate=subscription_rate,
+            annual_subscriber_growth=annual_subscriber_growth,
+            country_code=row.country_code,
+        ):
             continue
 
         records.append(
@@ -160,7 +236,18 @@ def search_videos(
                     row.subscriber_count,
                     row.is_subscriber_public,
                 ),
+                channel_published_at=row.channel_published_at,
+                channel_published_date_text=_format_published_date_text(row.channel_published_at),
                 country_code=row.country_code,
+                total_video_count=row.total_video_count,
+                total_video_count_text=f"{row.total_video_count:,}",
+                subscription_rate=subscription_rate,
+                subscription_rate_text=_format_percent_text(subscription_rate),
+                annual_subscriber_growth=annual_subscriber_growth,
+                annual_subscriber_growth_text=f"연 {annual_subscriber_growth:,}명",
+                uploads_per_week=uploads_per_week,
+                uploads_per_week_text=_format_uploads_per_week_text(uploads_per_week),
+                channel_grade=grade,
                 is_short_form=is_short_form,
                 has_script=has_script,
                 is_subscriber_public=row.is_subscriber_public,

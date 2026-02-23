@@ -13,6 +13,7 @@ from .client import (
     SearchUpstreamUnavailableError,
 )
 from .schemas import (
+    SearchCorePreset,
     SearchDurationBucket,
     SearchErrorResponse,
     SearchHoverMetric,
@@ -48,6 +49,7 @@ def get_search_videos(
     script_type: SearchScriptType = Query(default=SearchScriptType.ALL, alias="scriptType"),
     hover_metric: SearchHoverMetric = Query(default=SearchHoverMetric.NONE, alias="hoverMetric"),
     min_performance: int = Query(default=0, alias="minPerformance", ge=0),
+    core_preset: SearchCorePreset = Query(default=SearchCorePreset.NONE, alias="corePreset"),
 ):
     request_id = f"req_{uuid4().hex[:12]}"
 
@@ -73,6 +75,7 @@ def get_search_videos(
             short_form_type=short_form_type,
             script_type=script_type,
             min_performance=min_performance,
+            core_preset=core_preset,
         )
     except SearchQuotaExceededError:
         body = error_response(
@@ -113,7 +116,13 @@ def get_search_videos(
             publishedDateText=record.published_date_text,
             viewCountText=record.view_count_text,
             subscriberCountText=record.subscriber_count_text,
+            channelPublishedDateText=record.channel_published_date_text,
             countryCode=record.country_code,
+            totalVideoCountText=record.total_video_count_text,
+            subscriptionRateText=record.subscription_rate_text,
+            annualSubscriberGrowthText=record.annual_subscriber_growth_text,
+            uploadsPerWeekText=record.uploads_per_week_text,
+            channelGrade=record.channel_grade,
             isShortForm=record.is_short_form,
             hasScript=record.has_script,
             isSubscriberPublic=record.is_subscriber_public,

@@ -25,6 +25,7 @@ function buildRequestKey(query: SearchQueryState, filters: SearchFilterState): s
     filters.scriptType,
     filters.hoverMetric,
     String(filters.minPerformance),
+    filters.corePreset,
   ].join("|");
 }
 
@@ -65,6 +66,7 @@ export function useVideoSearch(initialCards: SearchResultCard[]): UseVideoSearch
         scriptType: filters.scriptType,
         hoverMetric: filters.hoverMetric,
         minPerformance: filters.minPerformance,
+        corePreset: filters.corePreset,
       });
 
       setVisibleCards(response.items);

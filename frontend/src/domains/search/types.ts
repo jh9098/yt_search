@@ -8,6 +8,20 @@ export type SearchDurationBucket = "all" | "under4m" | "4to20m" | "over20m";
 export type SearchShortFormType = "all" | "shorts" | "longform";
 export type SearchScriptType = "all" | "scripted" | "noScript";
 export type SearchHoverMetric = "none" | "estimatedRevenue";
+export type SearchCorePreset = "none" | "newRapidGrowth" | "efficiencyMonster" | "fastRising" | "krTrend" | "globalTrend";
+export type SearchTableSortKey =
+  | "title"
+  | "channelName"
+  | "publishedDateText"
+  | "viewCount"
+  | "subscriberCount"
+  | "channelPublishedDateText"
+  | "totalVideoCount"
+  | "subscriptionRate"
+  | "annualSubscriberGrowth"
+  | "uploadsPerWeek"
+  | "countryCode"
+  | "channelGrade";
 
 export interface SearchFilterState {
   sort: SearchSortOption;
@@ -21,6 +35,7 @@ export interface SearchFilterState {
   scriptType: SearchScriptType;
   hoverMetric: SearchHoverMetric;
   minPerformance: number;
+  corePreset: SearchCorePreset;
 }
 
 export interface SearchQueryState {
@@ -37,7 +52,13 @@ export interface SearchResultCard {
   publishedDateText: string;
   viewCountText: string;
   subscriberCountText: string;
+  channelPublishedDateText: string;
   countryCode: string;
+  totalVideoCountText: string;
+  subscriptionRateText: string;
+  annualSubscriberGrowthText: string;
+  uploadsPerWeekText: string;
+  channelGrade: string;
   isShortForm: boolean;
   hasScript: boolean;
   isSubscriberPublic: boolean;
@@ -61,6 +82,7 @@ export interface SearchApiRequestParams {
   scriptType: SearchScriptType;
   hoverMetric: SearchHoverMetric;
   minPerformance: number;
+  corePreset: SearchCorePreset;
 }
 
 export interface SearchApiResponseData {

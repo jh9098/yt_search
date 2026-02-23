@@ -1,3 +1,4 @@
+import { SearchResultTable } from "./SearchResultTable";
 import { VideoCard } from "./VideoCard";
 import type { SearchHoverMetric, SearchResultCard, SearchResultsState, SearchViewMode } from "../types";
 
@@ -40,8 +41,12 @@ export function VideoGrid({
     return <div className="results-placeholder">조건에 맞는 영상이 없습니다. 필터를 완화하고 다시 검색해 보세요.</div>;
   }
 
+  if (viewMode === "list") {
+    return <SearchResultTable cards={cards} />;
+  }
+
   return (
-    <div className={viewMode === "grid" ? "card-grid" : "card-list"}>
+    <div className="card-grid">
       {cards.map((card) => (
         <VideoCard
           key={card.videoId}

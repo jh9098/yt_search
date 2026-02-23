@@ -45,6 +45,7 @@ function toSearchQueryString(params: SearchApiRequestParams): string {
   searchParams.set("scriptType", params.scriptType);
   searchParams.set("hoverMetric", params.hoverMetric);
   searchParams.set("minPerformance", String(params.minPerformance));
+  searchParams.set("corePreset", params.corePreset);
 
   return searchParams.toString();
 }
