@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { searchVideos, SearchApiError } from "../api/client";
+import { searchVideos } from "../api/client";
 import type {
   SearchFilterState,
   SearchQueryState,
@@ -7,6 +7,7 @@ import type {
   SearchResultsState,
   UseVideoSearchResult,
 } from "../types";
+import { mapSearchErrorMessage } from "../utils/mapSearchErrorMessage";
 
 const SEARCH_FALLBACK_DELAY_MS = 250;
 
@@ -40,6 +41,7 @@ function delay(ms: number): Promise<void> {
 export function useVideoSearch(initialCards: SearchResultCard[]): UseVideoSearchResult {
   const [resultsState, setResultsState] = useState<SearchResultsState>("idle");
   const [visibleCards, setVisibleCards] = useState<SearchResultCard[]>(initialCards);
+  const [searchErrorMessage, setSearchErrorMessage] = useState<string | null>(null);
   const lastRequestKeyRef = useRef<string | null>(null);
 
   const runSearch = useCallback(async (query: SearchQueryState, filters: SearchFilterState) => {
@@ -51,6 +53,7 @@ export function useVideoSearch(initialCards: SearchResultCard[]): UseVideoSearch
 
     lastRequestKeyRef.current = requestKey;
     setResultsState("loading");
+    setSearchErrorMessage(null);
 
     try {
       await delay(SEARCH_FALLBACK_DELAY_MS);
@@ -76,13 +79,8 @@ export function useVideoSearch(initialCards: SearchResultCard[]): UseVideoSearch
       setVisibleCards(response.items);
       setResultsState(response.items.length > 0 ? "success" : "empty");
     } catch (caughtError) {
-      if (caughtError instanceof SearchApiError) {
-        setVisibleCards([]);
-        setResultsState("error");
-        return;
-      }
-
       setVisibleCards([]);
+      setSearchErrorMessage(mapSearchErrorMessage(caughtError));
       setResultsState("error");
     }
   }, []);
@@ -91,16 +89,18 @@ export function useVideoSearch(initialCards: SearchResultCard[]): UseVideoSearch
   const resetSearch = useCallback(() => {
     lastRequestKeyRef.current = null;
     setVisibleCards([]);
+    setSearchErrorMessage(null);
     setResultsState("idle");
   }, []);
 
   return useMemo(
     () => ({
       resultsState,
+      searchErrorMessage,
       visibleCards,
       runSearch,
       resetSearch,
     }),
-    [resetSearch, resultsState, runSearch, visibleCards],
+    [resetSearch, resultsState, runSearch, searchErrorMessage, visibleCards],
   );
 }

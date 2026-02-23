@@ -141,6 +141,7 @@ export interface SearchApiErrorResponse {
 
 export interface UseVideoSearchResult {
   resultsState: SearchResultsState;
+  searchErrorMessage: string | null;
   visibleCards: SearchResultCard[];
   runSearch: (query: SearchQueryState, filters: SearchFilterState) => Promise<void>;
   resetSearch: () => void;
