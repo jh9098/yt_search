@@ -85,32 +85,52 @@ AI 결과는 시간이 지나면 프롬프트/스키마/로직이 바뀌므로,
 
 ---
 
-## 캐시 키 설계 (권장)
-최소 기준:
-- `videoId + analysisVersion`
+## D-4 정책 확정: 캐시 키 설계 (고정)
+기본 캐시 키 포맷은 아래 단일안을 사용합니다.
 
-권장 확장 기준:
-- `videoId + analysisVersion + commentSnapshotHash`
+- `analysis:{videoId}:{analysisVersion}`
 
-### 설명
-- `videoId`: 분석 대상 식별
-- `analysisVersion`: 분석 로직/프롬프트/필드 구조 변화 반영
-- `commentSnapshotHash`: 댓글 데이터가 달라졌는지 감지 (선택)
+선택 확장(댓글 스냅샷 기준 강제 분리 필요 시):
+- `analysis:{videoId}:{analysisVersion}:{commentSnapshotHash}`
+
+### 필드 설명
+- `videoId`: 분석 대상 식별자
+- `analysisVersion`: 분석 로직/프롬프트/필드 구조 버전
+- `commentSnapshotHash`: 댓글 스냅샷 변경 감지용 선택 필드
+
+### 고정 원칙
+- 기본 인덱싱/조회 기준은 `videoId + analysisVersion`입니다.
+- `commentSnapshotHash`는 기본 필수가 아니며, 댓글 변동 반영 요구가 명확할 때만 사용합니다.
+- 캐시 키 포맷이 변경되면 이전 키와 자동 호환하지 않고 신규 키 공간으로 분리합니다.
 
 ---
 
-## 캐시 사용 정책 (초기 권장)
-1. `forceRefresh=false`
-   - 유효한 캐시가 있으면 캐시 결과 반환
-2. `forceRefresh=true`
+## D-4 정책 확정: 캐시 사용/TTL 정책 (고정)
+1. `forceRefresh=false` (기본)
+   - 유효 캐시가 있으면 즉시 캐시 결과 반환
+2. `forceRefresh=true` (예외 허용)
    - 캐시가 있어도 재분석 수행
+   - 허용 조건: 사용자 명시 재분석 요청 / `analysisVersion` 상향 / 직전 실패 작업 재시도
 3. 캐시 miss
-   - 분석 수행 후 저장
+   - 분석 수행 후 결과 저장
 
-응답 meta 권장 표시:
+### TTL 기본값 (초기 고정)
+- 기본 TTL: `24시간`
+- `analysisVersion` 상향 시: TTL 만료 전이라도 신규 버전 키로 재생성
+- 장애 대응 시(외부 API 불안정): 임시로 TTL을 단축할 수 있으나, 변경 시 `CHANGELOG_WORKING.md`에 사유 기록
+
+### 비용/읽기 소모 관점 메모
+- 캐시 우선 조회는 외부 API 호출뿐 아니라 저장소 재조회 횟수도 줄여 비용을 안정화합니다.
+- Firestore를 사용할 경우에도 `forceRefresh=false` 기본 정책은 불필요한 문서 read 반복을 줄이는 기본 안전장치로 동작합니다.
+
+응답 meta 표기 기준 (고정):
 - `cacheHit: true/false`
 - `analysisVersion`
 - `schemaVersion`
+
+`cacheHit` 판정 규칙:
+- `true`: 유효한 캐시 레코드를 그대로 반환한 경우
+- `false`: 재분석 수행 결과를 반환했거나, 캐시가 없거나, 강제 갱신을 수행한 경우
 
 ---
 

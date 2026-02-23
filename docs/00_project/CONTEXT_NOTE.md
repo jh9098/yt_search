@@ -40,7 +40,7 @@
 
 ### 4.2 캐시 필요성
 동일 영상에 대해 분석 요청이 반복되면 비용/시간 낭비가 크다.
-따라서 `video_id + analysis_version` 기준 캐시 전략이 필요하다.
+따라서 `analysis:{videoId}:{analysisVersion}` 기준 캐시 전략이 필요하다. (기본 TTL 24시간, `forceRefresh=false` 기본)
 
 ### 4.3 AI 출력 흔들림
 Gemini 결과는 자유 텍스트로 받으면 필드 누락/형식 깨짐이 발생할 수 있다.
@@ -69,6 +69,7 @@ AI가 "다 했습니다"라고만 말하지 못하게 하고,
 - AI 분석: Gemini API 우선
 - 초기 핵심 기능: AI 소재 분석 모달
 - 작업 방식: 문서 우선 → 작은 단위 구현 → 체크리스트 갱신
+- 캐시 정책: `analysis:{videoId}:{analysisVersion}` + TTL 24시간 + `forceRefresh` 예외 허용(명시 재분석/버전 상향/직전 실패 재시도)
 
 ※ 확실하지 않은 사실:
 - 유튜브 데이터 수집 방식(공식 API/스크래핑/서드파티) 최종 확정 전
