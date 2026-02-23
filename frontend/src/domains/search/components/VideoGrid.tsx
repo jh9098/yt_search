@@ -5,6 +5,7 @@ interface VideoGridProps {
   cards: SearchResultCard[];
   resultsState: SearchResultsState;
   viewMode: SearchViewMode;
+  keyword: string;
   isAnalyzeDisabled: boolean;
   onAnalyze: (card: SearchResultCard) => void;
 }
@@ -13,6 +14,7 @@ export function VideoGrid({
   cards,
   resultsState,
   viewMode,
+  keyword,
   isAnalyzeDisabled,
   onAnalyze,
 }: VideoGridProps) {
@@ -42,6 +44,7 @@ export function VideoGrid({
         <VideoCard
           key={card.videoId}
           card={card}
+          keyword={keyword}
           isAnalyzeDisabled={isAnalyzeDisabled}
           onAnalyze={onAnalyze}
         />

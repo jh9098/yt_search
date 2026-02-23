@@ -77,11 +77,11 @@
 ### `GET /api/search/videos`
 
 ### Query Parameters
-- `q` (string, required): 검색 키워드
+- `q` (string, optional): 검색 키워드 (단, `q`와 `channel` 둘 다 비어있으면 400)
 - `channel` (string, optional): 채널명/채널 식별자 필터
-- `sort` (string, optional): `relevance | date | viewCount` (기본 `relevance`)
-- `pageToken` (string, optional): 다음 페이지 토큰
-- `limit` (number, optional): 반환 개수 (서버 상한 적용)
+- `sort` (string, optional): `relevance | views | latest` (기본 `relevance`)
+- `period` (string, optional): `24h | 7d | 30d | all` (기본 `7d`)
+- `minViews` (number, optional): 최소 조회수 (기본 `0`)
 
 ### Success Response (예시)
 ```json
@@ -92,12 +92,22 @@
       {
         "videoId": "abc123",
         "title": "샘플 영상",
-        "channelTitle": "샘플 채널",
-        "publishedAt": "2026-03-12T10:00:00Z",
-        "viewCount": 12345
+        "channelName": "샘플 채널",
+        "thumbnailUrl": "https://i.ytimg.com/vi/abc123/hqdefault.jpg",
+        "durationText": "12:34",
+        "publishedDateText": "2026-03-12",
+        "viewCountText": "12.3만",
+        "subscriberCountText": "53.1만",
+        "countryCode": "KR",
+        "isShortForm": false,
+        "hasScript": false,
+        "isSubscriberPublic": true,
+        "keywordMatchedTerms": ["가족", "대화법"],
+        "estimatedRevenueTotalText": null,
+        "vphText": null,
+        "badgeLabel": null
       }
-    ],
-    "nextPageToken": "CAoQAA"
+    ]
   },
   "meta": {
     "requestId": "req_search_001",
@@ -105,6 +115,12 @@
   }
 }
 ```
+
+### 필드 제공/Null 정책
+- `estimatedRevenueTotalText`, `vphText`, `badgeLabel`는 선택 필드이며 데이터가 없으면 `null`로 내려준다.
+- `countryCode`는 채널 국가 정보가 없으면 `"N/A"`로 내려준다.
+- `keywordMatchedTerms`는 매칭 결과가 없으면 빈 배열(`[]`)로 내려준다.
+- `thumbnailUrl`, `durationText`, `publishedDateText`, `subscriberCountText`는 UI 카드 렌더링 고정 필드로 항상 포함한다.
 
 ### 검색 API 에러코드 매핑 (MVP)
 | 에러 코드 | 사용자 메시지(고정) | 재시도 가능 여부 | 프론트 기본 처리 |

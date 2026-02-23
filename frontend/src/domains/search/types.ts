@@ -20,8 +20,19 @@ export interface SearchResultCard {
   videoId: string;
   title: string;
   channelName: string;
+  thumbnailUrl: string;
+  durationText: string;
+  publishedDateText: string;
   viewCountText: string;
-  uploadedAtText: string;
+  subscriberCountText: string;
+  countryCode: string;
+  isShortForm: boolean;
+  hasScript: boolean;
+  isSubscriberPublic: boolean;
+  keywordMatchedTerms: string[];
+  estimatedRevenueTotalText?: string | null;
+  vphText?: string | null;
+  badgeLabel?: string | null;
 }
 
 export interface SearchApiRequestParams {
@@ -61,6 +72,7 @@ export interface UseVideoSearchResult {
   resultsState: SearchResultsState;
   visibleCards: SearchResultCard[];
   runSearch: (query: SearchQueryState, filters: SearchFilterState) => Promise<void>;
+  resetSearch: () => void;
 }
 
 export interface SearchSummary {

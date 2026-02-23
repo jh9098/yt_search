@@ -257,3 +257,10 @@
 - [x] 검색 API 계약에 quota/rate-limit/upstream 에러코드 매핑 추가
 - [x] 보안 매뉴얼에 키관리/로그마스킹/운영 체크리스트 보강
 - 메모: 버튼/Enter 트리거 + dedupe/캐시 우선 정책을 유지해 자동 재조회로 인한 불필요 호출과 추후 Firestore read 증가 위험을 낮춤
+
+### 2026-03-14 (검색 초기상태 + 카드 모델/렌더 고도화)
+- [x] 검색 기본 상태를 `keyword=""`로 변경하고 초기 마운트 자동 검색을 URL 파라미터 존재 시에만 실행하도록 조정
+- [x] `/api/search/videos` 응답/프론트 타입/백엔드 스키마를 카드 고도화 필드(썸네일/길이/국가/구독자/숏폼/스크립트/수익필드)로 확장
+- [x] YouTube `videos(part=snippet,statistics,contentDetails)` + `channels(part=snippet,statistics)` 연동으로 duration/thumbnail/subscriber/country 수집
+- [x] 검색 카드 UI를 썸네일 오버레이/키워드 강조/메타 3줄 구조로 모듈 분리
+- 메모: 현재 변경은 YouTube API 기반이며 Firestore를 조회하지 않아 read 소모는 0회. 또한 초기 자동검색 제거 + 명시적 검색 트리거 유지로 추후 Firestore 연동 시 불필요 read 발생 가능성을 줄임.

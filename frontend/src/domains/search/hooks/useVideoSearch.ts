@@ -65,12 +65,20 @@ export function useVideoSearch(initialCards: SearchResultCard[]): UseVideoSearch
     }
   }, []);
 
+
+  const resetSearch = useCallback(() => {
+    lastRequestKeyRef.current = null;
+    setVisibleCards([]);
+    setResultsState("idle");
+  }, []);
+
   return useMemo(
     () => ({
       resultsState,
       visibleCards,
       runSearch,
+      resetSearch,
     }),
-    [resultsState, runSearch, visibleCards],
+    [resetSearch, resultsState, runSearch, visibleCards],
   );
 }

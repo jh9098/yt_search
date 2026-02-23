@@ -42,7 +42,7 @@ const POLLING_INTERVAL_MS = 1200;
 export function App() {
   const { queryState, setQueryState, viewMode, setViewMode, copyShareUrl } = useSearchQueryState();
   const [filters, setFilters] = useState<SearchFilterState>(DEFAULT_FILTERS);
-  const { resultsState, visibleCards, runSearch } = useVideoSearch([]);
+  const { resultsState, visibleCards, runSearch, resetSearch } = useVideoSearch([]);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [status, setStatus] = useState<AnalysisModalStatus>("loading");
@@ -211,8 +211,14 @@ export function App() {
   }, [stopPolling]);
 
   useEffect(() => {
-    void runSearch(queryState, filters);
-    // 초기 URL 상태를 화면 결과에 반영하기 위해 마운트 시 1회 실행한다.
+    const params = new URLSearchParams(window.location.search);
+    const hasInitialQuery = (params.get("q") ?? "").trim() !== "";
+    const hasInitialChannel = (params.get("channel") ?? "").trim() !== "";
+
+    if (hasInitialQuery || hasInitialChannel) {
+      void runSearch(queryState, filters);
+    }
+    // URL 기반 초기 진입일 때만 검색을 복구한다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -258,14 +264,14 @@ export function App() {
 
   const handleResetAll = () => {
     const resetQuery: SearchQueryState = {
-      keyword: "가족 대화법",
+      keyword: "",
       channel: "",
     };
     setQueryState(resetQuery);
     setViewMode("grid");
     setFilters(DEFAULT_FILTERS);
     setShareMessage(null);
-    void runSearch(resetQuery, DEFAULT_FILTERS);
+    resetSearch();
   };
 
   const handleCopyShareUrl = async () => {
@@ -343,6 +349,7 @@ export function App() {
           cards={visibleCards}
           resultsState={resultsState}
           viewMode={viewMode}
+          keyword={queryState.keyword}
           isAnalyzeDisabled={isAnalyzeButtonDisabled}
           onAnalyze={openAnalysisModal}
         />

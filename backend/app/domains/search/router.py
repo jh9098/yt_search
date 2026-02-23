@@ -89,8 +89,19 @@ def get_search_videos(
             videoId=record.video_id,
             title=record.title,
             channelName=record.channel_name,
+            thumbnailUrl=record.thumbnail_url,
+            durationText=record.duration_text,
+            publishedDateText=record.published_date_text,
             viewCountText=record.view_count_text,
-            uploadedAtText=record.uploaded_at_text,
+            subscriberCountText=record.subscriber_count_text,
+            countryCode=record.country_code,
+            isShortForm=record.is_short_form,
+            hasScript=record.has_script,
+            isSubscriberPublic=record.is_subscriber_public,
+            keywordMatchedTerms=record.keyword_matched_terms,
+            estimatedRevenueTotalText=record.estimated_revenue_total_text,
+            vphText=record.vph_text,
+            badgeLabel=record.badge_label,
         )
         for record in records
     ]
