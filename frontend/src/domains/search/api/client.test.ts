@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildPrimarySearchUrl, buildSearchRequestPath } from "./client";
+import { buildLegacySearchRequestPath, buildPrimarySearchUrl, buildSearchRequestPath } from "./client";
 
 describe("search api client url contract", () => {
   it("요청 경로를 /search/videos + 확장 쿼리 문자열로 만든다", () => {
@@ -42,5 +42,37 @@ describe("search api client url contract", () => {
   it("기본 baseUrl(/api)와 결합 시 /api/search/videos가 된다", () => {
     const url = buildPrimarySearchUrl("/search/videos?q=test&sort=relevance&period=7d&minViews=0");
     expect(url).toContain("/api/search/videos");
+  });
+
+  it("레거시 백엔드 폴백 경로는 최소 파라미터만 포함한다", () => {
+    const path = buildLegacySearchRequestPath({
+      q: "카리나",
+      channel: "",
+      topic: "all",
+      resultLimit: 250,
+      sort: "views",
+      period: "30d",
+      minViews: 0,
+      country: "",
+      maxSubscribers: 1000000,
+      subscriberPublicOnly: false,
+      durationBucket: "all",
+      shortFormType: "all",
+      scriptType: "all",
+      hoverMetric: "vidiqTrend",
+      minPerformance: 100,
+      corePreset: "none",
+    });
+
+    expect(path.startsWith("/search/videos?")).toBe(true);
+    expect(path).toContain("q=%EC%B9%B4%EB%A6%AC%EB%82%98");
+    expect(path).toContain("sort=views");
+    expect(path).toContain("period=30d");
+    expect(path).toContain("minViews=0");
+    expect(path).toContain("resultLimit=50");
+    expect(path).not.toContain("topic=");
+    expect(path).not.toContain("maxSubscribers=");
+    expect(path).not.toContain("durationBucket=");
+    expect(path).not.toContain("corePreset=");
   });
 });
