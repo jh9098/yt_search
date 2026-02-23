@@ -52,4 +52,5 @@ export interface AnalysisModalProps {
   onClose: () => void;
   onRetry: () => void;
   isActionDisabled?: boolean;
+  onKeywordClick?: (keyword: string) => void;
 }

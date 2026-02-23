@@ -1,8 +1,10 @@
 import type { AnalysisResult } from "../types";
+import { AnalysisKeywordChips } from "./AnalysisKeywordChips";
 
 interface AnalysisSuccessViewProps {
   result: AnalysisResult;
   onClose: () => void;
+  onKeywordClick: (keyword: string) => void;
 }
 
 function formatDate(dateString: string): string {
@@ -15,7 +17,11 @@ function formatDate(dateString: string): string {
   return date.toLocaleString("ko-KR", { hour12: false });
 }
 
-export function AnalysisSuccessView({ result, onClose }: AnalysisSuccessViewProps) {
+export function AnalysisSuccessView({
+  result,
+  onClose,
+  onKeywordClick,
+}: AnalysisSuccessViewProps) {
   const contentIdeas = result.contentIdeas ?? [];
   const keywords = result.recommendedKeywords ?? [];
   const warnings = result.meta.warnings ?? [];
@@ -57,20 +63,7 @@ export function AnalysisSuccessView({ result, onClose }: AnalysisSuccessViewProp
 
       <section className="mt-5">
         <h3 className="text-sm font-semibold text-slate-900">추천 키워드</h3>
-        {keywords.length === 0 ? (
-          <p className="mt-2 text-sm text-slate-500">추천 키워드가 없습니다.</p>
-        ) : (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {keywords.map((keyword) => (
-              <span
-                key={keyword}
-                className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700"
-              >
-                {keyword}
-              </span>
-            ))}
-          </div>
-        )}
+        <AnalysisKeywordChips keywords={keywords} onKeywordClick={onKeywordClick} />
       </section>
 
       <section className="mt-5 rounded-md border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
