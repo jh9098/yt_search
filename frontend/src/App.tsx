@@ -30,29 +30,6 @@ import type {
   SearchSummary,
 } from "./domains/search/types";
 
-const SEARCH_RESULT_CARDS: SearchResultCard[] = [
-  {
-    videoId: "video_family_talk_001",
-    title: "가족과 대화가 자꾸 꼬일 때 감정 다루는 법",
-    channelName: "마음연구소",
-    viewCountText: "42만",
-    uploadedAtText: "3일 전",
-  },
-  {
-    videoId: "video_conflict_case_002",
-    title: "부부 갈등 대화, 왜 반복될까?",
-    channelName: "관계코치TV",
-    viewCountText: "18만",
-    uploadedAtText: "1주 전",
-  },
-  {
-    videoId: "video_work_life_003",
-    title: "퇴근 후 에너지 회복 루틴 5가지",
-    channelName: "직장인회복실",
-    viewCountText: "9.7만",
-    uploadedAtText: "2주 전",
-  },
-];
 
 const DEFAULT_FILTERS: SearchFilterState = {
   sort: "relevance",
@@ -65,7 +42,7 @@ const POLLING_INTERVAL_MS = 1200;
 export function App() {
   const { queryState, setQueryState, viewMode, setViewMode, copyShareUrl } = useSearchQueryState();
   const [filters, setFilters] = useState<SearchFilterState>(DEFAULT_FILTERS);
-  const { resultsState, visibleCards, runSearch } = useVideoSearch(SEARCH_RESULT_CARDS);
+  const { resultsState, visibleCards, runSearch } = useVideoSearch([]);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [status, setStatus] = useState<AnalysisModalStatus>("loading");
@@ -297,7 +274,7 @@ export function App() {
   };
 
   const summary: SearchSummary = {
-    totalCount: SEARCH_RESULT_CARDS.length,
+    totalCount: visibleCards.length,
     shownCount: visibleCards.length,
     resultsState,
   };

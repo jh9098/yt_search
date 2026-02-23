@@ -6,6 +6,12 @@ from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse
 
 from ...core.response import error_response, success_response
+from .client import (
+    SearchQuotaExceededError,
+    SearchRateLimitedError,
+    SearchUpstreamError,
+    SearchUpstreamUnavailableError,
+)
 from .schemas import (
     SearchErrorResponse,
     SearchPeriodOption,
@@ -41,13 +47,42 @@ def get_search_videos(
         )
         return JSONResponse(status_code=400, content=body)
 
-    records = search_videos(
-        keyword=q,
-        channel=channel,
-        sort=sort,
-        period=period,
-        min_views=min_views,
-    )
+    try:
+        records = search_videos(
+            keyword=q,
+            channel=channel,
+            sort=sort,
+            period=period,
+            min_views=min_views,
+        )
+    except SearchQuotaExceededError:
+        body = error_response(
+            code="SEARCH_QUOTA_EXCEEDED",
+            message="검색 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.",
+            request_id=request_id,
+        )
+        return JSONResponse(status_code=503, content=body)
+    except SearchRateLimitedError:
+        body = error_response(
+            code="SEARCH_RATE_LIMITED",
+            message="검색 요청이 많아 잠시 지연되고 있습니다. 잠시 후 다시 시도해 주세요.",
+            request_id=request_id,
+        )
+        return JSONResponse(status_code=503, content=body)
+    except SearchUpstreamUnavailableError:
+        body = error_response(
+            code="SEARCH_UPSTREAM_UNAVAILABLE",
+            message="검색 서비스 연결이 원활하지 않습니다. 잠시 후 다시 시도해 주세요.",
+            request_id=request_id,
+        )
+        return JSONResponse(status_code=503, content=body)
+    except SearchUpstreamError:
+        body = error_response(
+            code="SEARCH_UPSTREAM_ERROR",
+            message="검색 중 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+            request_id=request_id,
+        )
+        return JSONResponse(status_code=502, content=body)
 
     items = [
         SearchResultItem(
