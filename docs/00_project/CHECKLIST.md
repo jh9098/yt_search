@@ -157,6 +157,12 @@
 
 ## I. 완료 로그 (요약)
 
+### 2026-03-12 (FE-2 URL 쿼리 동기화)
+- [x] `useSearchQueryState` 훅 추가로 `q`, `channel`, `view` 파싱/직렬화 + `history.replaceState` 동기화 반영
+- [x] `App.tsx`에서 query/view 상태를 훅으로 이관하고, 초기 마운트 시 URL 기반 검색 복구 반영
+- [x] 결과 요약 바에 `필터 초기화`, `URL 복사` 액션 추가(실패/성공 메시지 포함)
+- 메모: 현재는 로컬 데이터 필터 기반이라 Firestore read는 0회이며, URL 동기화는 네트워크 호출 없이 브라우저 history만 갱신해 read 소모에 영향이 없다. 또한 자동 API 재조회가 아니라 버튼 트리거 검색을 유지해 추후 Firestore 연동 시 불필요 read 증가를 방지한다.
+
 ### 2026-03-12 (FE-1 탐색 화면 뼈대 보강)
 - [x] `FilterToolbar`, `ViewModeToggle` 컴포넌트 추가로 필터/보기 전환 UI 연결
 - [x] `App.tsx`에 검색영역-필터-결과상태 연결 및 검색 로딩/분석 로딩 상태 분리 유지

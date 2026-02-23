@@ -145,6 +145,18 @@ body {
   color: #94a3b8;
 }
 
+
+.result-summary-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.result-summary-share-message {
+  margin: 0;
+  color: #93c5fd;
+  font-size: 0.85rem;
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));

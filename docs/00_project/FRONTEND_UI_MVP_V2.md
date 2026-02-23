@@ -466,9 +466,9 @@ frontend/src/
 ---
 
 ## 10.2 Phase FE-2: 상태관리/URL 동기화
-- [ ] `useSearchQueryState` 구현
-- [ ] URL query ↔ UI 상태 동기화
-- [ ] 필터 초기화/공유 URL 복사
+- [x] `useSearchQueryState` 구현
+- [x] URL query ↔ UI 상태 동기화
+- [x] 필터 초기화/공유 URL 복사
 
 ### 완료 기준
 - 새로고침 후 검색 조건 복구됨
