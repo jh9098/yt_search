@@ -1,3 +1,38 @@
+## 2026-02-23 (검색 카드 + 분석 모달 트리거 + 키워드 칩 분리)
+### 오늘 목표
+- 검색 결과 카드(초안)에서 분석 모달을 실사용 흐름으로 열고, 추천 키워드 클릭까지 최소 연결한다.
+
+### 진행 내용 (완료)
+- [x] `frontend/src/App.tsx`를 검색 카드 중심 구조로 개편하고 카드별 "AI 소재 분석" 버튼 연결
+- [x] 로딩 상태에서 분석 버튼/모달 액션 비활성화로 중복 클릭 방지
+- [x] `frontend/src/domains/analysis/components/AnalysisKeywordChips.tsx` 생성 및 success 화면 분리 적용
+- [x] 추천 키워드 클릭 시 현재 검색어를 갱신하는 임시 핸들러 연결
+- [x] `docs/00_project/CHECKLIST.md` E 섹션 완료 반영
+
+### 진행 내용 (미완료)
+- [ ] 실제 API 호출 기반 분석 요청/응답 매핑 연결
+- [ ] 키워드 클릭 시 실제 검색 API 재호출 연결
+
+### 변경/생성 파일
+- `frontend/src/App.tsx`
+- `frontend/src/domains/analysis/components/AnalysisModal.tsx`
+- `frontend/src/domains/analysis/components/AnalysisSuccessView.tsx`
+- `frontend/src/domains/analysis/components/AnalysisKeywordChips.tsx`
+- `frontend/src/domains/analysis/types.ts`
+- `frontend/src/styles.css`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. `POST /api/analysis/jobs` 응답을 모달 상태(`loading/success/error`)로 매핑하는 프론트 API 어댑터 추가
+2. `ANALYSIS_RATE_LIMITED` + `Retry-After` 안내 문구를 모달 에러 상태에 반영
+
+### 메모
+- 이번 작업은 mock 상태 전환만 사용하므로 Firestore read는 0회다.
+- 로딩 중 중복 클릭을 UI 단에서 차단해, 추후 Firestore 연동 시 동일 요청 재발행으로 인한 불필요 read 증가를 예방한다.
+
+---
+
 ## 2026-03-09 (analysis 프론트 기초 연결: 타입/mock/모달 3상태)
 ### 오늘 목표
 - analysis 도메인의 프론트 최소 골격을 생성해 loading/success/error 상태 분기를 mock 데이터로 확인 가능한 상태로 만든다.

@@ -10,6 +10,7 @@ export function AnalysisModal({
   onClose,
   onRetry,
   isActionDisabled,
+  onKeywordClick,
 }: AnalysisModalProps) {
   const disabled = isActionDisabled ?? status === "loading";
 
@@ -22,7 +23,11 @@ export function AnalysisModal({
 
         {status === "success" ? (
           result ? (
-            <AnalysisSuccessView result={result} onClose={onClose} />
+            <AnalysisSuccessView
+              result={result}
+              onClose={onClose}
+              onKeywordClick={onKeywordClick ?? (() => undefined)}
+            />
           ) : (
             <AnalysisErrorView
               error={{
