@@ -3,14 +3,14 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass
 
-from backend.app.domains.analysis.client import (
+from .client import (
     ExternalAnalysisClient,
     ExternalAnalysisRateLimitedError,
     ExternalAnalysisTimeoutError,
     ExternalAnalysisUpstreamUnavailableError,
 )
-from backend.app.domains.analysis.schemas import AnalysisResult, AnalysisStatusData, JobStatus, ResponseError
-from backend.app.domains.analysis.validator import AnalysisValidationError, validate_and_normalize_result
+from .schemas import AnalysisResult, AnalysisStatusData, JobStatus, ResponseError
+from .validator import AnalysisValidationError, validate_and_normalize_result
 
 DEFAULT_RATE_LIMITED_RETRY_AFTER_SECONDS = 3
 

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from threading import Lock
 
-from backend.app.domains.analysis.schemas import AnalysisResult, AnalysisStatusData
+from .schemas import AnalysisResult, AnalysisStatusData
 
 DEFAULT_ANALYSIS_VERSION = "v1"
 DEFAULT_CACHE_TTL_HOURS = 24
