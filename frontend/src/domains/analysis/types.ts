@@ -8,6 +8,16 @@ export type AnalysisBasis =
   | "thumbnail_ocr"
   | "channel_meta";
 
+export type AnalysisJobStatus = "queued" | "processing" | "completed" | "failed";
+
+export type AnalysisErrorCode =
+  | "COMMON_INVALID_REQUEST"
+  | "ANALYSIS_TIMEOUT"
+  | "ANALYSIS_OUTPUT_INVALID"
+  | "ANALYSIS_JOB_NOT_FOUND"
+  | "ANALYSIS_RATE_LIMITED"
+  | "ANALYSIS_UPSTREAM_UNAVAILABLE";
+
 export interface AnalysisSummary {
   majorReactions: string;
   positivePoints: string;
@@ -38,6 +48,40 @@ export interface AnalysisResult {
   meta: AnalysisMeta;
 }
 
+export interface AnalysisStatusData {
+  jobId: string;
+  status: AnalysisJobStatus;
+  progress?: number;
+  step?: string;
+  message?: string;
+  result?: AnalysisResult;
+  error?: {
+    code: string;
+    message: string;
+  };
+}
+
+export interface ApiSuccessResponse<TData> {
+  success: true;
+  data: TData;
+  meta: {
+    requestId: string;
+    timestamp: string;
+  };
+}
+
+export interface ApiErrorResponse {
+  success: false;
+  error: {
+    code: string;
+    message: string;
+  };
+  meta: {
+    requestId: string;
+    timestamp: string;
+  };
+}
+
 export interface AnalysisErrorState {
   title: string;
   message: string;
@@ -45,10 +89,17 @@ export interface AnalysisErrorState {
   canRetry: boolean;
 }
 
+export interface AnalysisLoadingState {
+  progress?: number;
+  step?: string;
+  message: string;
+}
+
 export interface AnalysisModalProps {
   status: AnalysisModalStatus;
   result?: AnalysisResult | null;
   error?: AnalysisErrorState | null;
+  loadingState?: AnalysisLoadingState;
   onClose: () => void;
   onRetry: () => void;
   isActionDisabled?: boolean;

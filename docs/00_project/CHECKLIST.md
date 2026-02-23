@@ -157,6 +157,12 @@
 
 ## I. 완료 로그 (요약)
 
+### 2026-03-11
+- [x] analysis 프론트 실제 API 연결: create/status 어댑터 추가 및 모달 상태를 mock 타이머에서 API 응답 기반으로 전환
+- [x] queued/processing 폴링 + 완료/실패/모달 닫힘 중단 조건 반영
+- [x] `ANALYSIS_RATE_LIMITED`의 `Retry-After` 헤더 기반 재시도 안내 문구 반영
+- 메모: 현재는 백엔드 in-memory 저장소 기준이라 Firestore read는 0회이며, 폴링 간격(1.2s)·중단조건·중복 클릭 차단으로 추후 Firestore 연동 시 불필요 read 반복을 줄이도록 설계
+
 ### 2026-02-23
 - [x] 검색 카드(초안)에서 "AI 소재 분석" 모달 트리거 연결
 - [x] 추천 키워드 칩 컴포넌트 분리 및 임시 클릭(검색어 반영) 연결
