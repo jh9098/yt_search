@@ -22,14 +22,16 @@ class SearchClientTest(unittest.TestCase):
                             "publishedAt": "2026-01-01T00:00:00Z",
                         },
                         "statistics": {"viewCount": "100"},
+                        "contentDetails": {"duration": "PT58S"},
                     }
                 ]
             }
+            channels_response = {"items": [{"id": "", "snippet": {}, "statistics": {}}]}
 
             with patch.object(
                 client,
                 "_call_youtube_api",
-                side_effect=[search_response, videos_response],
+                side_effect=[search_response, videos_response, channels_response],
             ) as mocked_call:
                 rows = client.fetch_videos(
                     keyword="",

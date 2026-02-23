@@ -43,6 +43,7 @@ const DEFAULT_FILTERS: SearchFilterState = {
   scriptType: "all",
   hoverMetric: "none",
   minPerformance: 0,
+  corePreset: "none",
 };
 
 const POLLING_INTERVAL_MS = 1200;

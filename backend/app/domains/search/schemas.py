@@ -44,6 +44,15 @@ class SearchHoverMetric(str, Enum):
     ESTIMATED_REVENUE = "estimatedRevenue"
 
 
+class SearchCorePreset(str, Enum):
+    NONE = "none"
+    NEW_RAPID_GROWTH = "newRapidGrowth"
+    EFFICIENCY_MONSTER = "efficiencyMonster"
+    FAST_RISING = "fastRising"
+    KR_TREND = "krTrend"
+    GLOBAL_TREND = "globalTrend"
+
+
 class SearchResponseMeta(BaseModel):
     request_id: str = Field(..., alias="requestId")
     timestamp: str
@@ -63,7 +72,13 @@ class SearchResultItem(BaseModel):
     published_date_text: str = Field(..., alias="publishedDateText")
     view_count_text: str = Field(..., alias="viewCountText")
     subscriber_count_text: str = Field(..., alias="subscriberCountText")
+    channel_published_date_text: str = Field(..., alias="channelPublishedDateText")
     country_code: str = Field(..., alias="countryCode")
+    total_video_count_text: str = Field(..., alias="totalVideoCountText")
+    subscription_rate_text: str = Field(..., alias="subscriptionRateText")
+    annual_subscriber_growth_text: str = Field(..., alias="annualSubscriberGrowthText")
+    uploads_per_week_text: str = Field(..., alias="uploadsPerWeekText")
+    channel_grade: str = Field(..., alias="channelGrade")
     is_short_form: bool = Field(..., alias="isShortForm")
     has_script: bool = Field(..., alias="hasScript")
     is_subscriber_public: bool = Field(..., alias="isSubscriberPublic")
@@ -102,7 +117,18 @@ class SearchVideoRecord(BaseModel):
     view_count_text: str
     subscriber_count: int
     subscriber_count_text: str
+    channel_published_at: datetime
+    channel_published_date_text: str
     country_code: str
+    total_video_count: int
+    total_video_count_text: str
+    subscription_rate: float
+    subscription_rate_text: str
+    annual_subscriber_growth: int
+    annual_subscriber_growth_text: str
+    uploads_per_week: float
+    uploads_per_week_text: str
+    channel_grade: str
     is_short_form: bool
     has_script: bool
     is_subscriber_public: bool

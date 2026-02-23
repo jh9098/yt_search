@@ -50,6 +50,9 @@ class YoutubeVideoRaw:
     subscriber_count: int
     is_subscriber_public: bool
     country_code: str
+    channel_published_at: datetime
+    total_video_count: int
+    channel_view_count: int
 
 
 class YouTubeSearchClient:
@@ -304,7 +307,12 @@ class YouTubeSearchClient:
 
             hidden_subscriber_count = bool(channel_statistics.get("hiddenSubscriberCount", False))
             subscriber_count = _to_int(channel_statistics.get("subscriberCount"))
+            total_video_count = _to_int(channel_statistics.get("videoCount"))
+            channel_view_count = _to_int(channel_statistics.get("viewCount"))
             country_code = str(channel_snippet.get("country", "")).strip() or "N/A"
+            channel_published_at = _parse_youtube_datetime(str(channel_snippet.get("publishedAt", "")))
+            if channel_published_at is None:
+                channel_published_at = published_at
 
             rows.append(
                 YoutubeVideoRaw(
@@ -319,6 +327,9 @@ class YouTubeSearchClient:
                     subscriber_count=subscriber_count,
                     is_subscriber_public=not hidden_subscriber_count,
                     country_code=country_code,
+                    channel_published_at=channel_published_at,
+                    total_video_count=total_video_count,
+                    channel_view_count=channel_view_count,
                 )
             )
 

@@ -30,7 +30,18 @@ class SearchApiContractTest(unittest.TestCase):
                     view_count_text="42만",
                     subscriber_count=173000,
                     subscriber_count_text="17.3만",
+                    channel_published_at=datetime(2025, 1, 1, tzinfo=timezone.utc),
+                    channel_published_date_text="2025-01-01",
                     country_code="KR",
+                    total_video_count=11,
+                    total_video_count_text="11",
+                    subscription_rate=1.3,
+                    subscription_rate_text="1.30%",
+                    annual_subscriber_growth=84000,
+                    annual_subscriber_growth_text="연 84,000명",
+                    uploads_per_week=1.2,
+                    uploads_per_week_text="주 1.20개",
+                    channel_grade="C1",
                     is_short_form=True,
                     has_script=False,
                     is_subscriber_public=True,
@@ -56,6 +67,7 @@ class SearchApiContractTest(unittest.TestCase):
                     "scriptType": "all",
                     "hoverMetric": "estimatedRevenue",
                     "minPerformance": 0,
+                    "corePreset": "none",
                 },
             )
 
@@ -74,6 +86,9 @@ class SearchApiContractTest(unittest.TestCase):
         self.assertIn("viewCountText", first_item)
         self.assertIn("subscriberCountText", first_item)
         self.assertIn("countryCode", first_item)
+        self.assertIn("channelPublishedDateText", first_item)
+        self.assertIn("totalVideoCountText", first_item)
+        self.assertIn("subscriptionRateText", first_item)
         self.assertIn("isShortForm", first_item)
         self.assertIn("hasScript", first_item)
         self.assertIn("isSubscriberPublic", first_item)
@@ -82,7 +97,7 @@ class SearchApiContractTest(unittest.TestCase):
     def test_get_search_videos_returns_contract_error_when_query_missing(self) -> None:
         response = self.client.get(
             "/api/search/videos",
-            params={"q": "", "channel": "", "sort": "relevance", "period": "7d", "minViews": 0, "durationBucket": "all"},
+            params={"q": "", "channel": "", "sort": "relevance", "period": "7d", "minViews": 0, "durationBucket": "all", "corePreset": "none"},
         )
 
         self.assertEqual(response.status_code, 400)
@@ -95,7 +110,7 @@ class SearchApiContractTest(unittest.TestCase):
             mocked_search.return_value = []
             response = self.client.get(
                 "/api/search/videos",
-                params={"q": "없는검색어", "sort": "relevance", "period": "7d", "minViews": 0, "durationBucket": "all"},
+                params={"q": "없는검색어", "sort": "relevance", "period": "7d", "minViews": 0, "durationBucket": "all", "corePreset": "none"},
             )
 
         self.assertNotEqual(response.status_code, 404)

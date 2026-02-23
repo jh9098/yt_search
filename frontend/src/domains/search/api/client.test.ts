@@ -17,6 +17,7 @@ describe("search api client url contract", () => {
       scriptType: "all",
       hoverMetric: "estimatedRevenue",
       minPerformance: 0,
+      corePreset: "none",
     });
 
     expect(path.startsWith("/search/videos?")).toBe(true);
@@ -31,6 +32,7 @@ describe("search api client url contract", () => {
     expect(path).toContain("shortFormType=shorts");
     expect(path).toContain("scriptType=all");
     expect(path).toContain("hoverMetric=estimatedRevenue");
+    expect(path).toContain("corePreset=none");
   });
 
   it("기본 baseUrl(/api)와 결합 시 /api/search/videos가 된다", () => {

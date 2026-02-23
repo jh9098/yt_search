@@ -371,3 +371,70 @@ input:disabled {
   padding: 6px 8px;
   font-size: 0.75rem;
 }
+
+.core-preset-toolbar {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.core-preset-button.is-active {
+  border-color: #2563eb;
+  background: #1d4ed8;
+}
+
+.filter-grid-fields {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(120px, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.result-table-wrap {
+  border: 1px solid #334155;
+  border-radius: 12px;
+  overflow: auto;
+  background: #0f172a;
+}
+
+.result-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1180px;
+}
+
+.result-table th,
+.result-table td {
+  border-bottom: 1px solid #1e293b;
+  padding: 10px;
+  text-align: left;
+  font-size: 0.84rem;
+  white-space: nowrap;
+}
+
+.table-sort-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #e2e8f0;
+  font-weight: 700;
+}
+
+.table-sort-button:hover {
+  background: transparent;
+  color: #93c5fd;
+}
+
+@media (max-width: 1024px) {
+  .filter-grid-fields {
+    grid-template-columns: repeat(4, minmax(120px, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .filter-grid-fields {
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+  }
+}
