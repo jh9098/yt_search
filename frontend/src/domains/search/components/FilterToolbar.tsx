@@ -8,6 +8,7 @@ import type {
   SearchShortFormType,
   SearchSortOption,
 } from "../types";
+import { applyCorePreset } from "../utils/corePreset";
 
 interface FilterToolbarProps {
   filters: SearchFilterState;
@@ -76,7 +77,7 @@ export function FilterToolbar({ filters, isDisabled, onChange, onReset }: Filter
             type="button"
             disabled={isDisabled}
             className={filters.corePreset === preset.value ? "core-preset-button is-active" : "core-preset-button"}
-            onClick={() => onChange({ ...filters, corePreset: preset.value })}
+            onClick={() => onChange(applyCorePreset(filters, preset.value))}
           >
             {preset.label}
           </button>
@@ -85,7 +86,7 @@ export function FilterToolbar({ filters, isDisabled, onChange, onReset }: Filter
           type="button"
           disabled={isDisabled}
           className={filters.corePreset === "none" ? "core-preset-button is-active" : "core-preset-button"}
-          onClick={() => onChange({ ...filters, corePreset: "none" })}
+          onClick={() => onChange(applyCorePreset(filters, "none"))}
         >
           프리셋 해제
         </button>

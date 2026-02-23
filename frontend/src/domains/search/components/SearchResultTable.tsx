@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import type { SearchResultCard, SearchTableSortKey } from "../types";
+import { truncateText } from "../utils/text";
 
 interface SearchResultTableProps {
   cards: SearchResultCard[];
@@ -111,8 +112,8 @@ export function SearchResultTable({ cards }: SearchResultTableProps) {
         <tbody>
           {sortedCards.map((card) => (
             <tr key={card.videoId}>
-              <td>{card.title}</td>
-              <td>{card.channelName}</td>
+              <td title={card.title}>{truncateText(card.title, 30)}</td>
+              <td title={card.channelName}>{truncateText(card.channelName, 15)}</td>
               <td>{card.publishedDateText}</td>
               <td>{card.viewCountText}</td>
               <td>{card.subscriberCountText}</td>
