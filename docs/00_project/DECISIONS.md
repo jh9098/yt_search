@@ -390,3 +390,83 @@ JSON 파싱
 
 보정 규칙은 문서화된 범위 내에서만 허용하고 의미 왜곡은 금지한다.
 
+
+
+[DEC-005] YouTube API v3는 Render 백엔드 프록시로만 호출
+
+날짜: 2026-03-13
+
+상태: 승인
+
+결정자: 공동
+
+관련 문서:
+
+docs/01_manuals/backend.md
+
+docs/01_manuals/api-contracts.md
+
+docs/01_manuals/security.md
+
+docs/00_project/CHECKLIST.md
+
+관련 파일:
+
+(문서 정책 확정 단계, 코드 변경 없음)
+
+배경
+
+유튜브 검색 기능은 YouTube API v3 키가 필요하고, 프론트 직호출 시 키 노출/남용/비용 급증 위험이 큼.
+또한 quota 초과/상류 장애를 프론트에서 일관되게 처리하기 어려워 API 계약 고정이 필요함.
+
+결정 내용
+
+YouTube API v3 호출은 Render 백엔드에서만 수행한다.
+
+`YOUTUBE_API_KEY`는 서버 환경변수로만 관리하고 프론트(`VITE_*`)에는 저장하지 않는다.
+
+프론트는 `/api/search/videos`만 호출하고, 백엔드는 공통 에러코드(`SEARCH_QUOTA_EXCEEDED`, `SEARCH_RATE_LIMITED`, `SEARCH_UPSTREAM_UNAVAILABLE`, `SEARCH_UPSTREAM_ERROR`)로 변환해 반환한다.
+
+검색 요청은 dedupe + 캐시 우선 정책으로 중복 외부 호출을 억제한다.
+
+이유
+
+키 보안 강화 및 오남용 방지
+
+quota/장애 상황에서 일관된 사용자 경험 제공
+
+캐시/중복 방지로 비용과 지연을 줄이고, 추후 Firestore 연동 시 read 소모 증가 위험 완화
+
+고려한 대안
+
+프론트에서 YouTube API 직접 호출
+
+장점: 초기 구현 단순
+
+단점: 키 노출 위험, 호출 통제 어려움, 비용 보호 취약
+
+서드파티 검색 API 우선 사용
+
+장점: 구현 속도 가능
+
+단점: 데이터/정확도/정책 의존성 증가, 장기 운영 리스크
+
+영향 범위
+
+프론트: 백엔드 검색 API만 연동, 키 비노출 보장
+
+백엔드: YouTube 연동/timeout/에러매핑/dedupe 책임 증가
+
+데이터/캐시: 검색 캐시 키/TTL 정책 필요
+
+운영/비용: 키 관리 단순화, quota 대응 명확화
+
+후속 작업
+
+ [ ] FE-4 popstate 동기화에서 자동 재조회 조건을 최소화
+
+ [ ] 백엔드 검색 라우터 구현 시 에러코드/메시지 계약 준수 테스트 추가
+
+비고
+
+Firestore가 주 저장소로 확정되면, 동일 dedupe/캐시 원칙을 읽기 경로에도 일관 적용한다.

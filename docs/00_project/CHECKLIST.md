@@ -141,10 +141,10 @@
 ---
 
 ## G. Blocked (막힘/확인 필요)
-- [ ] 유튜브 데이터 수집 전략 확정 (공식 API vs 기타 방식)
-  - 이유: 수집 범위/요금/정책 제약 확정 필요
-  - 결정 필요자: 기획/개발 공동
-  - 임시 대응: 문서 설계 기준으로만 진행하고 구현은 보류
+- [x] 유튜브 데이터 수집 전략 확정 (공식 API v3 + Render 백엔드 프록시)
+  - 결정: 프론트 직호출 금지, Render 백엔드에서 `YOUTUBE_API_KEY` 환경변수로만 호출
+  - 반영 문서: `docs/01_manuals/backend.md`, `docs/01_manuals/api-contracts.md`, `docs/01_manuals/security.md`
+  - 운영 메모: dedupe/캐시/명시적 검색 트리거로 불필요 호출 및 추후 Firestore read 소모를 억제
 
 ---
 
@@ -251,3 +251,9 @@
 - [x] 완료 항목: 분석 도메인 공통 로깅 필드(`requestId`, `jobId`, `videoId`, `errorCode`, `retryAfter`, `cacheHit`) 표준화
 - [x] 완료 항목: 계약 테스트 보강(중복 요청 재사용, forceRefresh 우회, Retry-After 헤더 유지)
 - 메모: 현재 저장소는 in-memory라 Firestore read는 0회이며, dedupe + cache 우선 전략으로 Firestore 연동 시 동일 분석 요청의 반복 read를 줄일 수 있도록 선제 반영
+
+### 2026-03-13 (YouTube API v3 + Render 연동 정책 확정)
+- [x] YouTube API 호출을 Render 백엔드 경유로 고정하고 `YOUTUBE_API_KEY` 서버 환경변수 원칙 문서화
+- [x] 검색 API 계약에 quota/rate-limit/upstream 에러코드 매핑 추가
+- [x] 보안 매뉴얼에 키관리/로그마스킹/운영 체크리스트 보강
+- 메모: 버튼/Enter 트리거 + dedupe/캐시 우선 정책을 유지해 자동 재조회로 인한 불필요 호출과 추후 Firestore read 증가 위험을 낮춤

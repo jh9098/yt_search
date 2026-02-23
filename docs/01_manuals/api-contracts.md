@@ -67,6 +67,59 @@
 - `ANALYSIS_OUTPUT_INVALID`: 결과 화면 내 인라인 에러 우선 + 재시도 제공
 - `ANALYSIS_JOB_NOT_FOUND`: 토스트로 알리고 기존 job 폴링 중단 후 새 분석 시작 액션 제공
 
+
+---
+
+## 검색 API 계약 (YouTube API v3 프록시)
+
+> 원칙: 프론트는 YouTube API를 직접 호출하지 않고, 백엔드(Render) 검색 API를 호출합니다.
+
+### `GET /api/search/videos`
+
+### Query Parameters
+- `q` (string, required): 검색 키워드
+- `channel` (string, optional): 채널명/채널 식별자 필터
+- `sort` (string, optional): `relevance | date | viewCount` (기본 `relevance`)
+- `pageToken` (string, optional): 다음 페이지 토큰
+- `limit` (number, optional): 반환 개수 (서버 상한 적용)
+
+### Success Response (예시)
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "videoId": "abc123",
+        "title": "샘플 영상",
+        "channelTitle": "샘플 채널",
+        "publishedAt": "2026-03-12T10:00:00Z",
+        "viewCount": 12345
+      }
+    ],
+    "nextPageToken": "CAoQAA"
+  },
+  "meta": {
+    "requestId": "req_search_001",
+    "timestamp": "2026-03-12T10:00:02Z"
+  }
+}
+```
+
+### 검색 API 에러코드 매핑 (MVP)
+| 에러 코드 | 사용자 메시지(고정) | 재시도 가능 여부 | 프론트 기본 처리 |
+|---|---|---|---|
+| `COMMON_INVALID_REQUEST` | 요청값이 올바르지 않습니다. 입력값을 확인해 주세요. | 불가 | 인라인 에러 + 입력 수정 유도 |
+| `SEARCH_QUOTA_EXCEEDED` | 검색 한도에 도달했습니다. 잠시 후 다시 시도해 주세요. | 가능 | 토스트 + 재시도 버튼 노출 |
+| `SEARCH_RATE_LIMITED` | 검색 요청이 많아 잠시 지연되고 있습니다. 잠시 후 다시 시도해 주세요. | 가능 | 토스트 + 재시도 버튼 노출 |
+| `SEARCH_UPSTREAM_UNAVAILABLE` | 검색 서비스 연결이 원활하지 않습니다. 잠시 후 다시 시도해 주세요. | 가능 | 토스트 + 재시도 버튼 노출 |
+| `SEARCH_UPSTREAM_ERROR` | 검색 중 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요. | 가능 | 토스트 + 재시도 버튼 노출 |
+
+### 검색 API 운영 메모
+- 쿼리 자동 재호출은 최소화하고 버튼/Enter 트리거 우선 정책을 유지합니다.
+- 동일 파라미터 요청은 백엔드 dedupe + 캐시 우선 정책으로 중복 호출을 차단합니다.
+- 위 정책은 추후 Firestore 연동 시에도 불필요 read 소모를 줄이기 위한 기본 가드레일입니다.
+
 ---
 
 ## 1) 분석 Job 생성
