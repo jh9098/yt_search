@@ -7,6 +7,7 @@ export function AnalysisModal({
   status,
   result,
   error,
+  loadingState,
   onClose,
   onRetry,
   isActionDisabled,
@@ -18,7 +19,11 @@ export function AnalysisModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-4">
         {status === "loading" ? (
-          <AnalysisLoadingView isActionDisabled={disabled} onClose={onClose} />
+          <AnalysisLoadingView
+            isActionDisabled={disabled}
+            onClose={onClose}
+            loadingState={loadingState}
+          />
         ) : null}
 
         {status === "success" ? (
@@ -32,11 +37,11 @@ export function AnalysisModal({
             <AnalysisErrorView
               error={{
                 title: "결과 누락",
-                message: "분석 결과를 표시할 수 없습니다. 다시 시도해 주세요.",
-                code: "ANALYSIS_OUTPUT_INVALID",
+                message: "분석 결과가 비어 있습니다. 다시 시도해 주세요.",
                 canRetry: true,
+                code: "ANALYSIS_OUTPUT_INVALID",
               }}
-              isActionDisabled={false}
+              isActionDisabled={disabled}
               onClose={onClose}
               onRetry={onRetry}
             />
@@ -49,7 +54,6 @@ export function AnalysisModal({
               error ?? {
                 title: "분석 실패",
                 message: "분석 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
-                code: "ANALYSIS_TIMEOUT",
                 canRetry: true,
               }
             }

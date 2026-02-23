@@ -1,12 +1,20 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnalysisModal } from "./domains/analysis/components/AnalysisModal";
 import {
+  AnalysisApiError,
+  createAnalysisJob,
+  getAnalysisJobStatus,
+} from "./domains/analysis/api/client";
+import {
   analysisErrorMock,
-  analysisResultMock,
 } from "./domains/analysis/mocks/analysisResult.mock";
+import { mapAnalysisError } from "./domains/analysis/utils/errorMapper";
+import { toLoadingState } from "./domains/analysis/utils/loadingFallback";
 import type {
   AnalysisErrorState,
+  AnalysisLoadingState,
   AnalysisModalStatus,
+  AnalysisStatusData,
   AnalysisResult,
 } from "./domains/analysis/types";
 
@@ -14,7 +22,6 @@ interface SearchResultCard {
   videoId: string;
   title: string;
   channelName: string;
-  simulatedResult: "success" | "error";
 }
 
 const SEARCH_RESULT_CARDS: SearchResultCard[] = [
@@ -22,33 +29,15 @@ const SEARCH_RESULT_CARDS: SearchResultCard[] = [
     videoId: "video_family_talk_001",
     title: "가족과 대화가 자꾸 꼬일 때 감정 다루는 법",
     channelName: "마음연구소",
-    simulatedResult: "success",
   },
   {
     videoId: "video_conflict_case_002",
     title: "부부 갈등 대화, 왜 반복될까?",
     channelName: "관계코치TV",
-    simulatedResult: "error",
   },
 ];
 
-function createErrorStateFromCode(code: string): AnalysisErrorState {
-  if (code === "ANALYSIS_UPSTREAM_UNAVAILABLE") {
-    return {
-      title: "분석 서비스 지연",
-      message: "분석 서비스 연결이 원활하지 않습니다. 잠시 후 다시 시도해 주세요.",
-      code,
-      canRetry: true,
-    };
-  }
-
-  return {
-    title: "분석 실패",
-    message: "분석 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
-    code: "ANALYSIS_TIMEOUT",
-    canRetry: true,
-  };
-}
+const POLLING_INTERVAL_MS = 1200;
 
 export function App() {
   const [searchKeyword, setSearchKeyword] = useState("가족 대화법");
@@ -57,63 +46,184 @@ export function App() {
   const [status, setStatus] = useState<AnalysisModalStatus>("loading");
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<AnalysisErrorState | null>(null);
-  const loadingTimerRef = useRef<number | null>(null);
+  const [loadingState, setLoadingState] = useState<AnalysisLoadingState>({
+    message: "분석을 준비 중입니다.",
+  });
+  const pollTimerRef = useRef<number | null>(null);
+  const activeSessionRef = useRef(0);
+  const isModalOpenRef = useRef(false);
+
+  useEffect(() => {
+    isModalOpenRef.current = isModalOpen;
+  }, [isModalOpen]);
 
   const selectedCard = useMemo(
     () => SEARCH_RESULT_CARDS.find((card) => card.videoId === selectedVideoId) ?? null,
     [selectedVideoId],
   );
 
-  const clearLoadingTimer = () => {
-    if (loadingTimerRef.current !== null) {
-      window.clearTimeout(loadingTimerRef.current);
-      loadingTimerRef.current = null;
+  const clearPollTimer = useCallback(() => {
+    if (pollTimerRef.current !== null) {
+      window.clearTimeout(pollTimerRef.current);
+      pollTimerRef.current = null;
     }
-  };
+  }, []);
+
+  const stopPolling = useCallback(() => {
+    activeSessionRef.current += 1;
+    clearPollTimer();
+  }, [clearPollTimer]);
+
+  const applyStatusData = useCallback((data: AnalysisStatusData) => {
+    if (data.status === "completed" && data.result) {
+      setResult(data.result);
+      setStatus("success");
+      return;
+    }
+
+    if (data.status === "failed") {
+      const mappedError = mapAnalysisError({
+        code: data.error?.code,
+        message: data.error?.message,
+      });
+      setError(mappedError);
+      setStatus("error");
+      return;
+    }
+
+    setLoadingState(
+      toLoadingState({
+        status: data.status,
+        progress: data.progress,
+        step: data.step,
+        message: data.message,
+      }),
+    );
+    setStatus("loading");
+  }, []);
+
+  const pollJobStatus = useCallback(
+    async (jobId: string, sessionId: number) => {
+      if (!isModalOpenRef.current || activeSessionRef.current !== sessionId) {
+        return;
+      }
+
+      try {
+        const statusData = await getAnalysisJobStatus(jobId);
+        if (!isModalOpenRef.current || activeSessionRef.current !== sessionId) {
+          return;
+        }
+
+        applyStatusData(statusData);
+        const isCompleted = statusData.status === "completed" && Boolean(statusData.result);
+        const isFailed = statusData.status === "failed";
+
+        if (isCompleted || isFailed) {
+          clearPollTimer();
+          return;
+        }
+
+        clearPollTimer();
+        pollTimerRef.current = window.setTimeout(() => {
+          void pollJobStatus(jobId, sessionId);
+        }, POLLING_INTERVAL_MS);
+      } catch (caughtError) {
+        if (!isModalOpenRef.current || activeSessionRef.current !== sessionId) {
+          return;
+        }
+
+        const fallbackError =
+          caughtError instanceof AnalysisApiError
+            ? mapAnalysisError({
+                code: caughtError.code,
+                message: caughtError.message,
+                retryAfterSeconds: caughtError.retryAfterSeconds,
+              })
+            : mapAnalysisError({ code: "ANALYSIS_TIMEOUT" });
+
+        setError(fallbackError);
+        setStatus("error");
+        clearPollTimer();
+      }
+    },
+    [applyStatusData, clearPollTimer],
+  );
+
+  const startAnalysis = useCallback(
+    async (card: SearchResultCard, forceRefresh: boolean) => {
+      stopPolling();
+      setSelectedVideoId(card.videoId);
+      setIsModalOpen(true);
+      setStatus("loading");
+      setResult(null);
+      setError(null);
+      setLoadingState({ message: "분석을 준비 중입니다." });
+
+      const sessionId = activeSessionRef.current;
+
+      try {
+        const created = await createAnalysisJob({
+          videoId: card.videoId,
+          forceRefresh,
+        });
+
+        if (activeSessionRef.current !== sessionId) {
+          return;
+        }
+
+        applyStatusData(created);
+
+        const needsPolling = created.status === "queued" || created.status === "processing";
+        if (needsPolling) {
+          clearPollTimer();
+          pollTimerRef.current = window.setTimeout(() => {
+            void pollJobStatus(created.jobId, sessionId);
+          }, POLLING_INTERVAL_MS);
+        }
+      } catch (caughtError) {
+        const mappedError =
+          caughtError instanceof AnalysisApiError
+            ? mapAnalysisError({
+                code: caughtError.code,
+                message: caughtError.message,
+                retryAfterSeconds: caughtError.retryAfterSeconds,
+              })
+            : mapAnalysisError({ code: "ANALYSIS_TIMEOUT" });
+
+        setError(mappedError);
+        setStatus("error");
+      }
+    },
+    [applyStatusData, clearPollTimer, pollJobStatus, stopPolling],
+  );
 
   useEffect(() => {
     return () => {
-      clearLoadingTimer();
+      stopPolling();
     };
-  }, []);
+  }, [stopPolling]);
 
   const openAnalysisModal = (card: SearchResultCard) => {
     if (isModalOpen && status === "loading") {
       return;
     }
 
-    clearLoadingTimer();
-    setSelectedVideoId(card.videoId);
-    setStatus("loading");
-    setResult(null);
-    setError(null);
-    setIsModalOpen(true);
-
-    loadingTimerRef.current = window.setTimeout(() => {
-      if (card.simulatedResult === "success") {
-        setResult(analysisResultMock);
-        setStatus("success");
-        return;
-      }
-
-      setError(createErrorStateFromCode("ANALYSIS_UPSTREAM_UNAVAILABLE"));
-      setStatus("error");
-    }, 900);
+    void startAnalysis(card, false);
   };
 
   const closeModal = () => {
-    clearLoadingTimer();
+    stopPolling();
     setIsModalOpen(false);
   };
 
   const retryAnalysis = () => {
     if (!selectedCard) {
-      setError(createErrorStateFromCode("ANALYSIS_TIMEOUT"));
+      setError(analysisErrorMock);
       setStatus("error");
       return;
     }
 
-    openAnalysisModal(selectedCard);
+    void startAnalysis(selectedCard, true);
   };
 
   const handleKeywordClick = (keyword: string) => {
@@ -161,6 +271,7 @@ export function App() {
           status={status}
           result={status === "success" ? result : null}
           error={status === "error" ? error ?? analysisErrorMock : null}
+          loadingState={status === "loading" ? loadingState : undefined}
           isActionDisabled={status === "loading"}
           onClose={closeModal}
           onRetry={retryAnalysis}

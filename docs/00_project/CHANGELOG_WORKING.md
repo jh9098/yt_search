@@ -1,3 +1,42 @@
+## 2026-03-11 (analysis 프론트 API 연결 + 폴링/중단 + Retry-After 안내)
+### 오늘 목표
+- analysis 모달을 실제 API(`POST /api/analysis/jobs`, `GET /api/analysis/jobs/{jobId}`)와 연결하고, 폴링/중단/에러 안내를 계약대로 반영
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/analysis/api/client.ts` 생성 (create/status 호출 + `Retry-After` 파싱)
+- [x] `frontend/src/domains/analysis/utils/errorMapper.ts` 생성 (에러코드별 사용자 메시지/재시도 가능 여부 매핑)
+- [x] `frontend/src/domains/analysis/utils/loadingFallback.ts` 생성 (`progress/step/message` 누락 fallback 처리)
+- [x] `frontend/src/App.tsx`를 mock 타이머 방식에서 API 기반 상태 전환 + 폴링(1.2초) + 중단 조건(완료/실패/모달 닫힘)으로 전환
+- [x] `frontend/src/domains/analysis/components/AnalysisLoadingView.tsx`에 진행 메시지/단계/진행률 표시 연결
+- [x] `frontend/src/domains/analysis/components/AnalysisModal.tsx`, `types.ts`에 로딩 상태 전달 타입 확장 반영
+- [x] `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] 키워드 칩 클릭 시 실제 검색 API 재호출 연결
+
+### 변경/생성 파일
+- `frontend/src/App.tsx`
+- `frontend/src/domains/analysis/types.ts`
+- `frontend/src/domains/analysis/api/client.ts`
+- `frontend/src/domains/analysis/utils/errorMapper.ts`
+- `frontend/src/domains/analysis/utils/loadingFallback.ts`
+- `frontend/src/domains/analysis/components/AnalysisModal.tsx`
+- `frontend/src/domains/analysis/components/AnalysisLoadingView.tsx`
+- `frontend/src/vite-env.d.ts`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. 분석 모달 에러코드별 토스트/인라인 분기 UI를 계약표와 1:1로 정교화
+2. 키워드 칩 클릭 시 검색 API 재호출과 검색 결과 갱신 연결
+
+### 메모
+- 현재 구현은 Firestore 미사용(in-memory API)으로 read는 0회다.
+- 폴링은 `queued/processing`에서만 동작하고 완료/실패/모달 닫힘에서 즉시 중단되어, Firestore 연동 시 불필요한 상태 조회 read를 줄일 수 있다.
+- 로딩 중 버튼 비활성화 + forceRefresh 재시도 분리로 중복 요청에 의한 read 증가를 완화한다.
+
+---
+
 ## 2026-03-10 (analysis dedupe + 공통 로깅 필드 표준화)
 ### 오늘 목표
 - 동일 `videoId+analysisVersion` 요청의 진행 중 job 재사용(dedupe)과 공통 로깅 필드 표준화를 반영
