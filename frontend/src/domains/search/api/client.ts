@@ -4,9 +4,7 @@ import type {
   SearchApiResponseData,
   SearchApiSuccessResponse,
 } from "../types";
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8000/api";
+import { API_BASE_URL } from "../../../shared-api-base-url";
 
 const SEARCH_PATH = import.meta.env.VITE_SEARCH_API_PATH ?? "/search/videos";
 
@@ -75,4 +73,3 @@ export async function searchVideos(params: SearchApiRequestParams): Promise<Sear
   const body = await parseJson<SearchApiSuccessResponse<SearchApiResponseData>>(response);
   return body.data;
 }
-

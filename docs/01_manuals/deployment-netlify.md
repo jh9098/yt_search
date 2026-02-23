@@ -27,7 +27,23 @@ Netlify에서 프론트엔드(현재 `frontend` 폴더)를 안정적으로 빌�
 
 ## 환경변수 규칙 (Vite)
 - 프론트에서 사용될 변수는 `VITE_` 접두사가 필요합니다.
-- 예시: `VITE_API_BASE_URL=https://your-backend.example.com`
+- 이 프로젝트의 Render 백엔드 주소: `https://yt-search-mytn.onrender.com`
+- 권장값: `VITE_API_BASE_URL=https://yt-search-mytn.onrender.com/api`
+
+### Netlify 환경변수 설정 순서 (초보자용)
+1. Netlify 대시보드에서 해당 사이트 선택
+2. **Site configuration** → **Environment variables** 이동
+3. **Add a variable** 클릭
+4. Key에 `VITE_API_BASE_URL` 입력
+5. Value에 `https://yt-search-mytn.onrender.com/api` 입력
+6. 저장 후 **Deploys** 탭에서 **Trigger deploy** → **Deploy site** 실행
+7. 배포 완료 후 브라우저 개발자도구 Network에서 요청 URL이
+   `https://yt-search-mytn.onrender.com/api/...` 로 나가는지 확인
+
+> 현재 프론트 코드는 환경변수가 비어 있어도,
+> 로컬(`localhost`)에서는 `http://localhost:8000/api`,
+> 그 외(예: Netlify 도메인)에서는 `https://yt-search-mytn.onrender.com/api`를 기본 사용하도록 되어 있습니다.
+> 다만 운영 안정성을 위해 Netlify 환경변수를 명시적으로 설정하는 방식을 권장합니다.
 
 ## 점검 명령어 (로컬)
 ```bash
