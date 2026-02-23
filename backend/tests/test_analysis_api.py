@@ -113,6 +113,22 @@ class AnalysisApiContractTest(unittest.TestCase):
         second_job_id = responses[1]["data"]["jobId"]
         self.assertEqual(first_job_id, second_job_id)
 
+
+    def test_cors_preflight_includes_access_control_allow_origin(self) -> None:
+        response = self.client.options(
+            "/api/analysis/jobs",
+            headers={
+                "Origin": "https://ytitemsearch.netlify.app",
+                "Access-Control-Request-Method": "POST",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.headers.get("access-control-allow-origin"),
+            "*",
+        )
+
     def test_force_refresh_bypasses_cache(self) -> None:
         first = self.client.post(
             "/api/analysis/jobs",
