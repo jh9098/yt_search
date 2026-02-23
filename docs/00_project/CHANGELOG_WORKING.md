@@ -1,3 +1,45 @@
+## 2026-03-12 (MVP-A 탐색 화면 기초 골격 분리)
+### 오늘 목표
+- FRONTEND_UI_MVP_V2 기준으로 search 도메인 타입/컴포넌트 분리와 App 조립을 완료하고, 분석 모달 기존 흐름을 유지
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/search/types.ts` 생성 (검색 질의/결과 카드/결과 상태 타입)
+- [x] `frontend/src/domains/search/components/KeywordSearchBar.tsx` 생성
+- [x] `frontend/src/domains/search/components/ChannelSearchBar.tsx` 생성
+- [x] `frontend/src/domains/search/components/ResultSummaryBar.tsx` 생성
+- [x] `frontend/src/domains/search/components/VideoCard.tsx` 생성
+- [x] `frontend/src/domains/search/components/VideoGrid.tsx` 생성 (loading/empty/error placeholder 분기)
+- [x] `frontend/src/App.tsx`를 search 컴포넌트 조합 구조로 개편하고 analysis 모달 API 폴링/중단/재시도 흐름 유지
+- [x] `frontend/src/styles.css`에 search 패널/요약바/placeholder 스타일 추가
+- [x] `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] URL query 동기화(`q`, `channel`) 연결
+- [ ] 키워드 칩 클릭 시 실제 검색 API 재호출 연결
+
+### 변경/생성 파일
+- `frontend/src/domains/search/types.ts`
+- `frontend/src/domains/search/components/KeywordSearchBar.tsx`
+- `frontend/src/domains/search/components/ChannelSearchBar.tsx`
+- `frontend/src/domains/search/components/ResultSummaryBar.tsx`
+- `frontend/src/domains/search/components/VideoCard.tsx`
+- `frontend/src/domains/search/components/VideoGrid.tsx`
+- `frontend/src/App.tsx`
+- `frontend/src/styles.css`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. search 상태를 URL query(`q`, `channel`)와 동기화해 화면 공유/복구 가능 상태로 전환
+2. 키워드 칩 클릭 → search API 재호출(현재는 로컬 필터)로 연결
+
+### 메모
+- 현재 구현은 Firestore 미사용(in-memory local filter + backend API)으로 read는 0회다.
+- 검색을 입력 즉시 자동호출하지 않고 버튼 트리거 기반으로 유지해, Firestore 연동 시 불필요 read 급증을 방지할 수 있다.
+- analysis 모달 폴링은 기존처럼 `queued/processing`에서만 동작하고 종료 조건에서 즉시 중단되어 상태 조회 read 절감에 유리하다.
+
+---
+
 ## 2026-03-11 (analysis 프론트 API 연결 + 폴링/중단 + Retry-After 안내)
 ### 오늘 목표
 - analysis 모달을 실제 API(`POST /api/analysis/jobs`, `GET /api/analysis/jobs/{jobId}`)와 연결하고, 폴링/중단/에러 안내를 계약대로 반영
