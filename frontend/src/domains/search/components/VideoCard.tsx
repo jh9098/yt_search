@@ -8,10 +8,11 @@ interface VideoCardProps {
   keyword: string;
   isAnalyzeDisabled: boolean;
   onAnalyze: (card: SearchResultCard) => void;
+  onExtractTranscript: (card: SearchResultCard) => void;
   hoverMetric: SearchHoverMetric;
 }
 
-export function VideoCard({ card, keyword, isAnalyzeDisabled, onAnalyze, hoverMetric }: VideoCardProps) {
+export function VideoCard({ card, keyword, isAnalyzeDisabled, onAnalyze, onExtractTranscript, hoverMetric }: VideoCardProps) {
   const videoUrl = `https://www.youtube.com/watch?v=${card.videoId}`;
 
   return (
@@ -47,6 +48,14 @@ export function VideoCard({ card, keyword, isAnalyzeDisabled, onAnalyze, hoverMe
         <a href={videoUrl} target="_blank" rel="noreferrer" className="video-open-button" aria-label={`${card.title} 영상 보기`}>
           영상 보기
         </a>
+        <button
+          type="button"
+          className="video-open-button"
+          onClick={() => onExtractTranscript(card)}
+          aria-label={`${card.title} 대본 추출`}
+        >
+          대본 추출
+        </button>
         <button
           type="button"
           className="analyze-button"

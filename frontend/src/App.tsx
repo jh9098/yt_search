@@ -15,9 +15,13 @@ import { ResultSummaryBar } from "./domains/search/components/ResultSummaryBar";
 import { VideoGrid } from "./domains/search/components/VideoGrid";
 import { ViewModeToggle } from "./domains/search/components/ViewModeToggle";
 import { ApiKeyManager } from "./domains/search/components/ApiKeyManager";
+import { CookieFilePathManager } from "./domains/search/components/CookieFilePathManager";
+import { TranscriptModal } from "./domains/search/components/TranscriptModal";
 import { useSearchQueryState } from "./domains/search/hooks/useSearchQueryState";
 import { useVideoSearch } from "./domains/search/hooks/useVideoSearch";
 import { loadUserApiKeys, saveUserApiKeys } from "./domains/search/apiKeyStorage";
+import { loadCookieFilePath, saveCookieFilePath } from "./domains/search/cookiePathStorage";
+import { fetchVideoTranscript, SearchApiError } from "./domains/search/api/client";
 import type {
   AnalysisErrorState,
   AnalysisLoadingState,
@@ -30,6 +34,7 @@ import type {
   SearchQueryState,
   SearchResultCard,
   SearchSummary,
+  TranscriptResultData,
 } from "./domains/search/types";
 
 
@@ -67,6 +72,11 @@ export function App() {
   const activeSessionRef = useRef(0);
   const isModalOpenRef = useRef(false);
   const [userApiKeys, setUserApiKeys] = useState<string[]>(() => loadUserApiKeys());
+  const [cookieFilePath, setCookieFilePath] = useState<string>(() => loadCookieFilePath());
+  const [isTranscriptModalOpen, setIsTranscriptModalOpen] = useState(false);
+  const [transcriptStatus, setTranscriptStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [transcriptResult, setTranscriptResult] = useState<TranscriptResultData | null>(null);
+  const [transcriptErrorMessage, setTranscriptErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     isModalOpenRef.current = isModalOpen;
@@ -298,6 +308,40 @@ export function App() {
     setUserApiKeys(nextApiKeys);
   };
 
+  const handleSaveCookieFilePath = (nextCookieFilePath: string) => {
+    saveCookieFilePath(nextCookieFilePath);
+    setCookieFilePath(nextCookieFilePath);
+  };
+
+  const handleExtractTranscript = (card: SearchResultCard) => {
+    setIsTranscriptModalOpen(true);
+    setTranscriptStatus("loading");
+    setTranscriptResult(null);
+    setTranscriptErrorMessage(null);
+
+    void fetchVideoTranscript({
+      videoId: card.videoId,
+      cookieFilePath,
+    })
+      .then((data) => {
+        setTranscriptResult(data);
+        setTranscriptStatus("success");
+      })
+      .catch((caughtError: unknown) => {
+        if (caughtError instanceof SearchApiError) {
+          setTranscriptErrorMessage(caughtError.message);
+        } else {
+          setTranscriptErrorMessage("대본 추출 중 알 수 없는 오류가 발생했습니다.");
+        }
+        setTranscriptStatus("error");
+      });
+  };
+
+  const closeTranscriptModal = () => {
+    setIsTranscriptModalOpen(false);
+    setTranscriptStatus("idle");
+  };
+
   const summary: SearchSummary = {
     totalCount: visibleCards.length,
     shownCount: visibleCards.length,
@@ -323,6 +367,7 @@ export function App() {
             <progress value={estimatedQuotaLeft} max={quotaMax} />
           </div>
           <ApiKeyManager apiKeys={userApiKeys} onSave={handleSaveApiKeys} />
+          <CookieFilePathManager value={cookieFilePath} onSave={handleSaveCookieFilePath} />
         </div>
       </header>
 
@@ -392,9 +437,18 @@ export function App() {
           keyword={queryState.keyword}
           isAnalyzeDisabled={isAnalyzeButtonDisabled}
           onAnalyze={openAnalysisModal}
+          onExtractTranscript={handleExtractTranscript}
           hoverMetric={filters.hoverMetric}
         />
       </section>
+
+      <TranscriptModal
+        isOpen={isTranscriptModalOpen}
+        status={transcriptStatus}
+        result={transcriptResult}
+        errorMessage={transcriptErrorMessage}
+        onClose={closeTranscriptModal}
+      />
 
       {isModalOpen ? (
         <AnalysisModal

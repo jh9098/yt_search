@@ -153,3 +153,13 @@ export interface SearchSummary {
   shownCount: number;
   resultsState: SearchResultsState;
 }
+
+
+export interface TranscriptResultData {
+  videoId: string;
+  videoUrl: string;
+  title: string;
+  language: string;
+  source: string;
+  transcriptText: string;
+}

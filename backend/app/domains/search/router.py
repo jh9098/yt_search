@@ -13,6 +13,9 @@ from .client import (
     SearchUpstreamUnavailableError,
 )
 from .schemas import (
+    TranscriptErrorResponse,
+    TranscriptResultData,
+    TranscriptSuccessResponse,
     SearchCorePreset,
     SearchDurationBucket,
     SearchErrorResponse,
@@ -27,8 +30,77 @@ from .schemas import (
     SearchTopicOption,
 )
 from .service import search_videos
+from .transcript import TranscriptDependencyError, extract_transcript_from_video_url
 
 router = APIRouter(prefix="/api/search", tags=["search"])
+
+
+@router.get(
+    "/transcript",
+    response_model=TranscriptSuccessResponse,
+    responses={400: {"model": TranscriptErrorResponse}, 404: {"model": TranscriptErrorResponse}, 503: {"model": TranscriptErrorResponse}},
+)
+def get_video_transcript(
+    video_id: str = Query(default="", alias="videoId"),
+    video_url: str = Query(default="", alias="videoUrl"),
+    cookie_file_path: str = Query(default="", alias="cookieFilePath"),
+):
+    request_id = f"req_{uuid4().hex[:12]}"
+
+    resolved_video_url = video_url.strip()
+    if not resolved_video_url and video_id.strip():
+        resolved_video_url = f"https://www.youtube.com/watch?v={video_id.strip()}"
+
+    if not resolved_video_url:
+        body = error_response(
+            code="TRANSCRIPT_TARGET_REQUIRED",
+            message="videoId 또는 videoUrl 중 하나를 입력해 주세요.",
+            request_id=request_id,
+        )
+        return JSONResponse(status_code=400, content=body)
+
+    cookie_path = cookie_file_path.strip()
+
+    try:
+        result = extract_transcript_from_video_url(
+            video_url=resolved_video_url,
+            cookie_file_path=(cookie_path if cookie_path else None),
+        )
+    except TranscriptDependencyError:
+        body = error_response(
+            code="TRANSCRIPT_DEPENDENCY_MISSING",
+            message="서버에 yt_dlp 패키지가 설치되지 않았습니다.",
+            request_id=request_id,
+        )
+        return JSONResponse(status_code=503, content=body)
+    except Exception:
+        body = error_response(
+            code="TRANSCRIPT_FETCH_FAILED",
+            message="대본을 가져오는 중 오류가 발생했습니다.",
+            request_id=request_id,
+        )
+        return JSONResponse(status_code=503, content=body)
+
+    if result is None:
+        body = error_response(
+            code="TRANSCRIPT_NOT_FOUND",
+            message="해당 영상에서 사용 가능한 자막/자동자막을 찾지 못했습니다.",
+            request_id=request_id,
+        )
+        return JSONResponse(status_code=404, content=body)
+
+    resolved_video_id = video_id.strip() or resolved_video_url.split("v=")[-1]
+
+    data = TranscriptResultData(
+        videoId=resolved_video_id,
+        videoUrl=resolved_video_url,
+        title=result.title,
+        language=result.language,
+        source=result.source,
+        transcriptText=result.transcript_text,
+    )
+    body = success_response(data=data.model_dump(by_alias=True), request_id=request_id)
+    return JSONResponse(status_code=200, content=body)
 
 
 @router.get(

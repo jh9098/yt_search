@@ -10,6 +10,7 @@ interface VideoGridProps {
   keyword: string;
   isAnalyzeDisabled: boolean;
   onAnalyze: (card: SearchResultCard) => void;
+  onExtractTranscript: (card: SearchResultCard) => void;
   hoverMetric: SearchHoverMetric;
 }
 
@@ -21,6 +22,7 @@ export function VideoGrid({
   keyword,
   isAnalyzeDisabled,
   onAnalyze,
+  onExtractTranscript,
   hoverMetric,
 }: VideoGridProps) {
   if (resultsState === "loading") {
@@ -58,6 +60,7 @@ export function VideoGrid({
           keyword={keyword}
           isAnalyzeDisabled={isAnalyzeDisabled}
           onAnalyze={onAnalyze}
+          onExtractTranscript={onExtractTranscript}
           hoverMetric={hoverMetric}
         />
       ))}
