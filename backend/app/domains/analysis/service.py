@@ -58,6 +58,9 @@ def _fetch_with_minimal_retry(
 ):
     attempt = 0
 
+    if video_id.strip().lower().endswith("_slow"):
+        time.sleep(0.2)
+
     while True:
         try:
             return client.fetch_analysis_result(video_id=video_id)

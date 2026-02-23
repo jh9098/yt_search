@@ -1,3 +1,39 @@
+## 2026-03-10 (analysis dedupe + 공통 로깅 필드 표준화)
+### 오늘 목표
+- 동일 `videoId+analysisVersion` 요청의 진행 중 job 재사용(dedupe)과 공통 로깅 필드 표준화를 반영
+
+### 진행 내용 (완료)
+- [x] `backend/app/domains/analysis/repository.py`에 inflight 인덱스/원자적 mark/clear 로직 추가
+- [x] `backend/app/domains/analysis/router.py`에서 `forceRefresh=false` dedupe 재사용 분기 반영
+- [x] `backend/app/domains/analysis/telemetry.py` 생성 및 공통 로그 필드(`requestId/jobId/videoId/errorCode/retryAfter/cacheHit`) 적용
+- [x] rate-limited `Retry-After` 헤더 계약 유지
+- [x] `backend/tests/test_analysis_api.py`에 dedupe 재사용/forceRefresh 우회 검증 추가
+- [x] `docs/01_manuals/backend.md`, `docs/01_manuals/api-contracts.md` 문구 동기화
+
+### 진행 내용 (미완료)
+- [ ] 실제 비동기 큐 환경(멀티 프로세스/멀티 인스턴스)에서의 분산 dedupe
+
+### 변경/생성 파일
+- `backend/app/domains/analysis/repository.py`
+- `backend/app/domains/analysis/router.py`
+- `backend/app/domains/analysis/service.py`
+- `backend/app/domains/analysis/telemetry.py`
+- `backend/tests/test_analysis_api.py`
+- `docs/01_manuals/backend.md`
+- `docs/01_manuals/api-contracts.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. 프론트 분석 모달의 실제 API 어댑터 연결 (`POST /api/analysis/jobs` 상태 매핑)
+2. dedupe 정책을 GET status polling 흐름까지 확장 검토
+
+### 메모
+- 현재 구현은 Firestore 미사용(in-memory)으로 read는 0회다.
+- dedupe + cache 우선 흐름으로 동일 요청의 중복 분석/중복 조회를 줄여, Firestore 연동 시 read 소모 증가를 완화할 수 있다.
+
+---
+
 ## 2026-02-23 (검색 카드 + 분석 모달 트리거 + 키워드 칩 분리)
 ### 오늘 목표
 - 검색 결과 카드(초안)에서 분석 모달을 실사용 흐름으로 열고, 추천 키워드 클릭까지 최소 연결한다.
