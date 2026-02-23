@@ -112,6 +112,7 @@ export interface SearchApiRequestParams {
   hoverMetric: SearchHoverMetric;
   minPerformance: number;
   corePreset: SearchCorePreset;
+  apiKeys?: string[];
 }
 
 export interface SearchApiResponseData {
@@ -143,7 +144,7 @@ export interface UseVideoSearchResult {
   resultsState: SearchResultsState;
   searchErrorMessage: string | null;
   visibleCards: SearchResultCard[];
-  runSearch: (query: SearchQueryState, filters: SearchFilterState) => Promise<void>;
+  runSearch: (query: SearchQueryState, filters: SearchFilterState, apiKeys?: string[]) => Promise<void>;
   resetSearch: () => void;
 }
 

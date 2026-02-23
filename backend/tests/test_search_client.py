@@ -3,7 +3,11 @@ from __future__ import annotations
 import unittest
 from unittest.mock import Mock, patch
 
-from backend.app.domains.search.client import SearchUpstreamUnavailableError, YouTubeSearchClient
+from backend.app.domains.search.client import (
+    SearchQuotaExceededError,
+    SearchUpstreamUnavailableError,
+    YouTubeSearchClient,
+)
 from backend.app.domains.search.schemas import SearchPeriodOption, SearchSortOption
 
 
@@ -56,6 +60,52 @@ class SearchClientTest(unittest.TestCase):
         mapped = client._map_http_error(http_error)
 
         self.assertIsInstance(mapped, SearchUpstreamUnavailableError)
+
+
+    def test_fetch_videos_retries_with_next_api_key_when_quota_exceeded(self) -> None:
+        with patch.dict("os.environ", {"YOUTUBE_API_KEY": "default-key"}, clear=False):
+            client = YouTubeSearchClient()
+            search_response = {"items": [{"id": {"videoId": "abc123"}}]}
+            videos_response = {
+                "items": [
+                    {
+                        "id": "abc123",
+                        "snippet": {
+                            "title": "가족 대화법",
+                            "channelTitle": "연구소",
+                            "publishedAt": "2026-01-01T00:00:00Z",
+                        },
+                        "statistics": {"viewCount": "100"},
+                        "contentDetails": {"duration": "PT58S"},
+                    }
+                ]
+            }
+            channels_response = {"items": [{"id": "", "snippet": {}, "statistics": {}}]}
+
+            with patch.object(
+                client,
+                "_call_youtube_api",
+                side_effect=[
+                    SearchQuotaExceededError(),
+                    search_response,
+                    videos_response,
+                    channels_response,
+                ],
+            ) as mocked_call:
+                rows = client.fetch_videos(
+                    keyword="",
+                    channel="연구소",
+                    sort=SearchSortOption.RELEVANCE,
+                    period=SearchPeriodOption.LAST_7_DAYS,
+                    result_limit=50,
+                    api_keys=["first-key", "second-key"],
+                )
+
+        first_call_params = mocked_call.call_args_list[0].args[1]
+        second_call_params = mocked_call.call_args_list[1].args[1]
+        self.assertEqual(first_call_params["key"], "first-key")
+        self.assertEqual(second_call_params["key"], "second-key")
+        self.assertEqual(len(rows), 1)
 
 
 if __name__ == "__main__":

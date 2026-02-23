@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Header, Query
 from fastapi.responses import JSONResponse
 
 from ...core.response import error_response, success_response
@@ -53,6 +53,7 @@ def get_search_videos(
     hover_metric: SearchHoverMetric = Query(default=SearchHoverMetric.VIDIQ_TREND, alias="hoverMetric"),
     min_performance: int = Query(default=0, alias="minPerformance", ge=0),
     core_preset: SearchCorePreset = Query(default=SearchCorePreset.NONE, alias="corePreset"),
+    x_youtube_api_keys: str | None = Header(default=None, alias="X-YouTube-Api-Keys"),
 ):
     request_id = f"req_{uuid4().hex[:12]}"
 
@@ -63,6 +64,8 @@ def get_search_videos(
             request_id=request_id,
         )
         return JSONResponse(status_code=400, content=body)
+
+    user_api_keys = [key.strip() for key in (x_youtube_api_keys or "").split(",") if key.strip()]
 
     try:
         records = search_videos(
@@ -81,6 +84,7 @@ def get_search_videos(
             script_type=script_type,
             min_performance=min_performance,
             core_preset=core_preset,
+            user_api_keys=user_api_keys,
         )
     except SearchQuotaExceededError:
         body = error_response(

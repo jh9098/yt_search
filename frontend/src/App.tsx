@@ -14,8 +14,10 @@ import { KeywordSearchBar } from "./domains/search/components/KeywordSearchBar";
 import { ResultSummaryBar } from "./domains/search/components/ResultSummaryBar";
 import { VideoGrid } from "./domains/search/components/VideoGrid";
 import { ViewModeToggle } from "./domains/search/components/ViewModeToggle";
+import { ApiKeyManager } from "./domains/search/components/ApiKeyManager";
 import { useSearchQueryState } from "./domains/search/hooks/useSearchQueryState";
 import { useVideoSearch } from "./domains/search/hooks/useVideoSearch";
+import { loadUserApiKeys, saveUserApiKeys } from "./domains/search/apiKeyStorage";
 import type {
   AnalysisErrorState,
   AnalysisLoadingState,
@@ -64,6 +66,7 @@ export function App() {
   const pollTimerRef = useRef<number | null>(null);
   const activeSessionRef = useRef(0);
   const isModalOpenRef = useRef(false);
+  const [userApiKeys, setUserApiKeys] = useState<string[]>(() => loadUserApiKeys());
 
   useEffect(() => {
     isModalOpenRef.current = isModalOpen;
@@ -225,18 +228,18 @@ export function App() {
     const hasInitialChannel = (params.get("channel") ?? "").trim() !== "";
 
     if (hasInitialQuery || hasInitialChannel) {
-      void runSearch(queryState, filters);
+      void runSearch(queryState, filters, userApiKeys);
     }
     // URL 기반 초기 진입일 때만 검색을 복구한다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleKeywordSearch = () => {
-    void runSearch(queryState, filters);
+    void runSearch(queryState, filters, userApiKeys);
   };
 
   const handleChannelSearch = () => {
-    void runSearch(queryState, filters);
+    void runSearch(queryState, filters, userApiKeys);
   };
 
   const openAnalysisModal = (card: SearchResultCard) => {
@@ -268,7 +271,7 @@ export function App() {
       keyword,
     };
     setQueryState(nextQuery);
-    void runSearch(nextQuery, filters);
+    void runSearch(nextQuery, filters, userApiKeys);
   };
 
   const handleResetAll = () => {
@@ -290,6 +293,11 @@ export function App() {
     setShareMessage(copied ? "URL이 복사되었습니다." : "URL 복사에 실패했습니다.");
   };
 
+  const handleSaveApiKeys = (nextApiKeys: string[]) => {
+    saveUserApiKeys(nextApiKeys);
+    setUserApiKeys(nextApiKeys);
+  };
+
   const summary: SearchSummary = {
     totalCount: visibleCards.length,
     shownCount: visibleCards.length,
@@ -304,14 +312,17 @@ export function App() {
   return (
     <main className="app-container">
       <header className="app-header">
-        <div className="quota-indicator" aria-label="추정 할당량 잔량">
-          <p className="quota-title">추정 할당량 잔량</p>
-          <p className="quota-value">{estimatedQuotaLeft.toLocaleString()} / {quotaMax.toLocaleString()} pt</p>
-          <progress value={estimatedQuotaLeft} max={quotaMax} />
-        </div>
-        <div>
+        <div className="app-header-title-wrap">
           <h1>유튜브 소재 채굴기 v2.0</h1>
           <p className="app-subtitle">검색 결과에서 바로 AI 소재 분석을 실행할 수 있습니다.</p>
+        </div>
+        <div className="app-header-tools">
+          <div className="quota-indicator" aria-label="추정 할당량 잔량">
+            <p className="quota-title">추정 할당량 잔량</p>
+            <p className="quota-value">{estimatedQuotaLeft.toLocaleString()} / {quotaMax.toLocaleString()} pt</p>
+            <progress value={estimatedQuotaLeft} max={quotaMax} />
+          </div>
+          <ApiKeyManager apiKeys={userApiKeys} onSave={handleSaveApiKeys} />
         </div>
       </header>
 

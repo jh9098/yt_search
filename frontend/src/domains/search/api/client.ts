@@ -97,6 +97,19 @@ async function parseJson<T>(response: Response): Promise<T> {
   return (await response.json()) as T;
 }
 
+
+function toRequestHeaders(apiKeys?: string[]): HeadersInit {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (apiKeys && apiKeys.length > 0) {
+    headers["X-YouTube-Api-Keys"] = apiKeys.join(",");
+  }
+
+  return headers;
+}
+
 function removeApiSuffix(baseUrl: string): string {
   if (baseUrl.endsWith(API_SEGMENT)) {
     return baseUrl.slice(0, -API_SEGMENT.length);
@@ -105,12 +118,10 @@ function removeApiSuffix(baseUrl: string): string {
   return baseUrl;
 }
 
-async function fetchSearchResponse(requestPath: string): Promise<Response> {
+async function fetchSearchResponse(requestPath: string, apiKeys?: string[]): Promise<Response> {
   const primaryResponse = await fetch(buildPrimarySearchUrl(requestPath), {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: toRequestHeaders(apiKeys),
   });
 
   if (primaryResponse.status !== 404) {
@@ -125,19 +136,17 @@ async function fetchSearchResponse(requestPath: string): Promise<Response> {
 
   return fetch(`${fallbackBaseUrl}${requestPath}`, {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: toRequestHeaders(apiKeys),
   });
 }
 
 export async function searchVideos(params: SearchApiRequestParams): Promise<SearchApiResponseData> {
   const requestPath = buildSearchRequestPath(params);
-  let response = await fetchSearchResponse(requestPath);
+  let response = await fetchSearchResponse(requestPath, params.apiKeys);
 
   if (response.status === 422) {
     const legacyRequestPath = buildLegacySearchRequestPath(params);
-    response = await fetchSearchResponse(legacyRequestPath);
+    response = await fetchSearchResponse(legacyRequestPath, params.apiKeys);
   }
 
   if (!response.ok) {
