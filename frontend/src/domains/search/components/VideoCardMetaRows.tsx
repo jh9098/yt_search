@@ -28,7 +28,7 @@ export function VideoCardMetaRows({
       </p>
       <p className="result-card-meta">
         스크립트: {hasScript ? "있음" : "없음"}
-        {vphText ? ` · VPH: ${vphText}` : ""}
+        {vphText ? ` · 구독자대비 조회효율: ${vphText}` : ""}
         {estimatedRevenueTotalText ? ` · 예상 수익: ${estimatedRevenueTotalText}` : ""}
       </p>
     </div>

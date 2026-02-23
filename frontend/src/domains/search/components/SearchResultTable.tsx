@@ -55,8 +55,8 @@ function getSortValue(card: SearchResultCard, key: SearchTableSortKey): number |
 }
 
 export function SearchResultTable({ cards }: SearchResultTableProps) {
-  const [sortKey, setSortKey] = useState<SearchTableSortKey>("viewCount");
-  const [direction, setDirection] = useState<SortDirection>("desc");
+  const [sortKey, setSortKey] = useState<SearchTableSortKey>("subscriberCount");
+  const [direction, setDirection] = useState<SortDirection>("asc");
 
   const sortedCards = useMemo(() => {
     const copied = [...cards];
@@ -85,7 +85,7 @@ export function SearchResultTable({ cards }: SearchResultTableProps) {
     }
 
     setSortKey(nextKey);
-    setDirection("desc");
+    setDirection(nextKey === "subscriberCount" ? "asc" : "desc");
   };
 
   return (

@@ -18,6 +18,7 @@ interface FilterToolbarProps {
 }
 
 const SORT_OPTIONS: Array<{ value: SearchSortOption; label: string }> = [
+  { value: "subscriberAsc", label: "구독자수(낮은순)" },
   { value: "relevance", label: "관련도" },
   { value: "views", label: "조회수" },
   { value: "latest", label: "최신순" },
