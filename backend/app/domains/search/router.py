@@ -13,10 +13,14 @@ from .client import (
     SearchUpstreamUnavailableError,
 )
 from .schemas import (
+    SearchDurationBucket,
     SearchErrorResponse,
+    SearchHoverMetric,
     SearchPeriodOption,
     SearchResultData,
     SearchResultItem,
+    SearchScriptType,
+    SearchShortFormType,
     SearchSortOption,
     SearchSuccessResponse,
 )
@@ -36,6 +40,14 @@ def get_search_videos(
     sort: SearchSortOption = Query(default=SearchSortOption.RELEVANCE),
     period: SearchPeriodOption = Query(default=SearchPeriodOption.LAST_7_DAYS),
     min_views: int = Query(default=0, alias="minViews", ge=0),
+    country: str = Query(default="", min_length=0, max_length=2),
+    max_subscribers: int = Query(default=0, alias="maxSubscribers", ge=0),
+    subscriber_public_only: bool = Query(default=False, alias="subscriberPublicOnly"),
+    duration_bucket: SearchDurationBucket = Query(default=SearchDurationBucket.ALL, alias="durationBucket"),
+    short_form_type: SearchShortFormType = Query(default=SearchShortFormType.ALL, alias="shortFormType"),
+    script_type: SearchScriptType = Query(default=SearchScriptType.ALL, alias="scriptType"),
+    hover_metric: SearchHoverMetric = Query(default=SearchHoverMetric.NONE, alias="hoverMetric"),
+    min_performance: int = Query(default=0, alias="minPerformance", ge=0),
 ):
     request_id = f"req_{uuid4().hex[:12]}"
 
@@ -54,6 +66,13 @@ def get_search_videos(
             sort=sort,
             period=period,
             min_views=min_views,
+            country=country,
+            max_subscribers=max_subscribers,
+            subscriber_public_only=subscriber_public_only,
+            duration_bucket=duration_bucket,
+            short_form_type=short_form_type,
+            script_type=script_type,
+            min_performance=min_performance,
         )
     except SearchQuotaExceededError:
         body = error_response(

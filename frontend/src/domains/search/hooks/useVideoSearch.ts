@@ -17,6 +17,14 @@ function buildRequestKey(query: SearchQueryState, filters: SearchFilterState): s
     filters.sort,
     filters.period,
     String(filters.minViews),
+    filters.country.trim().toUpperCase(),
+    String(filters.maxSubscribers),
+    String(filters.subscriberPublicOnly),
+    filters.durationBucket,
+    filters.shortFormType,
+    filters.scriptType,
+    filters.hoverMetric,
+    String(filters.minPerformance),
   ].join("|");
 }
 
@@ -49,6 +57,14 @@ export function useVideoSearch(initialCards: SearchResultCard[]): UseVideoSearch
         sort: filters.sort,
         period: filters.period,
         minViews: filters.minViews,
+        country: filters.country,
+        maxSubscribers: filters.maxSubscribers,
+        subscriberPublicOnly: filters.subscriberPublicOnly,
+        durationBucket: filters.durationBucket,
+        shortFormType: filters.shortFormType,
+        scriptType: filters.scriptType,
+        hoverMetric: filters.hoverMetric,
+        minPerformance: filters.minPerformance,
       });
 
       setVisibleCards(response.items);

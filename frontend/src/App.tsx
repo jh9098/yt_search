@@ -35,12 +35,20 @@ const DEFAULT_FILTERS: SearchFilterState = {
   sort: "relevance",
   period: "7d",
   minViews: 0,
+  country: "",
+  maxSubscribers: 0,
+  subscriberPublicOnly: false,
+  durationBucket: "all",
+  shortFormType: "all",
+  scriptType: "all",
+  hoverMetric: "none",
+  minPerformance: 0,
 };
 
 const POLLING_INTERVAL_MS = 1200;
 
 export function App() {
-  const { queryState, setQueryState, viewMode, setViewMode, copyShareUrl } = useSearchQueryState();
+  const { queryState, setQueryState, viewMode, setViewMode, copyShareUrl } = useSearchQueryState({ autoSearchOnPopState: false });
   const [filters, setFilters] = useState<SearchFilterState>(DEFAULT_FILTERS);
   const { resultsState, visibleCards, runSearch, resetSearch } = useVideoSearch([]);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
@@ -352,6 +360,7 @@ export function App() {
           keyword={queryState.keyword}
           isAnalyzeDisabled={isAnalyzeButtonDisabled}
           onAnalyze={openAnalysisModal}
+          hoverMetric={filters.hoverMetric}
         />
       </section>
 

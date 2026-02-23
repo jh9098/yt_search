@@ -48,6 +48,14 @@ class SearchApiContractTest(unittest.TestCase):
                     "sort": "relevance",
                     "period": "7d",
                     "minViews": 0,
+                    "country": "KR",
+                    "maxSubscribers": 500000,
+                    "subscriberPublicOnly": True,
+                    "durationBucket": "all",
+                    "shortFormType": "all",
+                    "scriptType": "all",
+                    "hoverMetric": "estimatedRevenue",
+                    "minPerformance": 0,
                 },
             )
 
@@ -74,7 +82,7 @@ class SearchApiContractTest(unittest.TestCase):
     def test_get_search_videos_returns_contract_error_when_query_missing(self) -> None:
         response = self.client.get(
             "/api/search/videos",
-            params={"q": "", "channel": "", "sort": "relevance", "period": "7d", "minViews": 0},
+            params={"q": "", "channel": "", "sort": "relevance", "period": "7d", "minViews": 0, "durationBucket": "all"},
         )
 
         self.assertEqual(response.status_code, 400)
@@ -87,7 +95,7 @@ class SearchApiContractTest(unittest.TestCase):
             mocked_search.return_value = []
             response = self.client.get(
                 "/api/search/videos",
-                params={"q": "없는검색어", "sort": "relevance", "period": "7d", "minViews": 0},
+                params={"q": "없는검색어", "sort": "relevance", "period": "7d", "minViews": 0, "durationBucket": "all"},
             )
 
         self.assertNotEqual(response.status_code, 404)

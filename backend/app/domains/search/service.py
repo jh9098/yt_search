@@ -3,7 +3,14 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from .client import YouTubeSearchClient
-from .schemas import SearchPeriodOption, SearchSortOption, SearchVideoRecord
+from .schemas import (
+    SearchDurationBucket,
+    SearchPeriodOption,
+    SearchScriptType,
+    SearchShortFormType,
+    SearchSortOption,
+    SearchVideoRecord,
+)
 
 
 def _format_view_count_text(view_count: int) -> str:
@@ -59,6 +66,32 @@ def _sort_records(records: list[SearchVideoRecord], sort: SearchSortOption) -> l
     return records
 
 
+def _match_duration(duration_seconds: int, duration_bucket: SearchDurationBucket) -> bool:
+    if duration_bucket == SearchDurationBucket.UNDER_4M:
+        return duration_seconds < 240
+    if duration_bucket == SearchDurationBucket.BETWEEN_4M_AND_20M:
+        return 240 <= duration_seconds <= 1200
+    if duration_bucket == SearchDurationBucket.OVER_20M:
+        return duration_seconds > 1200
+    return True
+
+
+def _match_short_form(is_short_form: bool, short_form_type: SearchShortFormType) -> bool:
+    if short_form_type == SearchShortFormType.SHORTS:
+        return is_short_form
+    if short_form_type == SearchShortFormType.LONGFORM:
+        return not is_short_form
+    return True
+
+
+def _match_script(has_script: bool, script_type: SearchScriptType) -> bool:
+    if script_type == SearchScriptType.SCRIPTED:
+        return has_script
+    if script_type == SearchScriptType.NO_SCRIPT:
+        return not has_script
+    return True
+
+
 def search_videos(
     *,
     keyword: str,
@@ -66,6 +99,13 @@ def search_videos(
     sort: SearchSortOption,
     period: SearchPeriodOption,
     min_views: int,
+    country: str,
+    max_subscribers: int,
+    subscriber_public_only: bool,
+    duration_bucket: SearchDurationBucket,
+    short_form_type: SearchShortFormType,
+    script_type: SearchScriptType,
+    min_performance: int,
 ) -> list[SearchVideoRecord]:
     client = YouTubeSearchClient()
     youtube_rows = client.fetch_videos(
@@ -75,12 +115,34 @@ def search_videos(
         period=period,
     )
 
+    normalized_country = country.strip().upper()
+
     records: list[SearchVideoRecord] = []
     for row in youtube_rows:
         if row.view_count < min_views:
             continue
 
+        if normalized_country and row.country_code.upper() != normalized_country:
+            continue
+
+        if max_subscribers > 0 and row.subscriber_count > max_subscribers:
+            continue
+
+        if subscriber_public_only and not row.is_subscriber_public:
+            continue
+
         is_short_form = row.duration_seconds <= 60
+        has_script = False
+
+        if not _match_duration(row.duration_seconds, duration_bucket):
+            continue
+
+        if not _match_short_form(is_short_form, short_form_type):
+            continue
+
+        if not _match_script(has_script, script_type):
+            continue
+
         records.append(
             SearchVideoRecord(
                 video_id=row.video_id,
@@ -100,7 +162,7 @@ def search_videos(
                 ),
                 country_code=row.country_code,
                 is_short_form=is_short_form,
-                has_script=False,
+                has_script=has_script,
                 is_subscriber_public=row.is_subscriber_public,
                 keyword_matched_terms=_collect_keyword_matches(keyword, row.title),
                 estimated_revenue_total_text=None,

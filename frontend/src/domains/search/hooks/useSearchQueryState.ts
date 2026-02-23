@@ -9,6 +9,11 @@ const DEFAULT_QUERY_STATE: SearchQueryState = {
 
 const DEFAULT_VIEW_MODE: SearchViewMode = "grid";
 
+interface UseSearchQueryStateOptions {
+  autoSearchOnPopState?: boolean;
+  onPopStateQueryRestored?: (queryState: SearchQueryState) => void;
+}
+
 interface UseSearchQueryStateResult {
   queryState: SearchQueryState;
   viewMode: SearchViewMode;
@@ -60,7 +65,10 @@ function toSearchString(queryState: SearchQueryState, viewMode: SearchViewMode):
   return built.length > 0 ? `?${built}` : "";
 }
 
-export function useSearchQueryState(): UseSearchQueryStateResult {
+export function useSearchQueryState(options?: UseSearchQueryStateOptions): UseSearchQueryStateResult {
+  const autoSearchOnPopState = options?.autoSearchOnPopState ?? false;
+  const onPopStateQueryRestored = options?.onPopStateQueryRestored;
+
   const initialState = useMemo(() => parseSearchParams(window.location.search), []);
   const [queryState, setQueryState] = useState<SearchQueryState>(initialState.queryState);
   const [viewMode, setViewMode] = useState<SearchViewMode>(initialState.viewMode);
@@ -83,13 +91,17 @@ export function useSearchQueryState(): UseSearchQueryStateResult {
       setQueryState(parsed.queryState);
       setViewMode(parsed.viewMode);
       lastSearchRef.current = window.location.search;
+
+      if (autoSearchOnPopState && onPopStateQueryRestored) {
+        onPopStateQueryRestored(parsed.queryState);
+      }
     };
 
     window.addEventListener("popstate", handlePopState);
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, []);
+  }, [autoSearchOnPopState, onPopStateQueryRestored]);
 
   const copyShareUrl = useCallback(async () => {
     const shareUrl = `${window.location.origin}${window.location.pathname}${window.location.search}`;

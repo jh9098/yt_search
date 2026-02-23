@@ -35,6 +35,16 @@ function toSearchQueryString(params: SearchApiRequestParams): string {
   searchParams.set("sort", params.sort);
   searchParams.set("period", params.period);
   searchParams.set("minViews", String(params.minViews));
+  if (params.country.trim().length > 0) {
+    searchParams.set("country", params.country.trim().toUpperCase());
+  }
+  searchParams.set("maxSubscribers", String(params.maxSubscribers));
+  searchParams.set("subscriberPublicOnly", String(params.subscriberPublicOnly));
+  searchParams.set("durationBucket", params.durationBucket);
+  searchParams.set("shortFormType", params.shortFormType);
+  searchParams.set("scriptType", params.scriptType);
+  searchParams.set("hoverMetric", params.hoverMetric);
+  searchParams.set("minPerformance", String(params.minPerformance));
 
   return searchParams.toString();
 }
