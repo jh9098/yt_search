@@ -20,6 +20,30 @@ class SearchPeriodOption(str, Enum):
     ALL = "all"
 
 
+class SearchDurationBucket(str, Enum):
+    ALL = "all"
+    UNDER_4M = "under4m"
+    BETWEEN_4M_AND_20M = "4to20m"
+    OVER_20M = "over20m"
+
+
+class SearchShortFormType(str, Enum):
+    ALL = "all"
+    SHORTS = "shorts"
+    LONGFORM = "longform"
+
+
+class SearchScriptType(str, Enum):
+    ALL = "all"
+    SCRIPTED = "scripted"
+    NO_SCRIPT = "noScript"
+
+
+class SearchHoverMetric(str, Enum):
+    NONE = "none"
+    ESTIMATED_REVENUE = "estimatedRevenue"
+
+
 class SearchResponseMeta(BaseModel):
     request_id: str = Field(..., alias="requestId")
     timestamp: str

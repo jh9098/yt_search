@@ -1,24 +1,27 @@
 import { VideoCardMetaRows } from "./VideoCardMetaRows";
 import { VideoCardThumbnail } from "./VideoCardThumbnail";
 import { VideoCardTitle } from "./VideoCardTitle";
-import type { SearchResultCard } from "../types";
+import type { SearchHoverMetric, SearchResultCard } from "../types";
 
 interface VideoCardProps {
   card: SearchResultCard;
   keyword: string;
   isAnalyzeDisabled: boolean;
   onAnalyze: (card: SearchResultCard) => void;
+  hoverMetric: SearchHoverMetric;
 }
 
-export function VideoCard({ card, keyword, isAnalyzeDisabled, onAnalyze }: VideoCardProps) {
+export function VideoCard({ card, keyword, isAnalyzeDisabled, onAnalyze, hoverMetric }: VideoCardProps) {
   return (
-    <article className="result-card" aria-label={`영상 카드 ${card.title}`}>
+    <article className="result-card" aria-label={`${card.title} 검색 결과 카드`}>
       <VideoCardThumbnail
         thumbnailUrl={card.thumbnailUrl}
         title={card.title}
         durationText={card.durationText}
         publishedDateText={card.publishedDateText}
         badgeLabel={card.badgeLabel}
+        hoverMetric={hoverMetric}
+        estimatedRevenueTotalText={card.estimatedRevenueTotalText}
       />
       <VideoCardTitle title={card.title} keyword={keyword} />
       <VideoCardMetaRows

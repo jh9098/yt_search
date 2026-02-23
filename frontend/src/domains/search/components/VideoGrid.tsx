@@ -1,5 +1,5 @@
 import { VideoCard } from "./VideoCard";
-import type { SearchResultCard, SearchResultsState, SearchViewMode } from "../types";
+import type { SearchHoverMetric, SearchResultCard, SearchResultsState, SearchViewMode } from "../types";
 
 interface VideoGridProps {
   cards: SearchResultCard[];
@@ -8,6 +8,7 @@ interface VideoGridProps {
   keyword: string;
   isAnalyzeDisabled: boolean;
   onAnalyze: (card: SearchResultCard) => void;
+  hoverMetric: SearchHoverMetric;
 }
 
 export function VideoGrid({
@@ -17,6 +18,7 @@ export function VideoGrid({
   keyword,
   isAnalyzeDisabled,
   onAnalyze,
+  hoverMetric,
 }: VideoGridProps) {
   if (resultsState === "loading") {
     return (
@@ -29,13 +31,13 @@ export function VideoGrid({
   if (resultsState === "error") {
     return (
       <div className="results-placeholder results-placeholder-error" role="alert">
-        검색 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.
+        검색 중 문제가 발생했습니다. 필터를 조정한 뒤 검색 버튼으로 다시 시도해 주세요.
       </div>
     );
   }
 
   if (resultsState === "empty") {
-    return <div className="results-placeholder">조건에 맞는 영상이 없습니다.</div>;
+    return <div className="results-placeholder">조건에 맞는 영상이 없습니다. 필터를 완화하고 다시 검색해 보세요.</div>;
   }
 
   return (
@@ -47,6 +49,7 @@ export function VideoGrid({
           keyword={keyword}
           isAnalyzeDisabled={isAnalyzeDisabled}
           onAnalyze={onAnalyze}
+          hoverMetric={hoverMetric}
         />
       ))}
     </div>
