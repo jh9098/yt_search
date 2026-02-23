@@ -72,6 +72,7 @@ class AnalysisApiContractTest(unittest.TestCase):
             body["error"]["message"],
             "분석 요청이 많아 잠시 지연되고 있습니다. 잠시 후 다시 시도해 주세요.",
         )
+        self.assertEqual(response.headers.get("Retry-After"), "3")
 
     def test_create_job_upstream_unavailable_error_contract(self) -> None:
         response = self.client.post(

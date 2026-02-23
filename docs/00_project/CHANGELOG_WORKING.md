@@ -1,3 +1,38 @@
+## 2026-03-08 (Gemini SDK 예외 매핑 연결 + Retry-After 계약 반영)
+### 오늘 목표
+- 외부 SDK 예외를 도메인 예외로 연결하고, rate-limited 응답의 Retry-After 계약을 코드/문서/테스트로 동기화
+
+### 진행 내용 (완료)
+- [x] `backend/app/domains/analysis/client.py`에 Gemini SDK 어댑터 추가 (SDK 예외 → timeout/upstream/rate-limited 도메인 예외 변환)
+- [x] SDK 미가용 시 기존 suffix 기반 시뮬레이션으로 폴백하도록 유지
+- [x] `backend/app/domains/analysis/service.py`에 `AnalysisProcessingError.retry_after_seconds` 필드 추가
+- [x] rate-limited 최종 실패 시 `retry_after_seconds=3` 설정
+- [x] `backend/app/domains/analysis/router.py`에서 `ANALYSIS_RATE_LIMITED` 발생 시 `Retry-After` 헤더 반환
+- [x] `backend/tests/test_analysis_api.py`에 `Retry-After=3` 헤더 검증 추가
+- [x] `docs/01_manuals/api-contracts.md`에 `Retry-After` 초 단위 계약 정책 명시
+- [x] `docs/00_project/CHECKLIST.md` 완료 로그 업데이트
+
+### 진행 내용 (미완료)
+- [ ] 실제 Gemini 응답 텍스트가 비JSON일 때 프롬프트/응답 포맷 강제 전략 고도화
+
+### 변경/생성 파일
+- `backend/app/domains/analysis/client.py`
+- `backend/app/domains/analysis/service.py`
+- `backend/app/domains/analysis/router.py`
+- `backend/tests/test_analysis_api.py`
+- `docs/01_manuals/api-contracts.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. rate-limited/timeout 시 공통 로깅 필드(requestId, jobId, retryAfter) 표준화
+2. 동일 `videoId` 처리 중 dedupe(진행 중 job 재사용) 최소 구현
+
+### 메모
+- Firestore 도입 시에도 rate-limited 응답에 명시된 재시도 시각을 따르게 하면 짧은 간격 재호출/재조회(read) 루프를 줄여 읽기 소모를 완화할 수 있다.
+
+---
+
 # CHANGELOG_WORKING.md
 
 ## 2026-03-07 (외부 AI 호출 래퍼 도입 + 예외 매핑 확장)

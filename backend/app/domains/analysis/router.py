@@ -60,7 +60,14 @@ def create_analysis_job(payload: AnalysisJobCreateRequest):
         ).status_data
     except AnalysisProcessingError as processing_error:
         body = error_response(code=processing_error.code, message=processing_error.message)
-        return JSONResponse(status_code=503, content=body)
+        headers: dict[str, str] = {}
+        if (
+            processing_error.code == "ANALYSIS_RATE_LIMITED"
+            and processing_error.retry_after_seconds is not None
+        ):
+            headers["Retry-After"] = str(processing_error.retry_after_seconds)
+
+        return JSONResponse(status_code=503, content=body, headers=headers)
 
     repository.upsert_job_status(completed_or_failed_status)
 
