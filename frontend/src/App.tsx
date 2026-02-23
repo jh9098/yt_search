@@ -32,7 +32,7 @@ import type {
 
 
 const DEFAULT_FILTERS: SearchFilterState = {
-  sort: "relevance",
+  sort: "subscriberAsc",
   period: "7d",
   minViews: 0,
   country: "",
@@ -42,7 +42,7 @@ const DEFAULT_FILTERS: SearchFilterState = {
   shortFormType: "all",
   scriptType: "all",
   hoverMetric: "vidiqTrend",
-  minPerformance: 100,
+  minPerformance: 150,
   corePreset: "none",
 };
 

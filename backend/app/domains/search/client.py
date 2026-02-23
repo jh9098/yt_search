@@ -159,6 +159,8 @@ class YouTubeSearchClient:
             return "viewCount"
         if sort == SearchSortOption.LATEST:
             return "date"
+        if sort == SearchSortOption.SUBSCRIBER_ASC:
+            return "relevance"
         return "relevance"
 
     @staticmethod

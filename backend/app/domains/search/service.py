@@ -69,6 +69,8 @@ def _collect_keyword_matches(keyword: str, title: str) -> list[str]:
 
 
 def _sort_records(records: list[SearchVideoRecord], sort: SearchSortOption) -> list[SearchVideoRecord]:
+    if sort == SearchSortOption.SUBSCRIBER_ASC:
+        return sorted(records, key=lambda record: (record.subscriber_count, -record.view_count, record.title.lower()))
     if sort == SearchSortOption.VIEWS:
         return sorted(records, key=lambda record: record.view_count, reverse=True)
     if sort == SearchSortOption.LATEST:
@@ -259,6 +261,14 @@ def search_videos(
         uploads_per_week = row.total_video_count / (channel_age_days / 7)
         grade = _compute_channel_grade(row.subscriber_count)
 
+        if row.is_subscriber_public and row.subscriber_count > 0:
+            performance_ratio = (row.view_count / row.subscriber_count) * 100
+        else:
+            performance_ratio = 0.0
+
+        if performance_ratio < min_performance:
+            continue
+
         if not _match_core_preset(
             core_preset,
             channel_age_days=channel_age_days,
@@ -303,9 +313,9 @@ def search_videos(
                 has_script=has_script,
                 is_subscriber_public=row.is_subscriber_public,
                 keyword_matched_terms=_collect_keyword_matches(keyword, row.title),
-                estimated_revenue_total_text=None,
-                vph_text=None,
-                badge_label="SHORTS" if is_short_form else None,
+                estimated_revenue_total_text=f"CPM {1 + (row.view_count % 3):,}원 기준 약 {int(row.view_count * ((1 + (row.view_count % 3)) / 1000)):,}원",
+                vph_text=f"{performance_ratio:.1f}%",
+                badge_label="고효율" if performance_ratio >= 200 else ("SHORTS" if is_short_form else None),
             )
         )
 

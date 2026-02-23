@@ -8,7 +8,7 @@ describe("search api client url contract", () => {
       channel: "",
       topic: "all",
       resultLimit: 150,
-      sort: "relevance",
+      sort: "subscriberAsc",
       period: "7d",
       minViews: 0,
       country: "KR",
@@ -26,7 +26,7 @@ describe("search api client url contract", () => {
     expect(path).toContain("q=%EA%B0%80%EC%A1%B1+%EB%8C%80%ED%99%94%EB%B2%95");
     expect(path).toContain("topic=all");
     expect(path).toContain("resultLimit=150");
-    expect(path).toContain("sort=relevance");
+    expect(path).toContain("sort=subscriberAsc");
     expect(path).toContain("period=7d");
     expect(path).toContain("minViews=0");
     expect(path).toContain("country=KR");

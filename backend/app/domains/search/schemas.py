@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 
 class SearchSortOption(str, Enum):
+    SUBSCRIBER_ASC = "subscriberAsc"
     RELEVANCE = "relevance"
     VIEWS = "views"
     LATEST = "latest"

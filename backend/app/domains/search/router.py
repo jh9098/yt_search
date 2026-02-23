@@ -39,7 +39,7 @@ router = APIRouter(prefix="/api/search", tags=["search"])
 def get_search_videos(
     q: str = Query(default=""),
     channel: str = Query(default=""),
-    sort: SearchSortOption = Query(default=SearchSortOption.RELEVANCE),
+    sort: SearchSortOption = Query(default=SearchSortOption.SUBSCRIBER_ASC),
     topic: SearchTopicOption = Query(default=SearchTopicOption.ALL),
     result_limit: int = Query(default=250, alias="resultLimit", ge=1, le=250),
     period: SearchPeriodOption = Query(default=SearchPeriodOption.LAST_7_DAYS),
