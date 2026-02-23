@@ -134,7 +134,7 @@
 - [x] FastAPI 프로젝트 기본 구조 생성
 - [x] 공통 응답 스키마 정의
 - [x] 분석 API 엔드포인트(임시/동기 버전 가능) 추가
-- [ ] AI 응답 JSON 검증 로직 추가
+- [x] AI 응답 JSON 검증 로직 추가
 - [ ] 에러 처리/타임아웃 처리 추가
 - [ ] 결과 저장 구조(테이블/파일 mock) 추가
 
@@ -156,6 +156,10 @@
 ---
 
 ## I. 완료 로그 (요약)
+
+### 2026-02-23
+- 완료 항목: 백엔드 분석 검증 파이프라인 최소 구현(validator/service/router 연동)
+- 메모: 1차 필수 필드 검증 → 허용 필드 보정(`summary.weakPoints`, `contentIdeas`, `recommendedKeywords`, `meta.warnings`) → 2차 스키마 검증 순서를 코드로 고정하고, 실패 시 `ANALYSIS_OUTPUT_INVALID` + `status=failed`로 분기
 
 ### 2026-03-04
 - 완료 항목: 백엔드 MVP 최소 골격 생성(앱 진입점/analysis router/schemas/공통 응답 헬퍼)

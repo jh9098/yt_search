@@ -9,6 +9,36 @@
 
 ---
 
+## 2026-02-23 (백엔드 분석 검증 파이프라인 최소 구현)
+### 오늘 목표
+- D-5 정책(검증→보정→재검증)을 코드에 반영해 `failed` vs `completed(+warnings)` 분기를 실행 가능 상태로 전환
+
+### 진행 내용 (완료)
+- [x] `backend/app/domains/analysis/validator.py` 생성 (필수 필드 1차 검증 + 허용 필드 보정 + 2차 스키마 검증)
+- [x] `backend/app/domains/analysis/service.py` 생성 (`ANALYSIS_OUTPUT_INVALID` 실패 분기 / `completed` 결과 분기)
+- [x] `backend/app/domains/analysis/router.py` 연동 (기존 스텁 흐름에 서비스 적용)
+- [x] `docs/00_project/CHECKLIST.md` F 섹션(검증 로직) 완료 처리
+
+### 진행 내용 (미완료)
+- [ ] 백엔드 timeout/외부 API 예외 처리 추가
+- [ ] 결과 저장 구조(파일 mock/DB) 추가
+
+### 변경/생성 파일
+- `backend/app/domains/analysis/validator.py`
+- `backend/app/domains/analysis/service.py`
+- `backend/app/domains/analysis/router.py`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. 백엔드 에러 처리/timeout 정책을 코드에 반영해 F 섹션 항목 추가 완료
+2. 캐시/저장 구조(파일 mock 또는 DB)를 붙여 `cacheHit` 동작을 실제 분기로 확장
+
+### 메모
+- FastAPI/Pydantic 패키지 미설치 환경으로 API 통합 실행 검증은 제한되어, 파이썬 문법 컴파일 중심으로 검증함.
+
+---
+
 ## 2026-03-03 (D-5 출력 검증/보정 정책 확정)
 ### 오늘 목표
 - D-5(출력 검증/보정) 2단계 정책을 완료해 `failed` vs `partial-success` 분기와 저장 전 검증 순서를 고정

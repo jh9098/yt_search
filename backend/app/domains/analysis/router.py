@@ -8,10 +8,10 @@ from backend.app.domains.analysis.schemas import (
     AnalysisCreateSuccessResponse,
     AnalysisErrorResponse,
     AnalysisJobCreateRequest,
-    AnalysisResult,
     AnalysisStatusData,
     JobStatus,
 )
+from backend.app.domains.analysis.service import build_completed_or_failed_status
 
 router = APIRouter(prefix="/api/analysis", tags=["analysis"])
 
@@ -19,34 +19,25 @@ router = APIRouter(prefix="/api/analysis", tags=["analysis"])
 STUB_JOBS: dict[str, AnalysisStatusData] = {}
 
 
-def _build_completed_result() -> AnalysisResult:
-    return AnalysisResult.model_validate(
-        {
-            "summary": {
-                "majorReactions": "영상 내용에 공감하며 자신의 경험과 연결짓는 댓글이 많습니다.",
-                "positivePoints": "뇌과학/심리학적 설명이 이해에 도움 되었다는 평가가 있습니다.",
-                "weakPoints": "해결책이 추상적이라는 반응이 일부 있습니다.",
-            },
-            "contentIdeas": [
-                {
-                    "title": "가족에게 상처 주는 말 줄이는 대화법",
-                    "description": "감정 폭발 전 멈춤 신호와 표현 전환 팁 정리",
-                }
-            ],
-            "recommendedKeywords": ["가족관계", "심리", "감정조절"],
-            "meta": {
-                "model": "gemini-2.0-flash",
-                "analyzedAt": "2026-02-22T12:00:08Z",
-                "commentSampleCount": 320,
-                "analysisBasis": ["title", "description", "comments"],
-                "languageSummary": ["ko"],
-                "cacheHit": False,
-                "analysisVersion": "v1",
-                "schemaVersion": "analysis-result-v1",
-                "warnings": [],
-            },
-        }
-    )
+def _build_stub_raw_result() -> dict:
+    return {
+        "summary": {
+            "majorReactions": "영상 내용에 공감하며 자신의 경험과 연결짓는 댓글이 많습니다.",
+            "positivePoints": "뇌과학/심리학적 설명이 이해에 도움 되었다는 평가가 있습니다.",
+            # weakPoints intentionally omitted to verify fallback path
+        },
+        # contentIdeas intentionally omitted to verify fallback path
+        "recommendedKeywords": ["가족관계", "심리", "감정조절"],
+        "meta": {
+            "model": "gemini-2.0-flash",
+            "analyzedAt": "2026-02-22T12:00:08Z",
+            "commentSampleCount": 320,
+            "analysisBasis": ["title", "description", "comments"],
+            "languageSummary": ["ko"],
+            "analysisVersion": "v1",
+            "schemaVersion": "analysis-result-v1",
+        },
+    }
 
 
 @router.post(
@@ -67,13 +58,10 @@ def create_analysis_job(payload: AnalysisJobCreateRequest):
     data = AnalysisStatusData(jobId=job_id, status=JobStatus.QUEUED)
     STUB_JOBS[job_id] = data
 
-    # forceRefresh=true면 즉시 완료 예시를 저장해 상태 조회에서 completed 샘플을 확인 가능하게 함
+    # forceRefresh=true면 즉시 완료 샘플을 생성해 검증/보정 파이프라인이 동작하도록 유지
     if payload.force_refresh:
-        STUB_JOBS[job_id] = AnalysisStatusData(
-            jobId=job_id,
-            status=JobStatus.COMPLETED,
-            result=_build_completed_result(),
-        )
+        outcome = build_completed_or_failed_status(job_id=job_id, raw_result=_build_stub_raw_result())
+        STUB_JOBS[job_id] = outcome.status_data
 
     return success_response(data=data.model_dump(by_alias=True, exclude_none=True))
 
