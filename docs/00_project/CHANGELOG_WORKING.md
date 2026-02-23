@@ -1,5 +1,38 @@
 # CHANGELOG_WORKING.md
 
+## 2026-03-07 (외부 AI 호출 래퍼 도입 + 예외 매핑 확장)
+### 오늘 목표
+- 시뮬레이션 기반 예외 분기를 외부 호출 래퍼 + 서비스 매핑 구조로 치환하고 `ANALYSIS_RATE_LIMITED`까지 계약 테스트를 확장
+
+### 진행 내용 (완료)
+- [x] `backend/app/domains/analysis/client.py` 생성 (외부 호출 얇은 인터페이스 + 예외 타입 정의)
+- [x] `backend/app/domains/analysis/service.py`에서 timeout/upstream/rate-limited를 계약 코드로 매핑
+- [x] rate-limited 최소 백오프 재시도(1회) 후 실패 시 `ANALYSIS_RATE_LIMITED` 반환
+- [x] `backend/app/domains/analysis/router.py`에서 캐시 선조회 후 외부 호출하도록 순서 조정
+- [x] `backend/tests/test_analysis_api.py`에 rate-limited 실패 케이스 추가(총 5케이스)
+- [x] `docs/00_project/CHECKLIST.md` 완료 로그 업데이트
+
+### 진행 내용 (미완료)
+- [ ] 실제 Gemini/외부 SDK 예외 타입을 현재 매핑 구조에 직접 연결
+
+### 변경/생성 파일
+- `backend/app/domains/analysis/client.py`
+- `backend/app/domains/analysis/service.py`
+- `backend/app/domains/analysis/router.py`
+- `backend/tests/test_analysis_api.py`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. 외부 SDK(Gemini) 연동 시 timeout/rate-limit/upstream 예외를 `client.py` 예외 타입으로 변환
+2. rate-limited 응답의 `Retry-After` 헤더 활용 여부를 계약 문서에 반영할지 결정
+
+### 메모
+- 캐시 hit를 먼저 확인한 뒤 외부 호출하도록 순서를 고정해 불필요한 외부 호출/재시도를 줄였다.
+- Firestore 도입 시에도 동일 순서를 유지하면 중복 조회(read) 및 재저장 트래픽을 완화할 수 있다.
+
+---
+
 ## 2026-03-06 (analysis timeout/upstream 예외 매핑 + 최소 계약 테스트)
 ### 오늘 목표
 - `ANALYSIS_TIMEOUT`, `ANALYSIS_UPSTREAM_UNAVAILABLE` 예외를 API 계약 코드로 고정 매핑하고 최소 API 계약 테스트를 추가

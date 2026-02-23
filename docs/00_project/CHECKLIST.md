@@ -157,6 +157,10 @@
 
 ## I. 완료 로그 (요약)
 
+### 2026-03-07
+- 완료 항목: 외부 AI 호출 래퍼 도입 + timeout/upstream/rate-limited 계약 매핑 + API 테스트 5종 검증
+- 메모: 캐시 선조회 후 외부 호출하도록 순서를 조정해 불필요한 재요청을 방지했고, rate-limited는 최소 백오프(1회) 후 실패 시 `ANALYSIS_RATE_LIMITED`로 고정 응답
+
 ### 2026-03-06
 - 완료 항목: 백엔드 timeout/upstream 예외 매핑 + 최소 API 계약 테스트 추가
 - 메모: `videoId` 시뮬레이션 접미사(`_timeout`, `_upstream_unavailable`)로 `ANALYSIS_TIMEOUT`/`ANALYSIS_UPSTREAM_UNAVAILABLE`를 계약 메시지로 고정 반환하고, TestClient 기반 정상/캐시 hit/실패 응답 테스트 4건을 추가
