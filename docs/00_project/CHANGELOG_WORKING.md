@@ -786,3 +786,35 @@
 
 ### 메모
 - 이번 세션은 단일 작업 원칙에 따라 백엔드 최소 골격만 구현했고, Gemini/DB/캐시 실구현은 범위에 맞춰 제외함.
+
+---
+
+## 2026-03-12 (FE-3 검색 API 최소 연결: client + hook + App 트리거)
+### 오늘 목표
+- FE-3 범위에서 검색 API 클라이언트/훅을 추가하고, App 검색 흐름을 버튼/Enter 트리거 기반 API 호출로 전환
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/search/api/client.ts` 추가 (`VITE_API_BASE_URL` + `VITE_SEARCH_API_PATH` 기반 GET 요청/에러 파싱)
+- [x] `frontend/src/domains/search/hooks/useVideoSearch.ts` 추가 (`loading/empty/error/success` 상태 관리 + 동일 파라미터 중복 호출 가드)
+- [x] `frontend/src/domains/search/types.ts`에 검색 API 요청/응답 타입 및 훅 반환 타입 추가
+- [x] `frontend/src/App.tsx`를 `useVideoSearch` 기반으로 전환하고, 검색 버튼/Enter로만 `runSearch` 실행되도록 연결
+- [x] 필터/보기모드 변경 시 자동 API 재호출을 하지 않도록 유지(명시적 검색 트리거 정책 유지)
+- [x] `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] popstate(브라우저 뒤로가기/앞으로가기) 시 검색 결과 자동 재조회 동기화
+
+### 변경/생성 파일
+- `frontend/src/domains/search/api/client.ts`
+- `frontend/src/domains/search/hooks/useVideoSearch.ts`
+- `frontend/src/domains/search/types.ts`
+- `frontend/src/App.tsx`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. popstate 시점 URL 상태(`q/channel/view`) 복구와 검색 결과 재조회 동기화를 경량 보강
+
+### 메모
+- 현재 백엔드 검색 API가 확정 구현되지 않은 환경에서도, 프론트는 명시적 트리거 호출 구조를 유지해 자동 재조회로 인한 Firestore read 급증 위험을 방지하도록 설계했다.
+- 동일 파라미터 재검색은 훅 내부 키 비교로 요청을 건너뛰어 추후 Firestore 연동 시 불필요 read 소모를 줄일 수 있다.
