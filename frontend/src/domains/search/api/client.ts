@@ -52,8 +52,40 @@ function toSearchQueryString(params: SearchApiRequestParams): string {
   return searchParams.toString();
 }
 
+function toLegacySearchQueryString(params: SearchApiRequestParams): string {
+  const searchParams = new URLSearchParams();
+
+  const trimmedKeyword = params.q.trim();
+  const trimmedChannel = params.channel.trim();
+
+  if (trimmedKeyword.length > 0) {
+    searchParams.set("q", trimmedKeyword);
+  }
+
+  if (trimmedChannel.length > 0) {
+    searchParams.set("channel", trimmedChannel);
+  }
+
+  searchParams.set("sort", params.sort);
+  searchParams.set("period", params.period);
+  searchParams.set("minViews", String(params.minViews));
+
+  if (params.country.trim().length > 0) {
+    searchParams.set("country", params.country.trim().toUpperCase());
+  }
+
+  searchParams.set("resultLimit", String(Math.min(params.resultLimit, 50)));
+
+  return searchParams.toString();
+}
+
 export function buildSearchRequestPath(params: SearchApiRequestParams): string {
   const queryString = toSearchQueryString(params);
+  return queryString.length > 0 ? `${SEARCH_PATH}?${queryString}` : SEARCH_PATH;
+}
+
+export function buildLegacySearchRequestPath(params: SearchApiRequestParams): string {
+  const queryString = toLegacySearchQueryString(params);
   return queryString.length > 0 ? `${SEARCH_PATH}?${queryString}` : SEARCH_PATH;
 }
 
@@ -101,7 +133,12 @@ async function fetchSearchResponse(requestPath: string): Promise<Response> {
 
 export async function searchVideos(params: SearchApiRequestParams): Promise<SearchApiResponseData> {
   const requestPath = buildSearchRequestPath(params);
-  const response = await fetchSearchResponse(requestPath);
+  let response = await fetchSearchResponse(requestPath);
+
+  if (response.status === 422) {
+    const legacyRequestPath = buildLegacySearchRequestPath(params);
+    response = await fetchSearchResponse(legacyRequestPath);
+  }
 
   if (!response.ok) {
     let code = "COMMON_INVALID_REQUEST";
