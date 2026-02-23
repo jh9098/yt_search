@@ -55,6 +55,12 @@
 | `ANALYSIS_RATE_LIMITED` | 분석 요청이 많아 잠시 지연되고 있습니다. 잠시 후 다시 시도해 주세요. | 가능 | 토스트 + 재시도 버튼 노출 |
 | `ANALYSIS_UPSTREAM_UNAVAILABLE` | 분석 서비스 연결이 원활하지 않습니다. 잠시 후 다시 시도해 주세요. | 가능 | 토스트 + 재시도 버튼 노출 |
 
+
+### D-3 확장 정책: `ANALYSIS_RATE_LIMITED`의 `Retry-After` 헤더 (고정)
+- `ANALYSIS_RATE_LIMITED`(HTTP 503) 응답에서는 `Retry-After` 헤더를 **초(second) 단위**로 함께 반환합니다.
+- MVP 기본값은 `Retry-After: 3` 입니다.
+- 프론트는 헤더가 있으면 해당 초 이후 재시도 안내 문구를 우선 사용하고, 헤더가 없으면 기본 재시도 문구를 사용합니다.
+
 ### D-3 정책 확정: 코드군별 프론트 분기 기준 (고정)
 - `COMMON_*` 입력 검증 계열: 인라인 안내 우선, 사용자 입력 수정 유도, 즉시 재시도 비권장
 - `ANALYSIS_TIMEOUT`, `ANALYSIS_RATE_LIMITED`, `ANALYSIS_UPSTREAM_UNAVAILABLE`: 토스트 + 재시도 버튼 동시 제공

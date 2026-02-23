@@ -12,6 +12,8 @@ from backend.app.domains.analysis.client import (
 from backend.app.domains.analysis.schemas import AnalysisResult, AnalysisStatusData, JobStatus, ResponseError
 from backend.app.domains.analysis.validator import AnalysisValidationError, validate_and_normalize_result
 
+DEFAULT_RATE_LIMITED_RETRY_AFTER_SECONDS = 3
+
 
 @dataclass
 class ServiceOutcome:
@@ -22,6 +24,7 @@ class ServiceOutcome:
 class AnalysisProcessingError(Exception):
     code: str
     message: str
+    retry_after_seconds: int | None = None
 
 
 def process_analysis_job(
@@ -73,6 +76,7 @@ def _fetch_with_minimal_retry(
                 raise AnalysisProcessingError(
                     code="ANALYSIS_RATE_LIMITED",
                     message="분석 요청이 많아 잠시 지연되고 있습니다. 잠시 후 다시 시도해 주세요.",
+                    retry_after_seconds=DEFAULT_RATE_LIMITED_RETRY_AFTER_SECONDS,
                 ) from rate_limited_error
 
             backoff_seconds = base_backoff_seconds * (2**attempt)
@@ -97,12 +101,6 @@ def build_completed_or_failed_status(job_id: str, raw_result: dict) -> ServiceOu
     completed_status = AnalysisStatusData(
         jobId=job_id,
         status=JobStatus.COMPLETED,
-        result=_with_cache_hint(validation_outcome.normalized_result),
+        result=AnalysisResult.model_validate(validation_outcome.normalized_result),
     )
     return ServiceOutcome(status_data=completed_status)
-
-
-def _with_cache_hint(result: AnalysisResult) -> AnalysisResult:
-    if result.meta.cache_hit is None:
-        result.meta.cache_hit = False
-    return result

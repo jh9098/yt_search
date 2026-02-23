@@ -157,6 +157,10 @@
 
 ## I. 완료 로그 (요약)
 
+### 2026-03-08
+- 완료 항목: 외부 SDK 예외 변환 연결 + `ANALYSIS_RATE_LIMITED` `Retry-After`(3초) 정책 반영 + API 계약 테스트 헤더 검증 추가
+- 메모: SDK 미가용 환경은 기존 시뮬레이션 모드로 안전 폴백되며, rate-limited 응답에서 재시도 타이밍을 명시해 불필요한 재호출을 줄일 수 있음
+
 ### 2026-03-07
 - 완료 항목: 외부 AI 호출 래퍼 도입 + timeout/upstream/rate-limited 계약 매핑 + API 테스트 5종 검증
 - 메모: 캐시 선조회 후 외부 호출하도록 순서를 조정해 불필요한 재요청을 방지했고, rate-limited는 최소 백오프(1회) 후 실패 시 `ANALYSIS_RATE_LIMITED`로 고정 응답
