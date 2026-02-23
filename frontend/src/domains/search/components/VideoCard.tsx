@@ -1,19 +1,36 @@
+import { VideoCardMetaRows } from "./VideoCardMetaRows";
+import { VideoCardThumbnail } from "./VideoCardThumbnail";
+import { VideoCardTitle } from "./VideoCardTitle";
 import type { SearchResultCard } from "../types";
 
 interface VideoCardProps {
   card: SearchResultCard;
+  keyword: string;
   isAnalyzeDisabled: boolean;
   onAnalyze: (card: SearchResultCard) => void;
 }
 
-export function VideoCard({ card, isAnalyzeDisabled, onAnalyze }: VideoCardProps) {
+export function VideoCard({ card, keyword, isAnalyzeDisabled, onAnalyze }: VideoCardProps) {
   return (
     <article className="result-card" aria-label={`영상 카드 ${card.title}`}>
-      <p className="result-card-channel">채널: {card.channelName}</p>
-      <h2 className="result-card-title">{card.title}</h2>
-      <p className="result-card-meta">조회수: {card.viewCountText}</p>
-      <p className="result-card-meta">업로드: {card.uploadedAtText}</p>
-      <p className="result-card-video-id">videoId: {card.videoId}</p>
+      <VideoCardThumbnail
+        thumbnailUrl={card.thumbnailUrl}
+        title={card.title}
+        durationText={card.durationText}
+        publishedDateText={card.publishedDateText}
+        badgeLabel={card.badgeLabel}
+      />
+      <VideoCardTitle title={card.title} keyword={keyword} />
+      <VideoCardMetaRows
+        channelName={card.channelName}
+        countryCode={card.countryCode}
+        viewCountText={card.viewCountText}
+        subscriberCountText={card.subscriberCountText}
+        hasScript={card.hasScript}
+        isSubscriberPublic={card.isSubscriberPublic}
+        estimatedRevenueTotalText={card.estimatedRevenueTotalText}
+        vphText={card.vphText}
+      />
 
       <button
         type="button"

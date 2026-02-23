@@ -3,7 +3,7 @@ import type { Dispatch, SetStateAction } from "react";
 import type { SearchQueryState, SearchViewMode } from "../types";
 
 const DEFAULT_QUERY_STATE: SearchQueryState = {
-  keyword: "가족 대화법",
+  keyword: "",
   channel: "",
 };
 
@@ -44,7 +44,7 @@ function toSearchString(queryState: SearchQueryState, viewMode: SearchViewMode):
   const trimmedKeyword = queryState.keyword.trim();
   const trimmedChannel = queryState.channel.trim();
 
-  if (trimmedKeyword.length > 0 && trimmedKeyword !== DEFAULT_QUERY_STATE.keyword) {
+  if (trimmedKeyword.length > 0) {
     params.set("q", trimmedKeyword);
   }
 

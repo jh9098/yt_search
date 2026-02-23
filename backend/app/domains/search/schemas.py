@@ -34,8 +34,19 @@ class SearchResultItem(BaseModel):
     video_id: str = Field(..., alias="videoId")
     title: str
     channel_name: str = Field(..., alias="channelName")
+    thumbnail_url: str = Field(..., alias="thumbnailUrl")
+    duration_text: str = Field(..., alias="durationText")
+    published_date_text: str = Field(..., alias="publishedDateText")
     view_count_text: str = Field(..., alias="viewCountText")
-    uploaded_at_text: str = Field(..., alias="uploadedAtText")
+    subscriber_count_text: str = Field(..., alias="subscriberCountText")
+    country_code: str = Field(..., alias="countryCode")
+    is_short_form: bool = Field(..., alias="isShortForm")
+    has_script: bool = Field(..., alias="hasScript")
+    is_subscriber_public: bool = Field(..., alias="isSubscriberPublic")
+    keyword_matched_terms: list[str] = Field(..., alias="keywordMatchedTerms")
+    estimated_revenue_total_text: str | None = Field(default=None, alias="estimatedRevenueTotalText")
+    vph_text: str | None = Field(default=None, alias="vphText")
+    badge_label: str | None = Field(default=None, alias="badgeLabel")
 
 
 class SearchResultData(BaseModel):
@@ -58,7 +69,20 @@ class SearchVideoRecord(BaseModel):
     video_id: str
     title: str
     channel_name: str
+    thumbnail_url: str
+    duration_seconds: int
+    duration_text: str
+    published_at: datetime
+    published_date_text: str
     view_count: int
     view_count_text: str
-    published_at: datetime
-    uploaded_at_text: str
+    subscriber_count: int
+    subscriber_count_text: str
+    country_code: str
+    is_short_form: bool
+    has_script: bool
+    is_subscriber_public: bool
+    keyword_matched_terms: list[str]
+    estimated_revenue_total_text: str | None = None
+    vph_text: str | None = None
+    badge_label: str | None = None

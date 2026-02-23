@@ -21,10 +21,23 @@ class SearchApiContractTest(unittest.TestCase):
                     video_id="video_family_talk_001",
                     title="가족과 대화가 자꾸 꼬일 때 감정 다루는 법",
                     channel_name="마음연구소",
+                    thumbnail_url="https://i.ytimg.com/sample.jpg",
+                    duration_seconds=58,
+                    duration_text="00:58",
+                    published_at=datetime(2026, 3, 1, tzinfo=timezone.utc),
+                    published_date_text="2026-03-01",
                     view_count=420000,
                     view_count_text="42만",
-                    published_at=datetime(2026, 3, 1, tzinfo=timezone.utc),
-                    uploaded_at_text="3일 전",
+                    subscriber_count=173000,
+                    subscriber_count_text="17.3만",
+                    country_code="KR",
+                    is_short_form=True,
+                    has_script=False,
+                    is_subscriber_public=True,
+                    keyword_matched_terms=["가족", "대화"],
+                    estimated_revenue_total_text=None,
+                    vph_text=None,
+                    badge_label="SHORTS",
                 )
             ]
 
@@ -47,8 +60,16 @@ class SearchApiContractTest(unittest.TestCase):
         self.assertIn("videoId", first_item)
         self.assertIn("title", first_item)
         self.assertIn("channelName", first_item)
+        self.assertIn("thumbnailUrl", first_item)
+        self.assertIn("durationText", first_item)
+        self.assertIn("publishedDateText", first_item)
         self.assertIn("viewCountText", first_item)
-        self.assertIn("uploadedAtText", first_item)
+        self.assertIn("subscriberCountText", first_item)
+        self.assertIn("countryCode", first_item)
+        self.assertIn("isShortForm", first_item)
+        self.assertIn("hasScript", first_item)
+        self.assertIn("isSubscriberPublic", first_item)
+        self.assertIn("keywordMatchedTerms", first_item)
 
     def test_get_search_videos_returns_contract_error_when_query_missing(self) -> None:
         response = self.client.get(

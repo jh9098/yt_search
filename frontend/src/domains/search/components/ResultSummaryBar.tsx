@@ -8,7 +8,7 @@ interface ResultSummaryBarProps {
 }
 
 const STATE_LABEL: Record<SearchSummary["resultsState"], string> = {
-  idle: "검색 조건 입력 대기",
+  idle: "검색어를 입력하고 검색 버튼을 눌러주세요",
   loading: "검색 중",
   success: "검색 완료",
   empty: "검색 결과 없음",

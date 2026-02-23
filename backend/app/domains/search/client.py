@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -13,6 +14,7 @@ from .schemas import SearchPeriodOption, SearchSortOption
 
 YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search"
 YOUTUBE_VIDEOS_URL = "https://www.googleapis.com/youtube/v3/videos"
+YOUTUBE_CHANNELS_URL = "https://www.googleapis.com/youtube/v3/channels"
 
 
 @dataclass(frozen=True)
@@ -39,9 +41,15 @@ class SearchUpstreamError(Exception):
 class YoutubeVideoRaw:
     video_id: str
     title: str
+    channel_id: str
     channel_name: str
+    thumbnail_url: str
     published_at: datetime
+    duration_seconds: int
     view_count: int
+    subscriber_count: int
+    is_subscriber_public: bool
+    country_code: str
 
 
 class YouTubeSearchClient:
@@ -81,13 +89,42 @@ class YouTubeSearchClient:
         videos_response = self._call_youtube_api(
             YOUTUBE_VIDEOS_URL,
             {
-                "part": "snippet,statistics",
+                "part": "snippet,statistics,contentDetails",
                 "id": ",".join(video_ids),
                 "key": self._api_key,
             },
         )
 
-        return self._to_video_rows(videos_response, channel=channel)
+        channel_ids = self._extract_channel_ids(videos_response)
+        channel_map = self._fetch_channel_map(channel_ids)
+        return self._to_video_rows(videos_response, channel=channel, channel_map=channel_map)
+
+    def _fetch_channel_map(self, channel_ids: list[str]) -> dict[str, dict[str, Any]]:
+        if len(channel_ids) == 0:
+            return {}
+
+        channels_response = self._call_youtube_api(
+            YOUTUBE_CHANNELS_URL,
+            {
+                "part": "snippet,statistics",
+                "id": ",".join(channel_ids),
+                "key": self._api_key,
+            },
+        )
+
+        items = channels_response.get("items")
+        if not isinstance(items, list):
+            return {}
+
+        mapped: dict[str, dict[str, Any]] = {}
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            channel_id = item.get("id")
+            if not isinstance(channel_id, str) or channel_id == "":
+                continue
+            mapped[channel_id] = item
+        return mapped
 
     def _build_search_params(
         self,
@@ -191,7 +228,33 @@ class YouTubeSearchClient:
         return video_ids
 
     @staticmethod
-    def _to_video_rows(videos_response: dict[str, Any], channel: str) -> list[YoutubeVideoRaw]:
+    def _extract_channel_ids(videos_response: dict[str, Any]) -> list[str]:
+        items = videos_response.get("items")
+        if not isinstance(items, list):
+            return []
+
+        deduped: list[str] = []
+        seen: set[str] = set()
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            snippet = item.get("snippet")
+            if not isinstance(snippet, dict):
+                continue
+            channel_id = snippet.get("channelId")
+            if not isinstance(channel_id, str) or channel_id == "" or channel_id in seen:
+                continue
+            seen.add(channel_id)
+            deduped.append(channel_id)
+
+        return deduped
+
+    @staticmethod
+    def _to_video_rows(
+        videos_response: dict[str, Any],
+        channel: str,
+        channel_map: dict[str, dict[str, Any]],
+    ) -> list[YoutubeVideoRaw]:
         items = videos_response.get("items")
         if not isinstance(items, list):
             return []
@@ -202,13 +265,21 @@ class YouTubeSearchClient:
         for item in items:
             if not isinstance(item, dict):
                 continue
+
             snippet = item.get("snippet")
             statistics = item.get("statistics")
+            content_details = item.get("contentDetails")
             video_id = item.get("id")
 
-            if not isinstance(snippet, dict) or not isinstance(statistics, dict) or not isinstance(video_id, str):
+            if (
+                not isinstance(snippet, dict)
+                or not isinstance(statistics, dict)
+                or not isinstance(content_details, dict)
+                or not isinstance(video_id, str)
+            ):
                 continue
 
+            channel_id = str(snippet.get("channelId", "")).strip()
             channel_title = str(snippet.get("channelTitle", "")).strip()
             if normalized_channel and normalized_channel not in channel_title.lower():
                 continue
@@ -217,14 +288,37 @@ class YouTubeSearchClient:
             if published_at is None:
                 continue
 
+            thumbnails = snippet.get("thumbnails")
+            thumbnail_url = _extract_best_thumbnail_url(thumbnails)
+
+            duration_seconds = _parse_iso8601_duration_to_seconds(str(content_details.get("duration", "")))
             view_count = _to_int(statistics.get("viewCount"))
+
+            channel_item = channel_map.get(channel_id, {})
+            channel_statistics = channel_item.get("statistics") if isinstance(channel_item, dict) else {}
+            channel_snippet = channel_item.get("snippet") if isinstance(channel_item, dict) else {}
+            if not isinstance(channel_statistics, dict):
+                channel_statistics = {}
+            if not isinstance(channel_snippet, dict):
+                channel_snippet = {}
+
+            hidden_subscriber_count = bool(channel_statistics.get("hiddenSubscriberCount", False))
+            subscriber_count = _to_int(channel_statistics.get("subscriberCount"))
+            country_code = str(channel_snippet.get("country", "")).strip() or "N/A"
+
             rows.append(
                 YoutubeVideoRaw(
                     video_id=video_id,
                     title=str(snippet.get("title", "")).strip(),
+                    channel_id=channel_id,
                     channel_name=channel_title,
+                    thumbnail_url=thumbnail_url,
                     published_at=published_at,
+                    duration_seconds=duration_seconds,
                     view_count=view_count,
+                    subscriber_count=subscriber_count,
+                    is_subscriber_public=not hidden_subscriber_count,
+                    country_code=country_code,
                 )
             )
 
@@ -239,6 +333,36 @@ def _parse_youtube_datetime(value: str) -> datetime | None:
         return datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError:
         return None
+
+
+def _extract_best_thumbnail_url(thumbnails: Any) -> str:
+    if not isinstance(thumbnails, dict):
+        return ""
+
+    for key in ("maxres", "standard", "high", "medium", "default"):
+        candidate = thumbnails.get(key)
+        if not isinstance(candidate, dict):
+            continue
+        url = candidate.get("url")
+        if isinstance(url, str) and url.strip() != "":
+            return url
+
+    return ""
+
+
+def _parse_iso8601_duration_to_seconds(raw: str) -> int:
+    if raw == "":
+        return 0
+
+    pattern = re.compile(r"^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$")
+    matched = pattern.match(raw)
+    if not matched:
+        return 0
+
+    hours = int(matched.group(1) or 0)
+    minutes = int(matched.group(2) or 0)
+    seconds = int(matched.group(3) or 0)
+    return (hours * 3600) + (minutes * 60) + seconds
 
 
 def _to_int(value: Any) -> int:
