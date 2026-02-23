@@ -134,6 +134,27 @@ class SearchErrorResponse(BaseModel):
     meta: SearchResponseMeta
 
 
+class TranscriptResultData(BaseModel):
+    video_id: str = Field(..., alias="videoId")
+    video_url: str = Field(..., alias="videoUrl")
+    title: str
+    language: str
+    source: str
+    transcript_text: str = Field(..., alias="transcriptText")
+
+
+class TranscriptSuccessResponse(BaseModel):
+    success: Literal[True]
+    data: TranscriptResultData
+    meta: SearchResponseMeta
+
+
+class TranscriptErrorResponse(BaseModel):
+    success: Literal[False]
+    error: SearchResponseError
+    meta: SearchResponseMeta
+
+
 class SearchVideoRecord(BaseModel):
     video_id: str
     title: str

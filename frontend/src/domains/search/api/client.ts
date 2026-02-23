@@ -3,6 +3,7 @@ import type {
   SearchApiRequestParams,
   SearchApiResponseData,
   SearchApiSuccessResponse,
+  TranscriptResultData,
 } from "../types";
 import { API_BASE_URL } from "../../../shared-api-base-url";
 
@@ -167,5 +168,40 @@ export async function searchVideos(params: SearchApiRequestParams): Promise<Sear
   }
 
   const body = await parseJson<SearchApiSuccessResponse<SearchApiResponseData>>(response);
+  return body.data;
+}
+
+
+export async function fetchVideoTranscript(params: {
+  videoId: string;
+  cookieFilePath?: string;
+}): Promise<TranscriptResultData> {
+  const query = new URLSearchParams();
+  query.set("videoId", params.videoId);
+  if ((params.cookieFilePath ?? "").trim().length > 0) {
+    query.set("cookieFilePath", params.cookieFilePath!.trim());
+  }
+
+  const requestPath = `/search/transcript?${query.toString()}`;
+  const response = await fetchSearchResponse(requestPath);
+
+  if (!response.ok) {
+    let code = "TRANSCRIPT_FETCH_FAILED";
+    let message = "대본 추출 중 오류가 발생했습니다.";
+
+    try {
+      const body = await parseJson<SearchApiErrorResponse>(response);
+      if (body.success === false) {
+        code = body.error.code;
+        message = body.error.message;
+      }
+    } catch {
+      // 파싱 실패 시 기본 메시지 사용
+    }
+
+    throw new SearchApiError({ code, message });
+  }
+
+  const body = await parseJson<SearchApiSuccessResponse<TranscriptResultData>>(response);
   return body.data;
 }
