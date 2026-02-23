@@ -23,12 +23,6 @@ const COLUMNS: Array<{ key: SearchTableSortKey; label: string }> = [
   { key: "channelGrade", label: "등급" },
 ];
 
-function parseNumericText(raw: string): number {
-  const cleaned = raw.replace(/[^0-9.]/g, "");
-  const parsed = Number(cleaned);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
 function getSortValue(card: SearchResultCard, key: SearchTableSortKey): number | string {
   switch (key) {
     case "title":
@@ -38,19 +32,19 @@ function getSortValue(card: SearchResultCard, key: SearchTableSortKey): number |
     case "publishedDateText":
       return card.publishedDateText;
     case "viewCount":
-      return parseNumericText(card.viewCountText);
+      return card.viewCount;
     case "subscriberCount":
-      return parseNumericText(card.subscriberCountText);
+      return card.subscriberCount;
     case "channelPublishedDateText":
       return card.channelPublishedDateText;
     case "totalVideoCount":
-      return parseNumericText(card.totalVideoCountText);
+      return Number(card.totalVideoCountText.replace(/[^0-9]/g, "")) || 0;
     case "subscriptionRate":
-      return parseNumericText(card.subscriptionRateText);
+      return Number(card.subscriptionRateText.replace(/[^0-9.]/g, "")) || 0;
     case "annualSubscriberGrowth":
-      return parseNumericText(card.annualSubscriberGrowthText);
+      return Number(card.annualSubscriberGrowthText.replace(/[^0-9]/g, "")) || 0;
     case "uploadsPerWeek":
-      return parseNumericText(card.uploadsPerWeekText);
+      return Number(card.uploadsPerWeekText.replace(/[^0-9.]/g, "")) || 0;
     case "countryCode":
       return card.countryCode;
     case "channelGrade":

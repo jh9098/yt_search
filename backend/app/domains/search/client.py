@@ -168,6 +168,14 @@ class YouTubeSearchClient:
             return (now - timedelta(days=7)).isoformat().replace("+00:00", "Z")
         if period == SearchPeriodOption.LAST_30_DAYS:
             return (now - timedelta(days=30)).isoformat().replace("+00:00", "Z")
+        if period == SearchPeriodOption.LAST_90_DAYS:
+            return (now - timedelta(days=90)).isoformat().replace("+00:00", "Z")
+        if period == SearchPeriodOption.LAST_180_DAYS:
+            return (now - timedelta(days=180)).isoformat().replace("+00:00", "Z")
+        if period == SearchPeriodOption.LAST_365_DAYS:
+            return (now - timedelta(days=365)).isoformat().replace("+00:00", "Z")
+        if period == SearchPeriodOption.LAST_730_DAYS:
+            return (now - timedelta(days=730)).isoformat().replace("+00:00", "Z")
         return None
 
     def _call_youtube_api(self, url: str, params: dict[str, str]) -> dict[str, Any]:
