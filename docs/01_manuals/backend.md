@@ -159,6 +159,29 @@ DB 저장 실패
 
 사용자 메시지와 내부 로그 메시지 분리
 
+
+
+## D-3 정책 확정: 사용자 메시지 vs 내부 로그 메시지 분리 원칙 (고정)
+
+### 1) 분리 원칙
+- API 응답 `error.message`는 사용자 행동 유도 문구만 포함합니다.
+- 내부 로그는 원인 파악용 상세 정보(외부 API 상태, 검증 실패 필드, trace)를 기록합니다.
+- 사용자 응답에는 내부 시스템명, 스택트레이스, 원문 payload를 노출하지 않습니다.
+
+### 2) 코드별 로그/응답 매핑 기준
+| 에러 코드 | 사용자 응답 메시지(고정) | 내부 로그 메시지 예시 |
+|---|---|---|
+| `COMMON_INVALID_REQUEST` | 요청값이 올바르지 않습니다. 입력값을 확인해 주세요. | `COMMON_INVALID_REQUEST: invalid videoId format (requestId=...)` |
+| `ANALYSIS_TIMEOUT` | 분석 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요. | `ANALYSIS_TIMEOUT: Gemini call timed out after 20s (jobId=..., requestId=...)` |
+| `ANALYSIS_OUTPUT_INVALID` | 분석 결과 검증에 실패했습니다. 다시 시도해 주세요. | `ANALYSIS_OUTPUT_INVALID: schema validation failed, missing field=contentIdeas (jobId=...)` |
+| `ANALYSIS_JOB_NOT_FOUND` | 분석 작업을 찾을 수 없습니다. 새로 분석을 시작해 주세요. | `ANALYSIS_JOB_NOT_FOUND: no job matched by id (jobId=..., requestId=...)` |
+| `ANALYSIS_RATE_LIMITED` | 분석 요청이 많아 잠시 지연되고 있습니다. 잠시 후 다시 시도해 주세요. | `ANALYSIS_RATE_LIMITED: upstream quota exceeded (provider=gemini, requestId=...)` |
+| `ANALYSIS_UPSTREAM_UNAVAILABLE` | 분석 서비스 연결이 원활하지 않습니다. 잠시 후 다시 시도해 주세요. | `ANALYSIS_UPSTREAM_UNAVAILABLE: provider unavailable status=503 (requestId=...)` |
+
+### 3) 구현 시 주의
+- 응답 메시지 변경 시 `api-contracts.md`, `frontend.md`를 같은 세션에 동기화합니다.
+- 실패 로그에는 `requestId`, 가능하면 `jobId`를 포함합니다.
+- 민감정보(API 키, 토큰, 원문 대량 데이터)는 로그 금지 정책을 유지합니다.
 예:
 
 사용자 메시지: "분석 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."

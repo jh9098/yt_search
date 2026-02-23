@@ -45,6 +45,22 @@
   - `ANALYSIS_OUTPUT_INVALID`
   - `ANALYSIS_JOB_NOT_FOUND`
 
+### D-3 정책 확정: MVP 필수 에러코드/메시지/재시도 매핑 (고정)
+| 에러 코드 | 사용자 메시지(고정) | 재시도 가능 여부 | 프론트 기본 처리 |
+|---|---|---|---|
+| `COMMON_INVALID_REQUEST` | 요청값이 올바르지 않습니다. 입력값을 확인해 주세요. | 불가 | 인라인 에러 + 재시도 버튼 숨김 |
+| `ANALYSIS_TIMEOUT` | 분석 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요. | 가능 | 토스트 + 재시도 버튼 노출 |
+| `ANALYSIS_OUTPUT_INVALID` | 분석 결과 검증에 실패했습니다. 다시 시도해 주세요. | 가능 | 인라인 에러 + 재시도 버튼 노출 |
+| `ANALYSIS_JOB_NOT_FOUND` | 분석 작업을 찾을 수 없습니다. 새로 분석을 시작해 주세요. | 불가 | 토스트 + "새 분석 시작" 버튼 노출 |
+| `ANALYSIS_RATE_LIMITED` | 분석 요청이 많아 잠시 지연되고 있습니다. 잠시 후 다시 시도해 주세요. | 가능 | 토스트 + 재시도 버튼 노출 |
+| `ANALYSIS_UPSTREAM_UNAVAILABLE` | 분석 서비스 연결이 원활하지 않습니다. 잠시 후 다시 시도해 주세요. | 가능 | 토스트 + 재시도 버튼 노출 |
+
+### D-3 정책 확정: 코드군별 프론트 분기 기준 (고정)
+- `COMMON_*` 입력 검증 계열: 인라인 안내 우선, 사용자 입력 수정 유도, 즉시 재시도 비권장
+- `ANALYSIS_TIMEOUT`, `ANALYSIS_RATE_LIMITED`, `ANALYSIS_UPSTREAM_UNAVAILABLE`: 토스트 + 재시도 버튼 동시 제공
+- `ANALYSIS_OUTPUT_INVALID`: 결과 화면 내 인라인 에러 우선 + 재시도 제공
+- `ANALYSIS_JOB_NOT_FOUND`: 토스트로 알리고 기존 job 폴링 중단 후 새 분석 시작 액션 제공
+
 ---
 
 ## 1) 분석 Job 생성
