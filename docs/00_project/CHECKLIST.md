@@ -135,7 +135,7 @@
 - [x] 공통 응답 스키마 정의
 - [x] 분석 API 엔드포인트(임시/동기 버전 가능) 추가
 - [x] AI 응답 JSON 검증 로직 추가
-- [ ] 에러 처리/타임아웃 처리 추가
+- [x] 에러 처리/타임아웃 처리 추가
 - [x] 결과 저장 구조(테이블/파일 mock) 추가
 
 ---
@@ -156,6 +156,10 @@
 ---
 
 ## I. 완료 로그 (요약)
+
+### 2026-03-06
+- 완료 항목: 백엔드 timeout/upstream 예외 매핑 + 최소 API 계약 테스트 추가
+- 메모: `videoId` 시뮬레이션 접미사(`_timeout`, `_upstream_unavailable`)로 `ANALYSIS_TIMEOUT`/`ANALYSIS_UPSTREAM_UNAVAILABLE`를 계약 메시지로 고정 반환하고, TestClient 기반 정상/캐시 hit/실패 응답 테스트 4건을 추가
 
 ### 2026-02-23
 - 완료 항목: 백엔드 분석 검증 파이프라인 최소 구현(validator/service/router 연동)
