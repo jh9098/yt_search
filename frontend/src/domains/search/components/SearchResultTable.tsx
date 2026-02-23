@@ -106,7 +106,7 @@ export function SearchResultTable({ cards }: SearchResultTableProps) {
         <tbody>
           {sortedCards.map((card) => (
             <tr key={card.videoId}>
-              <td title={card.title}>{truncateText(card.title, 30)}</td>
+              <td title={card.title}><a href={`https://www.youtube.com/watch?v=${card.videoId}`} target="_blank" rel="noreferrer" className="table-video-link">{truncateText(card.title, 30)}</a></td>
               <td title={card.channelName}>{truncateText(card.channelName, 15)}</td>
               <td>{card.publishedDateText}</td>
               <td>{card.viewCountText}</td>

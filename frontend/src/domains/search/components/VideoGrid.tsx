@@ -23,8 +23,10 @@ export function VideoGrid({
 }: VideoGridProps) {
   if (resultsState === "loading") {
     return (
-      <div className="results-placeholder" role="status" aria-live="polite">
-        검색 결과를 불러오는 중입니다...
+      <div className="results-loading" role="status" aria-live="polite">
+        <span className="loading-spinner" aria-hidden="true" />
+        <p className="results-loading-title">데이터를 분석하고 있습니다...</p>
+        <p className="results-loading-subtitle">영상 상세 정보 분석 중...</p>
       </div>
     );
   }

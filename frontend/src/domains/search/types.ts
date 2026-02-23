@@ -5,9 +5,32 @@ export type SearchViewMode = "grid" | "list";
 export type SearchSortOption = "relevance" | "views" | "latest";
 export type SearchPeriodOption = "24h" | "7d" | "30d" | "90d" | "180d" | "365d" | "730d" | "all";
 export type SearchDurationBucket = "all" | "under4m" | "4to20m" | "over20m";
-export type SearchShortFormType = "all" | "shorts" | "longform";
+export type SearchShortFormType =
+  | "all"
+  | "shopping"
+  | "clip"
+  | "game"
+  | "food"
+  | "animal"
+  | "knowledge"
+  | "beauty"
+  | "sports"
+  | "entertainment"
+  | "other";
+export type SearchTopicOption =
+  | "all"
+  | "shopping"
+  | "clip"
+  | "game"
+  | "food"
+  | "animal"
+  | "knowledge"
+  | "beauty"
+  | "sports"
+  | "entertainment"
+  | "other";
 export type SearchScriptType = "all" | "scripted" | "noScript";
-export type SearchHoverMetric = "none" | "estimatedRevenue";
+export type SearchHoverMetric = "vidiqTrend" | "estimatedRevenue";
 export type SearchCorePreset = "none" | "newRapidGrowth" | "efficiencyMonster" | "fastRising" | "krTrend" | "globalTrend";
 export type SearchTableSortKey =
   | "title"
@@ -41,6 +64,8 @@ export interface SearchFilterState {
 export interface SearchQueryState {
   keyword: string;
   channel: string;
+  topic: SearchTopicOption;
+  resultLimit: 50 | 150 | 250;
 }
 
 export interface SearchResultCard {
@@ -73,6 +98,8 @@ export interface SearchResultCard {
 export interface SearchApiRequestParams {
   q: string;
   channel: string;
+  topic: SearchTopicOption;
+  resultLimit: 50 | 150 | 250;
   sort: SearchSortOption;
   period: SearchPeriodOption;
   minViews: number;

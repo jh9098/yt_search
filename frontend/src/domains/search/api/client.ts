@@ -32,6 +32,8 @@ function toSearchQueryString(params: SearchApiRequestParams): string {
     searchParams.set("channel", trimmedChannel);
   }
 
+  searchParams.set("topic", params.topic);
+  searchParams.set("resultLimit", String(params.resultLimit));
   searchParams.set("sort", params.sort);
   searchParams.set("period", params.period);
   searchParams.set("minViews", String(params.minViews));

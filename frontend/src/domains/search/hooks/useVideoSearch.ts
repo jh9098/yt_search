@@ -14,6 +14,8 @@ function buildRequestKey(query: SearchQueryState, filters: SearchFilterState): s
   return [
     query.keyword.trim().toLowerCase(),
     query.channel.trim().toLowerCase(),
+    query.topic,
+    String(query.resultLimit),
     filters.sort,
     filters.period,
     String(filters.minViews),
@@ -55,6 +57,8 @@ export function useVideoSearch(initialCards: SearchResultCard[]): UseVideoSearch
       const response = await searchVideos({
         q: query.keyword,
         channel: query.channel,
+        topic: query.topic,
+        resultLimit: query.resultLimit,
         sort: filters.sort,
         period: filters.period,
         minViews: filters.minViews,
