@@ -51,7 +51,7 @@ const POLLING_INTERVAL_MS = 1200;
 export function App() {
   const { queryState, setQueryState, viewMode, setViewMode, copyShareUrl } = useSearchQueryState({ autoSearchOnPopState: false });
   const [filters, setFilters] = useState<SearchFilterState>(DEFAULT_FILTERS);
-  const { resultsState, visibleCards, runSearch, resetSearch } = useVideoSearch([]);
+  const { resultsState, searchErrorMessage, visibleCards, runSearch, resetSearch } = useVideoSearch([]);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [status, setStatus] = useState<AnalysisModalStatus>("loading");
@@ -376,6 +376,7 @@ export function App() {
         <VideoGrid
           cards={visibleCards}
           resultsState={resultsState}
+          errorMessage={searchErrorMessage}
           viewMode={viewMode}
           keyword={queryState.keyword}
           isAnalyzeDisabled={isAnalyzeButtonDisabled}

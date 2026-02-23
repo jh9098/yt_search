@@ -6,6 +6,7 @@ interface VideoGridProps {
   cards: SearchResultCard[];
   resultsState: SearchResultsState;
   viewMode: SearchViewMode;
+  errorMessage: string | null;
   keyword: string;
   isAnalyzeDisabled: boolean;
   onAnalyze: (card: SearchResultCard) => void;
@@ -16,6 +17,7 @@ export function VideoGrid({
   cards,
   resultsState,
   viewMode,
+  errorMessage,
   keyword,
   isAnalyzeDisabled,
   onAnalyze,
@@ -34,7 +36,7 @@ export function VideoGrid({
   if (resultsState === "error") {
     return (
       <div className="results-placeholder results-placeholder-error" role="alert">
-        검색 중 문제가 발생했습니다. 필터를 조정한 뒤 검색 버튼으로 다시 시도해 주세요.
+        {errorMessage ?? "검색 중 문제가 발생했습니다. 필터를 조정한 뒤 검색 버튼으로 다시 시도해 주세요."}
       </div>
     );
   }
