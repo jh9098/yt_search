@@ -65,9 +65,13 @@ class YouTubeSearchClient:
         if not self.is_configured:
             raise SearchUpstreamUnavailableError(message="YOUTUBE_API_KEY is not configured")
 
+        normalized_keyword = keyword.strip()
+        normalized_channel = channel.strip()
+        effective_query = normalized_keyword if normalized_keyword != "" else normalized_channel
+
         search_response = self._call_youtube_api(
             YOUTUBE_SEARCH_URL,
-            self._build_search_params(keyword=keyword, sort=sort, period=period),
+            self._build_search_params(keyword=effective_query, sort=sort, period=period),
         )
         video_ids = self._extract_video_ids(search_response)
 
@@ -155,8 +159,11 @@ class YouTubeSearchClient:
             parsed = {}
 
         message = json.dumps(parsed, ensure_ascii=False) if parsed else str(http_error)
+        lowered_message = message.lower()
 
-        if status == 403 and "quota" in message.lower():
+        if status == 400 and "api key not valid" in lowered_message:
+            return SearchUpstreamUnavailableError(message="youtube api key is invalid")
+        if status == 403 and "quota" in lowered_message:
             return SearchQuotaExceededError()
         if status == 429:
             return SearchRateLimitedError()
