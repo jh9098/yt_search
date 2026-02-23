@@ -248,17 +248,21 @@ progress: 0~100
 
 step: collecting_comments, extracting_keywords, generating_insights, validating_output
 
-캐시/중복 방지 규칙 (요약)
+## D-4 정책 확정: 캐시/중복 방지 규칙 (고정)
 
-동일 영상 + 동일 분석 버전이면 재분석 대신 캐시 결과 사용
+- 동일 영상 + 동일 분석 버전 요청은 재분석보다 캐시 재사용을 우선합니다.
+- 기본 캐시 키는 `analysis:{videoId}:{analysisVersion}`를 사용합니다.
+- 댓글 변동 기준 분리가 필요할 때만 `analysis:{videoId}:{analysisVersion}:{commentSnapshotHash}` 확장을 허용합니다.
 
-캐시 키 예시:
+### forceRefresh + TTL 처리 기준
+- 기본값은 `forceRefresh=false`이며, 유효 TTL(24시간) 캐시가 있으면 즉시 반환합니다.
+- `forceRefresh=true`는 사용자 명시 재분석/버전 상향/직전 실패 재시도에서만 허용합니다.
+- `analysisVersion`이 상향되면 기존 TTL과 무관하게 신규 키로 재분석합니다.
 
-video_id + analysis_version
-
-(선택) comment_snapshot_hash 추가
-
-캐시 사용 여부/재분석 여부는 응답 meta에 표시 권장
+### 응답 meta 표기 기준
+- `cacheHit=true`: 유효 캐시를 그대로 반환
+- `cacheHit=false`: 재분석 결과 반환(캐시 miss/강제갱신 포함)
+- `analysisVersion`은 항상 결과와 함께 응답합니다.
 
 예:
 
@@ -280,6 +284,8 @@ endpoint
 외부 API 성공/실패 요약
 
 검증 실패 이유
+
+캐시 판단 근거(`cacheKey`, `cacheHit`, `forceRefresh`)
 
 로그에 남기면 안 되는 것
 

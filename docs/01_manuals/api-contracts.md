@@ -85,6 +85,12 @@
   2) `analysisVersion` 상향
   3) 직전 실패 작업 재시도
 
+#### D-4 캐시 키/TTL 기준 (고정)
+- 기본 캐시 키 포맷: `analysis:{videoId}:{analysisVersion}`
+- 선택 확장 키 포맷: `analysis:{videoId}:{analysisVersion}:{commentSnapshotHash}`
+- 기본 TTL: 24시간
+- `analysisVersion` 상향 시 TTL과 무관하게 신규 키로 재분석합니다.
+
 ### Success Response (예시)
 ```json
 {
@@ -188,6 +194,19 @@
   }
 }
 ```
+
+### D-4 응답 `meta.cacheHit` 표기/로그 기준 (고정)
+- `cacheHit=true`: 유효 캐시 결과를 반환한 응답
+- `cacheHit=false`: 재분석 결과를 반환한 응답(캐시 miss/강제 갱신 포함)
+- `cacheHit`은 `status=completed` + `result.meta`에서만 표기합니다.
+- `status=queued|processing|failed`에서는 `cacheHit`를 강제하지 않습니다.
+
+권장 로그 필드:
+- `requestId` (필수)
+- `jobId` (가능하면 포함)
+- `cacheKey` (해시/축약 허용)
+- `cacheHit`
+- `forceRefresh`
 
 ### Success Response - 작업 실패(status=failed) 예시
 ```json

@@ -9,6 +9,36 @@
 
 ---
 
+## 2026-03-02 (D-4 캐시 키 전략 정책 확정)
+### 오늘 목표
+- D-4(캐시 키 전략) 2단계 정책을 완료해 캐시 키/TTL/cacheHit 기준을 고정
+
+### 진행 내용 (완료)
+- [x] `docs/01_manuals/data.md`에 캐시 키 포맷(`analysis:{videoId}:{analysisVersion}`) 단일안 고정
+- [x] TTL 기본값(24시간) 및 `forceRefresh` 예외 허용 조건 문서화
+- [x] `docs/01_manuals/api-contracts.md`에 `meta.cacheHit` 표기 조건/로그 필드 기준 추가
+- [x] `docs/01_manuals/backend.md`에 캐시/중복 방지 규칙 및 로깅 기준 동기화
+- [x] `docs/00_project/CHECKLIST.md` D-4 2단계 완료 처리
+
+### 진행 내용 (미완료)
+- [ ] D-5(AI 출력 검증/보정) 2단계 정책 확정
+
+### 변경/생성 파일
+- `docs/01_manuals/data.md`
+- `docs/01_manuals/api-contracts.md`
+- `docs/01_manuals/backend.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. D-5(AI 출력 검증/보정) 2단계 정책 확정
+2. D-4~D-5 완료 기준으로 프론트/백엔드 구현 착수 순서 1개 확정
+
+### 메모
+- 이번 세션은 단일 작업 원칙에 따라 D-4 문서 정책 확정만 수행했고, 코드 구현은 하지 않음.
+
+---
+
 ## 기록 규칙
 - 하루/세션 단위로 기록
 - 완료/미완료/막힘/다음 시작점 중심으로 간단히 작성
