@@ -39,6 +39,15 @@ function toSearchQueryString(params: SearchApiRequestParams): string {
   return searchParams.toString();
 }
 
+export function buildSearchRequestPath(params: SearchApiRequestParams): string {
+  const queryString = toSearchQueryString(params);
+  return queryString.length > 0 ? `${SEARCH_PATH}?${queryString}` : SEARCH_PATH;
+}
+
+export function buildPrimarySearchUrl(requestPath: string): string {
+  return `${API_BASE_URL}${requestPath}`;
+}
+
 async function parseJson<T>(response: Response): Promise<T> {
   return (await response.json()) as T;
 }
@@ -52,7 +61,7 @@ function removeApiSuffix(baseUrl: string): string {
 }
 
 async function fetchSearchResponse(requestPath: string): Promise<Response> {
-  const primaryResponse = await fetch(`${API_BASE_URL}${requestPath}`, {
+  const primaryResponse = await fetch(buildPrimarySearchUrl(requestPath), {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -78,8 +87,7 @@ async function fetchSearchResponse(requestPath: string): Promise<Response> {
 }
 
 export async function searchVideos(params: SearchApiRequestParams): Promise<SearchApiResponseData> {
-  const queryString = toSearchQueryString(params);
-  const requestPath = queryString.length > 0 ? `${SEARCH_PATH}?${queryString}` : SEARCH_PATH;
+  const requestPath = buildSearchRequestPath(params);
   const response = await fetchSearchResponse(requestPath);
 
   if (!response.ok) {

@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .domains.analysis.router import router as analysis_router
+from .domains.search.router import router as search_router
 
 app = FastAPI(title="yt_search backend", version="0.1.0")
 
@@ -22,6 +23,7 @@ app.add_middleware(
 )
 
 app.include_router(analysis_router)
+app.include_router(search_router)
 
 
 @app.get("/health")
