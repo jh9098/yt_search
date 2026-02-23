@@ -5,21 +5,21 @@ from uuid import uuid4
 from fastapi import APIRouter, Path
 from fastapi.responses import JSONResponse
 
-from backend.app.core.response import error_response, success_response
-from backend.app.domains.analysis.client import ExternalAnalysisClient
-from backend.app.domains.analysis.repository import (
+from ...core.response import error_response, success_response
+from .client import ExternalAnalysisClient
+from .repository import (
     DEFAULT_ANALYSIS_VERSION,
     InMemoryAnalysisRepository,
 )
-from backend.app.domains.analysis.schemas import (
+from .schemas import (
     AnalysisCreateSuccessResponse,
     AnalysisErrorResponse,
     AnalysisJobCreateRequest,
     AnalysisStatusData,
     JobStatus,
 )
-from backend.app.domains.analysis.service import AnalysisProcessingError, process_analysis_job
-from backend.app.domains.analysis.telemetry import log_analysis_event
+from .service import AnalysisProcessingError, process_analysis_job
+from .telemetry import log_analysis_event
 
 router = APIRouter(prefix="/api/analysis", tags=["analysis"])
 repository = InMemoryAnalysisRepository()

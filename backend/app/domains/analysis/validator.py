@@ -6,7 +6,7 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from backend.app.domains.analysis.schemas import AnalysisResult
+from .schemas import AnalysisResult
 
 DEFAULT_WEAK_POINTS = "충분한 데이터가 없어 아쉬운 점을 특정하기 어렵습니다."
 

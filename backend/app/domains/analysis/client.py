@@ -4,7 +4,7 @@ import os
 from dataclasses import dataclass
 from typing import Any
 
-from backend.app.domains.analysis.repository import DEFAULT_ANALYSIS_VERSION
+from .repository import DEFAULT_ANALYSIS_VERSION
 
 
 @dataclass(frozen=True)
