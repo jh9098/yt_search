@@ -1,5 +1,34 @@
 # CHANGELOG_WORKING.md
 
+## 2026-03-06 (analysis timeout/upstream 예외 매핑 + 최소 계약 테스트)
+### 오늘 목표
+- `ANALYSIS_TIMEOUT`, `ANALYSIS_UPSTREAM_UNAVAILABLE` 예외를 API 계약 코드로 고정 매핑하고 최소 API 계약 테스트를 추가
+
+### 진행 내용 (완료)
+- [x] `backend/app/domains/analysis/service.py`에 `AnalysisProcessingError` + 시뮬레이션 분기(`_timeout`, `_upstream_unavailable`) 추가
+- [x] `backend/app/domains/analysis/router.py`에서 처리 예외를 공통 에러 응답으로 매핑 (`HTTP 503` + 계약 메시지)
+- [x] `backend/tests/test_analysis_api.py` 생성 (정상/캐시 hit/timeout/upstream 실패 4케이스)
+- [x] `docs/00_project/CHECKLIST.md` F 섹션(에러 처리/타임아웃 처리) 완료 처리
+
+### 진행 내용 (미완료)
+- [ ] 실제 외부 API 연동 레이어에서 timeout/upstream 예외를 동일 코드로 연결
+
+### 변경/생성 파일
+- `backend/app/domains/analysis/service.py`
+- `backend/app/domains/analysis/router.py`
+- `backend/tests/test_analysis_api.py`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. 시뮬레이션 기반 예외 분기를 실제 외부 API 호출 레이어 예외 매핑으로 치환
+2. `ANALYSIS_RATE_LIMITED` 매핑 분기와 재시도 정책(백오프)을 최소 구현
+
+### 메모
+- Firestore 도입 시에도 캐시 우선(`forceRefresh=false`) + 실패 즉시 종료 분기로 불필요한 재조회(read) 루프를 줄이는 구조를 유지해야 함.
+
+---
+
 ## 2026-03-05 (analysis 저장/캐시 최소 동작 연결)
 ### 오늘 목표
 - analysis 결과 저장 구조(in-memory)와 캐시 재사용(`cacheHit`) 분기를 연결해 F 섹션 미완료 항목을 축소
