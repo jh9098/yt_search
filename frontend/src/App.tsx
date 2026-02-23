@@ -5,11 +5,13 @@ import {
   createAnalysisJob,
   getAnalysisJobStatus,
 } from "./domains/analysis/api/client";
-import {
-  analysisErrorMock,
-} from "./domains/analysis/mocks/analysisResult.mock";
+import { analysisErrorMock } from "./domains/analysis/mocks/analysisResult.mock";
 import { mapAnalysisError } from "./domains/analysis/utils/errorMapper";
 import { toLoadingState } from "./domains/analysis/utils/loadingFallback";
+import { ChannelSearchBar } from "./domains/search/components/ChannelSearchBar";
+import { KeywordSearchBar } from "./domains/search/components/KeywordSearchBar";
+import { ResultSummaryBar } from "./domains/search/components/ResultSummaryBar";
+import { VideoGrid } from "./domains/search/components/VideoGrid";
 import type {
   AnalysisErrorState,
   AnalysisLoadingState,
@@ -17,30 +19,46 @@ import type {
   AnalysisStatusData,
   AnalysisResult,
 } from "./domains/analysis/types";
-
-interface SearchResultCard {
-  videoId: string;
-  title: string;
-  channelName: string;
-}
+import type {
+  SearchQueryState,
+  SearchResultCard,
+  SearchResultsState,
+  SearchSummary,
+} from "./domains/search/types";
 
 const SEARCH_RESULT_CARDS: SearchResultCard[] = [
   {
     videoId: "video_family_talk_001",
     title: "가족과 대화가 자꾸 꼬일 때 감정 다루는 법",
     channelName: "마음연구소",
+    viewCountText: "42만",
+    uploadedAtText: "3일 전",
   },
   {
     videoId: "video_conflict_case_002",
     title: "부부 갈등 대화, 왜 반복될까?",
     channelName: "관계코치TV",
+    viewCountText: "18만",
+    uploadedAtText: "1주 전",
+  },
+  {
+    videoId: "video_work_life_003",
+    title: "퇴근 후 에너지 회복 루틴 5가지",
+    channelName: "직장인회복실",
+    viewCountText: "9.7만",
+    uploadedAtText: "2주 전",
   },
 ];
 
 const POLLING_INTERVAL_MS = 1200;
 
 export function App() {
-  const [searchKeyword, setSearchKeyword] = useState("가족 대화법");
+  const [queryState, setQueryState] = useState<SearchQueryState>({
+    keyword: "가족 대화법",
+    channel: "",
+  });
+  const [resultsState, setResultsState] = useState<SearchResultsState>("success");
+  const [visibleCards, setVisibleCards] = useState<SearchResultCard[]>(SEARCH_RESULT_CARDS);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [status, setStatus] = useState<AnalysisModalStatus>("loading");
@@ -50,6 +68,7 @@ export function App() {
     message: "분석을 준비 중입니다.",
   });
   const pollTimerRef = useRef<number | null>(null);
+  const searchTimerRef = useRef<number | null>(null);
   const activeSessionRef = useRef(0);
   const isModalOpenRef = useRef(false);
 
@@ -57,9 +76,17 @@ export function App() {
     isModalOpenRef.current = isModalOpen;
   }, [isModalOpen]);
 
+  useEffect(() => {
+    return () => {
+      if (searchTimerRef.current !== null) {
+        window.clearTimeout(searchTimerRef.current);
+      }
+    };
+  }, []);
+
   const selectedCard = useMemo(
-    () => SEARCH_RESULT_CARDS.find((card) => card.videoId === selectedVideoId) ?? null,
-    [selectedVideoId],
+    () => visibleCards.find((card) => card.videoId === selectedVideoId) ?? null,
+    [selectedVideoId, visibleCards],
   );
 
   const clearPollTimer = useCallback(() => {
@@ -203,6 +230,49 @@ export function App() {
     };
   }, [stopPolling]);
 
+  const filterCards = useCallback((query: SearchQueryState) => {
+    const normalizedKeyword = query.keyword.trim().toLowerCase();
+    const normalizedChannel = query.channel.trim().toLowerCase();
+
+    return SEARCH_RESULT_CARDS.filter((card) => {
+      const titleMatched =
+        normalizedKeyword.length === 0 || card.title.toLowerCase().includes(normalizedKeyword);
+      const channelMatched =
+        normalizedChannel.length === 0 || card.channelName.toLowerCase().includes(normalizedChannel);
+      return titleMatched && channelMatched;
+    });
+  }, []);
+
+  const runSearch = useCallback(
+    (nextQuery: SearchQueryState) => {
+      if (searchTimerRef.current !== null) {
+        window.clearTimeout(searchTimerRef.current);
+      }
+
+      setResultsState("loading");
+      searchTimerRef.current = window.setTimeout(() => {
+        if (nextQuery.keyword.trim() === "에러테스트") {
+          setVisibleCards([]);
+          setResultsState("error");
+          return;
+        }
+
+        const filteredCards = filterCards(nextQuery);
+        setVisibleCards(filteredCards);
+        setResultsState(filteredCards.length > 0 ? "success" : "empty");
+      }, 300);
+    },
+    [filterCards],
+  );
+
+  const handleKeywordSearch = () => {
+    runSearch(queryState);
+  };
+
+  const handleChannelSearch = () => {
+    runSearch(queryState);
+  };
+
   const openAnalysisModal = (card: SearchResultCard) => {
     if (isModalOpen && status === "loading") {
       return;
@@ -227,7 +297,18 @@ export function App() {
   };
 
   const handleKeywordClick = (keyword: string) => {
-    setSearchKeyword(keyword);
+    const nextQuery: SearchQueryState = {
+      ...queryState,
+      keyword,
+    };
+    setQueryState(nextQuery);
+    runSearch(nextQuery);
+  };
+
+  const summary: SearchSummary = {
+    totalCount: SEARCH_RESULT_CARDS.length,
+    shownCount: visibleCards.length,
+    resultsState,
   };
 
   const isAnalyzeButtonDisabled = isModalOpen && status === "loading";
@@ -239,31 +320,34 @@ export function App() {
         <p className="app-subtitle">검색 결과에서 바로 AI 소재 분석을 실행할 수 있습니다.</p>
       </header>
 
+      <section className="search-panel" aria-label="탐색 검색 패널">
+        <KeywordSearchBar
+          keyword={queryState.keyword}
+          isDisabled={resultsState === "loading"}
+          onKeywordChange={(keyword) => {
+            setQueryState((previous) => ({ ...previous, keyword }));
+          }}
+          onSearch={handleKeywordSearch}
+        />
+
+        <ChannelSearchBar
+          channel={queryState.channel}
+          isDisabled={resultsState === "loading"}
+          onChannelChange={(channel) => {
+            setQueryState((previous) => ({ ...previous, channel }));
+          }}
+          onSearch={handleChannelSearch}
+        />
+      </section>
+
       <section className="search-section" aria-label="검색 결과">
-        <div className="search-meta-row">
-          <p className="search-keyword-label">
-            현재 검색어: <strong>{searchKeyword}</strong>
-          </p>
-        </div>
-
-        <div className="card-grid">
-          {SEARCH_RESULT_CARDS.map((card) => (
-            <article key={card.videoId} className="result-card">
-              <p className="result-card-channel">채널: {card.channelName}</p>
-              <h2 className="result-card-title">{card.title}</h2>
-              <p className="result-card-video-id">videoId: {card.videoId}</p>
-
-              <button
-                type="button"
-                className="analyze-button"
-                disabled={isAnalyzeButtonDisabled}
-                onClick={() => openAnalysisModal(card)}
-              >
-                AI 소재 분석
-              </button>
-            </article>
-          ))}
-        </div>
+        <ResultSummaryBar summary={summary} />
+        <VideoGrid
+          cards={visibleCards}
+          resultsState={resultsState}
+          isAnalyzeDisabled={isAnalyzeButtonDisabled}
+          onAnalyze={openAnalysisModal}
+        />
       </section>
 
       {isModalOpen ? (
