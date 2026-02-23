@@ -1,58 +1,47 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
+from .client import YouTubeSearchClient
 from .schemas import SearchPeriodOption, SearchSortOption, SearchVideoRecord
 
-NOW_UTC = datetime.now(timezone.utc)
 
-SEARCH_VIDEO_RECORDS: tuple[SearchVideoRecord, ...] = (
-    SearchVideoRecord(
-        video_id="video_family_talk_001",
-        title="가족과 대화가 자꾸 꼬일 때 감정 다루는 법",
-        channel_name="마음연구소",
-        view_count=420000,
-        view_count_text="42만",
-        published_at=NOW_UTC - timedelta(days=3),
-        uploaded_at_text="3일 전",
-    ),
-    SearchVideoRecord(
-        video_id="video_conflict_case_002",
-        title="부부 갈등 대화, 왜 반복될까?",
-        channel_name="관계코치TV",
-        view_count=180000,
-        view_count_text="18만",
-        published_at=NOW_UTC - timedelta(days=6),
-        uploaded_at_text="1주 전",
-    ),
-    SearchVideoRecord(
-        video_id="video_work_life_003",
-        title="퇴근 후 에너지 회복 루틴 5가지",
-        channel_name="직장인회복실",
-        view_count=97000,
-        view_count_text="9.7만",
-        published_at=NOW_UTC - timedelta(days=14),
-        uploaded_at_text="2주 전",
-    ),
-)
+def _format_view_count_text(view_count: int) -> str:
+    if view_count >= 100000000:
+        normalized = f"{view_count / 100000000:.1f}".rstrip("0").rstrip(".")
+        return f"{normalized}억"
+    if view_count >= 10000:
+        normalized = f"{view_count / 10000:.1f}".rstrip("0").rstrip(".")
+        return f"{normalized}만"
+    return f"{view_count:,}"
 
 
-def _contains_keyword(source: str, keyword: str) -> bool:
-    if keyword == "":
-        return True
-    return keyword in source.lower()
+def _format_uploaded_at_text(published_at: datetime) -> str:
+    now = datetime.now(timezone.utc)
+    delta_seconds = int((now - published_at).total_seconds())
 
+    if delta_seconds < 60:
+        return "방금 전"
 
-def _is_in_period(record: SearchVideoRecord, period: SearchPeriodOption) -> bool:
-    if period == SearchPeriodOption.ALL:
-        return True
+    delta_minutes = delta_seconds // 60
+    if delta_minutes < 60:
+        return f"{delta_minutes}분 전"
 
-    delta = NOW_UTC - record.published_at
-    if period == SearchPeriodOption.LAST_24_HOURS:
-        return delta <= timedelta(hours=24)
-    if period == SearchPeriodOption.LAST_7_DAYS:
-        return delta <= timedelta(days=6)
-    return delta <= timedelta(days=30)
+    delta_hours = delta_minutes // 60
+    if delta_hours < 24:
+        return f"{delta_hours}시간 전"
+
+    delta_days = delta_hours // 24
+    if delta_days < 7:
+        return f"{delta_days}일 전"
+
+    if delta_days < 30:
+        return f"{max(1, delta_days // 7)}주 전"
+
+    if delta_days < 365:
+        return f"{max(1, delta_days // 30)}개월 전"
+
+    return f"{max(1, delta_days // 365)}년 전"
 
 
 def _sort_records(records: list[SearchVideoRecord], sort: SearchSortOption) -> list[SearchVideoRecord]:
@@ -71,16 +60,29 @@ def search_videos(
     period: SearchPeriodOption,
     min_views: int,
 ) -> list[SearchVideoRecord]:
-    normalized_keyword = keyword.strip().lower()
-    normalized_channel = channel.strip().lower()
+    client = YouTubeSearchClient()
+    youtube_rows = client.fetch_videos(
+        keyword=keyword,
+        channel=channel,
+        sort=sort,
+        period=period,
+    )
 
-    filtered_records = [
-        record
-        for record in SEARCH_VIDEO_RECORDS
-        if _contains_keyword(record.title.lower(), normalized_keyword)
-        and _contains_keyword(record.channel_name.lower(), normalized_channel)
-        and _is_in_period(record, period)
-        and record.view_count >= min_views
-    ]
+    records: list[SearchVideoRecord] = []
+    for row in youtube_rows:
+        if row.view_count < min_views:
+            continue
 
-    return _sort_records(filtered_records, sort)
+        records.append(
+            SearchVideoRecord(
+                video_id=row.video_id,
+                title=row.title,
+                channel_name=row.channel_name,
+                view_count=row.view_count,
+                view_count_text=_format_view_count_text(row.view_count),
+                published_at=row.published_at,
+                uploaded_at_text=_format_uploaded_at_text(row.published_at),
+            )
+        )
+
+    return _sort_records(records, sort)
