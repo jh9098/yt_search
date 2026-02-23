@@ -1,3 +1,42 @@
+## 2026-03-12 (FE-1 탐색 화면 뼈대 완성: 필터/보기전환)
+### 오늘 목표
+- FRONTEND_UI_MVP_V2의 FE-1 범위 내에서 FilterToolbar + Grid/List 토글 + 결과 상태 렌더를 실제 화면에 연결
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/search/components/FilterToolbar.tsx` 생성 (필터 UI + 변경 이벤트 emit)
+- [x] `frontend/src/domains/search/components/ViewModeToggle.tsx` 생성 (grid/list 전환)
+- [x] `frontend/src/domains/search/types.ts` 확장 (`SearchFilterState`, `SearchViewMode`)
+- [x] `frontend/src/App.tsx`에 검색영역-필터-결과상태 연결 및 기존 analysis 모달 폴링/에러 흐름 유지
+- [x] `frontend/src/domains/search/components/VideoGrid.tsx`에 view mode 반영 (`card-grid`/`card-list`)
+- [x] `frontend/src/styles.css` 다크 테마/필터 툴바/보기 모드 스타일 최소 보강
+- [x] `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md`, `docs/00_project/FRONTEND_UI_MVP_V2.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] URL query 동기화(`q`, `channel`, `view`) 연결
+- [ ] 검색 API 클라이언트/훅(`useVideoSearch`) 연결
+- [ ] `VideoCard` 정보 밀도(썸네일/배지/VPH) 보강
+
+### 변경/생성 파일
+- `frontend/src/domains/search/components/FilterToolbar.tsx`
+- `frontend/src/domains/search/components/ViewModeToggle.tsx`
+- `frontend/src/domains/search/types.ts`
+- `frontend/src/domains/search/components/VideoGrid.tsx`
+- `frontend/src/App.tsx`
+- `frontend/src/styles.css`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+- `docs/00_project/FRONTEND_UI_MVP_V2.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. `useSearchQueryState` 훅을 추가해 `q`, `channel`, `view` URL 동기화
+2. 검색 API 클라이언트/훅을 붙이고 로컬 필터를 실제 API 호출로 교체
+
+### 메모
+- 현재 구현은 Firestore 미연동 상태라 read는 0회다.
+- 검색은 버튼 트리거 + 300ms 지연 처리로 즉시 연타 호출을 줄였고, 분석 폴링은 종료 조건에서 즉시 중단해 추후 Firestore 연동 시 read 폭증 위험을 낮췄다.
+
+---
+
 ## 2026-03-12 (MVP-A 탐색 화면 기초 골격 분리)
 ### 오늘 목표
 - FRONTEND_UI_MVP_V2 기준으로 search 도메인 타입/컴포넌트 분리와 App 조립을 완료하고, 분석 모달 기존 흐름을 유지

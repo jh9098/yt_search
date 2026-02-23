@@ -453,11 +453,11 @@ frontend/src/
 ## 10. 구현 우선순위 (프론트 작업 순서)
 
 ## 10.1 Phase FE-1: 탐색 화면 뼈대 (가짜 데이터 가능)
-- [ ] AppShell + Header + Search 영역 레이아웃
-- [ ] FilterToolbar UI (값 변경만)
+- [x] AppShell + Header + Search 영역 레이아웃
+- [x] FilterToolbar UI (값 변경만)
 - [ ] VideoCard UI (썸네일/배지/지표/버튼)
-- [ ] Grid/List 토글 UI
-- [ ] 로딩/빈결과/오류 상태 컴포넌트
+- [x] Grid/List 토글 UI
+- [x] 로딩/빈결과/오류 상태 컴포넌트
 
 ### 완료 기준
 - 스크린샷과 유사한 정보 밀도의 화면이 더미 데이터로 표시됨
