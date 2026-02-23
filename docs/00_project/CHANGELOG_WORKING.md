@@ -332,3 +332,36 @@
 
 ### 메모
 - 이번 세션은 단일 작업 원칙에 따라 테스트 케이스 문서 작성만 수행함.
+
+---
+
+## 2026-03-04 (백엔드 MVP 최소 골격 생성)
+### 오늘 목표
+- FastAPI 앱 진입점 + analysis 도메인 스텁 API(create/status) + 공통 응답 구조를 실행 가능한 최소 상태로 구현
+
+### 진행 내용 (완료)
+- [x] `backend/app/main.py` 생성 및 analysis 라우터 연결
+- [x] `backend/app/domains/analysis/schemas.py` 생성 (요청/응답/상태 스키마)
+- [x] `backend/app/domains/analysis/router.py` 생성 (`POST /api/analysis/jobs`, `GET /api/analysis/jobs/{jobId}` 스텁)
+- [x] `backend/app/core/response.py` 생성 (공통 응답 헬퍼: `success`, `data|error`, `meta`)
+- [x] `docs/00_project/CHECKLIST.md` F 섹션 일부 완료 처리
+
+### 진행 내용 (미완료)
+- [ ] AI 응답 JSON 스키마 검증 로직 추가
+- [ ] 외부 API timeout/예외 처리 세부 정책의 코드 반영
+- [ ] 결과 저장 구조(파일 mock 또는 DB) 추가
+
+### 변경/생성 파일
+- `backend/app/main.py`
+- `backend/app/core/response.py`
+- `backend/app/domains/analysis/schemas.py`
+- `backend/app/domains/analysis/router.py`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. analysis 서비스 계층 초안 추가 후 `ANALYSIS_TIMEOUT`, `ANALYSIS_UPSTREAM_UNAVAILABLE` 등 에러 코드 매핑 구현
+2. `GET /api/analysis/jobs/{jobId}`에 `failed` 상태 스텁 분기 추가 및 프론트 에러 상태 매핑 검증
+
+### 메모
+- 이번 세션은 단일 작업 원칙에 따라 백엔드 최소 골격만 구현했고, Gemini/DB/캐시 실구현은 범위에 맞춰 제외함.
