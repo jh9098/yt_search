@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from backend.app.domains.analysis.router import router as analysis_router
+from app.domains.analysis.router import router as analysis_router
 
 app = FastAPI(title="yt_search backend", version="0.1.0")
 app.include_router(analysis_router)
