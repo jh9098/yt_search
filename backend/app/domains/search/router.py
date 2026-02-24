@@ -74,7 +74,7 @@ def _build_transcript_response(
     except TranscriptDependencyError:
         body = error_response(
             code="TRANSCRIPT_DEPENDENCY_MISSING",
-            message="서버에 yt_dlp 패키지가 설치되지 않았습니다.",
+            message="서버 대본 추출 의존성이 부족하거나 외부 차단으로 대본을 가져오지 못했습니다.",
             request_id=request_id,
         )
         return JSONResponse(status_code=503, content=body)
