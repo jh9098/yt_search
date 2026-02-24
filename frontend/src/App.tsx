@@ -18,6 +18,7 @@ import { ApiKeyManager } from "./domains/search/components/ApiKeyManager";
 import { CookieFilePathManager } from "./domains/search/components/CookieFilePathManager";
 import { TranscriptModal } from "./domains/search/components/TranscriptModal";
 import { useSearchQueryState } from "./domains/search/hooks/useSearchQueryState";
+import { POPSTATE_RESTORED_MESSAGE } from "./domains/search/utils/popStateSyncPolicy";
 import { useVideoSearch } from "./domains/search/hooks/useVideoSearch";
 import { loadUserApiKeys, saveUserApiKeys } from "./domains/search/apiKeyStorage";
 import {
@@ -62,6 +63,7 @@ const DEFAULT_FILTERS: SearchFilterState = {
 };
 
 const POLLING_INTERVAL_MS = 1200;
+const POPSTATE_NOTICE_DURATION_MS = 2600;
 
 export function App() {
   const [filters, setFilters] = useState<SearchFilterState>(DEFAULT_FILTERS);
@@ -72,9 +74,23 @@ export function App() {
     void runSearch(restoredQuery, filters, userApiKeys);
   }, [filters, runSearch, userApiKeys]);
 
+  const showPopStateNotice = useCallback(() => {
+    if (popStateNoticeTimerRef.current !== null) {
+      window.clearTimeout(popStateNoticeTimerRef.current);
+      popStateNoticeTimerRef.current = null;
+    }
+
+    setPopStateNoticeMessage(POPSTATE_RESTORED_MESSAGE);
+    popStateNoticeTimerRef.current = window.setTimeout(() => {
+      setPopStateNoticeMessage(null);
+      popStateNoticeTimerRef.current = null;
+    }, POPSTATE_NOTICE_DURATION_MS);
+  }, []);
+
   const { queryState, setQueryState, viewMode, setViewMode, copyShareUrl } = useSearchQueryState({
     autoSearchOnPopState: true,
     onPopStateQueryRestored: handlePopStateQueryRestored,
+    onPopStateSearchRestoredNotice: showPopStateNotice,
   });
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -85,6 +101,8 @@ export function App() {
     message: "분석을 준비 중입니다.",
   });
   const [shareMessage, setShareMessage] = useState<string | null>(null);
+  const [popStateNoticeMessage, setPopStateNoticeMessage] = useState<string | null>(null);
+  const popStateNoticeTimerRef = useRef<number | null>(null);
   const pollTimerRef = useRef<number | null>(null);
   const activeSessionRef = useRef(0);
   const isModalOpenRef = useRef(false);
@@ -99,6 +117,14 @@ export function App() {
   useEffect(() => {
     isModalOpenRef.current = isModalOpen;
   }, [isModalOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (popStateNoticeTimerRef.current !== null) {
+        window.clearTimeout(popStateNoticeTimerRef.current);
+      }
+    };
+  }, []);
 
   const selectedCard = useMemo(
     () => visibleCards.find((card) => card.videoId === selectedVideoId) ?? null,
@@ -464,6 +490,7 @@ export function App() {
             void handleCopyShareUrl();
           }}
           shareMessage={shareMessage}
+          popStateNoticeMessage={popStateNoticeMessage}
         />
         <VideoGrid
           cards={visibleCards}

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { SearchQueryState, SearchViewMode } from "../types";
+import { evaluatePopStateSync } from "../utils/popStateSyncPolicy";
 
 const DEFAULT_QUERY_STATE: SearchQueryState = {
   keyword: "",
@@ -14,6 +15,7 @@ const DEFAULT_VIEW_MODE: SearchViewMode = "grid";
 interface UseSearchQueryStateOptions {
   autoSearchOnPopState?: boolean;
   onPopStateQueryRestored?: (queryState: SearchQueryState) => void;
+  onPopStateSearchRestoredNotice?: () => void;
 }
 
 interface UseSearchQueryStateResult {
@@ -106,18 +108,10 @@ function toSearchString(queryState: SearchQueryState, viewMode: SearchViewMode):
   return built.length > 0 ? `?${built}` : "";
 }
 
-function isSameQueryState(left: SearchQueryState, right: SearchQueryState): boolean {
-  return (
-    left.keyword === right.keyword
-    && left.channel === right.channel
-    && left.topic === right.topic
-    && left.resultLimit === right.resultLimit
-  );
-}
-
 export function useSearchQueryState(options?: UseSearchQueryStateOptions): UseSearchQueryStateResult {
   const autoSearchOnPopState = options?.autoSearchOnPopState ?? false;
   const onPopStateQueryRestored = options?.onPopStateQueryRestored;
+  const onPopStateSearchRestoredNotice = options?.onPopStateSearchRestoredNotice;
 
   const initialState = useMemo(() => parseSearchParams(window.location.search), []);
   const [queryState, setQueryState] = useState<SearchQueryState>(initialState.queryState);
@@ -148,11 +142,15 @@ export function useSearchQueryState(options?: UseSearchQueryStateOptions): UseSe
   useEffect(() => {
     const handlePopState = () => {
       const parsed = parseSearchParams(window.location.search);
+      const syncDecision = evaluatePopStateSync({
+        parsedQueryState: parsed.queryState,
+        parsedViewMode: parsed.viewMode,
+        currentQueryState: queryStateRef.current,
+        currentViewMode: viewModeRef.current,
+        autoSearchOnPopState,
+      });
 
-      const hasQueryChanged = !isSameQueryState(parsed.queryState, queryStateRef.current);
-      const hasViewModeChanged = parsed.viewMode !== viewModeRef.current;
-
-      if (!hasQueryChanged && !hasViewModeChanged) {
+      if (!syncDecision.shouldApplyState) {
         lastSearchRef.current = window.location.search;
         return;
       }
@@ -161,8 +159,12 @@ export function useSearchQueryState(options?: UseSearchQueryStateOptions): UseSe
       setViewMode(parsed.viewMode);
       lastSearchRef.current = window.location.search;
 
-      if (hasQueryChanged && autoSearchOnPopState && onPopStateQueryRestored) {
+      if (syncDecision.shouldTriggerSearch && onPopStateQueryRestored) {
         onPopStateQueryRestored(parsed.queryState);
+      }
+
+      if (syncDecision.shouldShowRestoredNotice && onPopStateSearchRestoredNotice) {
+        onPopStateSearchRestoredNotice();
       }
     };
 
@@ -170,7 +172,7 @@ export function useSearchQueryState(options?: UseSearchQueryStateOptions): UseSe
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [autoSearchOnPopState, onPopStateQueryRestored]);
+  }, [autoSearchOnPopState, onPopStateQueryRestored, onPopStateSearchRestoredNotice]);
 
   const copyShareUrl = useCallback(async () => {
     const shareUrl = `${window.location.origin}${window.location.pathname}${window.location.search}`;
