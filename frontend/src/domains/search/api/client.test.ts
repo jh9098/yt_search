@@ -1,5 +1,10 @@
-import { describe, expect, it } from "vitest";
-import { buildLegacySearchRequestPath, buildPrimarySearchUrl, buildSearchRequestPath } from "./client";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  buildLegacySearchRequestPath,
+  buildPrimarySearchUrl,
+  buildSearchRequestPath,
+  fetchVideoTranscript,
+} from "./client";
 
 describe("search api client url contract", () => {
   it("요청 경로를 /search/videos + 확장 쿼리 문자열로 만든다", () => {
@@ -74,5 +79,46 @@ describe("search api client url contract", () => {
     expect(path).not.toContain("maxSubscribers=");
     expect(path).not.toContain("durationBucket=");
     expect(path).not.toContain("corePreset=");
+  });
+});
+
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
+describe("transcript api client", () => {
+  it("대본 요청을 POST body로 보낸다", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          success: true,
+          data: {
+            videoId: "abc123",
+            videoUrl: "https://www.youtube.com/watch?v=abc123",
+            title: "테스트",
+            language: "ko",
+            source: "subtitle",
+            transcriptText: "안녕하세요",
+          },
+          meta: { requestId: "req_123", timestamp: "2026-01-01T00:00:00Z" },
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      ),
+    );
+
+    const result = await fetchVideoTranscript({
+      videoId: "abc123",
+      cookieContent: "cookie-data",
+    });
+
+    expect(result.videoId).toBe("abc123");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    const [requestUrl, requestInit] = fetchMock.mock.calls[0];
+    expect(String(requestUrl)).toContain("/api/search/transcript");
+    expect(requestInit?.method).toBe("POST");
+    expect(String(requestInit?.body)).toContain('"videoId":"abc123"');
+    expect(String(requestInit?.body)).toContain('"cookieContent":"cookie-data"');
   });
 });

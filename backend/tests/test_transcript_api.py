@@ -66,6 +66,29 @@ class TranscriptApiContractTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(captured_cookie_path["value"])
 
+
+    def test_post_video_transcript_uses_body_payload_contract(self) -> None:
+        with patch("backend.app.domains.search.router.extract_transcript_from_video_url") as mocked_extract:
+            mocked_extract.return_value = TranscriptResult(
+                title="POST 테스트",
+                transcript_text="첫 줄",
+                language="ko",
+                source="subtitle",
+            )
+
+            response = self.client.post(
+                "/api/search/transcript",
+                json={
+                    "videoId": "post123xyz",
+                    "cookieContent": "# Netscape HTTP Cookie File\n.youtube.com\tTRUE\t/\tFALSE\t0\tSID\tvalue",
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertTrue(body["success"])
+        self.assertEqual(body["data"]["videoId"], "post123xyz")
+
     def test_get_video_transcript_returns_not_found_when_no_caption(self) -> None:
         with patch("backend.app.domains.search.router.extract_transcript_from_video_url") as mocked_extract:
             mocked_extract.return_value = None
