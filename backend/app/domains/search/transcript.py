@@ -1,17 +1,29 @@
 from __future__ import annotations
 
+import json
 import os
 import re
 import tempfile
-import json
-from html import unescape
-from urllib.parse import parse_qs, urlparse
-from urllib.request import Request, urlopen
+import traceback
 from contextlib import contextmanager
 from dataclasses import dataclass
+from html import unescape
+from pathlib import Path
+from urllib.parse import parse_qs, urlparse
+from urllib.request import Request, urlopen
 from xml.etree import ElementTree
 
 _CUE_RE = re.compile(r"^\d{2}:\d{2}:\d{2}\.\d{3}\s*-->\s*\d{2}:\d{2}:\d{2}\.\d{3}")
+
+BASE_DIR = Path(__file__).resolve().parent
+DEFAULT_COOKIE_PATH = BASE_DIR / "cookies.txt"
+YTDLP_IMPORT_ERROR: str | None = None
+
+try:
+    import yt_dlp  # type: ignore
+except Exception as error:  # pragma: no cover - 의존성 미설치 환경 보호
+    yt_dlp = None
+    YTDLP_IMPORT_ERROR = repr(error)
 
 
 class TranscriptDependencyError(RuntimeError):
@@ -37,7 +49,7 @@ class _QuietLogger:
         return None
 
     def error(self, message: str) -> None:
-        print(message)
+        print("[yt-dlp]", message)
 
 
 def clean_vtt(vtt_text: str) -> str:
@@ -61,6 +73,19 @@ def clean_vtt(vtt_text: str) -> str:
     return "\n".join(result)
 
 
+def resolve_default_cookie_path() -> Path | None:
+    env_cookie_path = os.getenv("YTDLP_COOKIEFILE", "").strip()
+    if env_cookie_path:
+        env_path = Path(env_cookie_path)
+        if env_path.exists():
+            return env_path
+
+    if DEFAULT_COOKIE_PATH.exists():
+        return DEFAULT_COOKIE_PATH
+
+    return None
+
+
 def _build_ydl_options(cookie_file_path: str | None) -> dict:
     options: dict = {
         "skip_download": True,
@@ -71,6 +96,7 @@ def _build_ydl_options(cookie_file_path: str | None) -> dict:
         "logger": _QuietLogger(),
         "forcejson": True,
         "simulate": True,
+        "cachedir": False,
         "http_headers": {"User-Agent": "Mozilla/5.0"},
         "extractor_args": {
             "youtube": {
@@ -90,11 +116,29 @@ def _build_ydl_options(cookie_file_path: str | None) -> dict:
     return options
 
 
+def build_transcript_health() -> dict:
+    cookie_path = resolve_default_cookie_path()
+    return {
+        "ok": True,
+        "yt_dlp_import_ok": yt_dlp is not None,
+        "yt_dlp_import_error": YTDLP_IMPORT_ERROR,
+        "cookie_found": bool(cookie_path),
+        "cookie_path": str(cookie_path) if cookie_path else "",
+        "cwd": os.getcwd(),
+        "base_dir": str(BASE_DIR),
+    }
+
+
 @contextmanager
 def resolve_cookie_file_path(cookie_file_path: str | None, cookie_content: str | None):
     cleaned_path = (cookie_file_path or "").strip()
     if cleaned_path:
         yield cleaned_path
+        return
+
+    default_cookie_path = resolve_default_cookie_path()
+    if default_cookie_path is not None:
+        yield str(default_cookie_path)
         return
 
     cleaned_content = (cookie_content or "").strip()
@@ -129,43 +173,64 @@ def _pick_vtt_track(subtitles_by_language: dict, preferred_languages: tuple[str,
     return None, None
 
 
+def extract_text_and_title(video_url: str, cookie_file_path: str | None = None) -> tuple[str | None, str, dict]:
+    if yt_dlp is None:
+        raise TranscriptDependencyError(f"YT_DLP_IMPORT_FAILED: {YTDLP_IMPORT_ERROR}")
+
+    options = _build_ydl_options(cookie_file_path)
+    debug_meta: dict[str, object] = {
+        "using_cookie": bool(cookie_file_path),
+        "cookie_path": cookie_file_path or "",
+        "ydl_opts_keys": sorted(list(options.keys())),
+    }
+
+    with yt_dlp.YoutubeDL(options) as ydl:  # type: ignore[union-attr]
+        info = ydl.extract_info(video_url, download=False)
+        title = (info.get("title") or "video").strip() or "video"
+        subtitles = info.get("subtitles") or {}
+        auto_captions = info.get("automatic_captions") or {}
+
+        debug_meta["has_subtitles_keys"] = sorted(list(subtitles.keys()))[:20]
+        debug_meta["has_auto_captions_keys"] = sorted(list(auto_captions.keys()))[:20]
+
+        url, language = _pick_vtt_track(subtitles, ("ko", "ko-KR", "ko_KR", "en"))
+        source = "subtitle"
+
+        if not url:
+            url, language = _pick_vtt_track(auto_captions, ("ko", "ko-KR", "ko_KR", "en"))
+            source = "automatic"
+
+        if not url:
+            return None, title, debug_meta
+
+        vtt_content = ydl.urlopen(url).read().decode("utf-8", "ignore")
+        transcript_text = clean_vtt(vtt_content)
+
+        debug_meta["source"] = source
+        debug_meta["language"] = language or "unknown"
+
+        if transcript_text.strip() == "":
+            return None, title, debug_meta
+
+        return transcript_text, title, debug_meta
+
+
 def extract_transcript_from_video_url(video_url: str, cookie_file_path: str | None = None) -> TranscriptResult | None:
     yt_dlp_error: Exception | None = None
 
     try:
-        import yt_dlp
-    except Exception as exc:  # pragma: no cover - 의존성 미설치 환경 보호
-        yt_dlp_error = exc
-    else:
-        options = _build_ydl_options(cookie_file_path)
-
-        try:
-            with yt_dlp.YoutubeDL(options) as ydl:
-                info = ydl.extract_info(video_url, download=False)
-                title = (info.get("title") or "video").strip() or "video"
-                subtitles = info.get("subtitles") or {}
-                auto_captions = info.get("automatic_captions") or {}
-
-                url, language = _pick_vtt_track(subtitles, ("ko", "ko-KR", "ko_KR", "en"))
-                source = "subtitle"
-
-                if not url:
-                    url, language = _pick_vtt_track(auto_captions, ("ko", "ko-KR", "ko_KR", "en"))
-                    source = "automatic"
-
-                if url:
-                    vtt_content = ydl.urlopen(url).read().decode("utf-8")
-                    transcript_text = clean_vtt(vtt_content)
-
-                    if transcript_text.strip() != "":
-                        return TranscriptResult(
-                            title=title,
-                            transcript_text=transcript_text,
-                            language=language or "unknown",
-                            source=source,
-                        )
-        except Exception as exc:  # pragma: no cover - 네트워크/외부 요인 보호
-            yt_dlp_error = exc
+        transcript_text, title, debug_meta = extract_text_and_title(video_url, cookie_file_path=cookie_file_path)
+        if transcript_text:
+            return TranscriptResult(
+                title=title,
+                transcript_text=transcript_text,
+                language=str(debug_meta.get("language") or "unknown"),
+                source=str(debug_meta.get("source") or "subtitle"),
+            )
+    except Exception as error:  # pragma: no cover - 네트워크/외부 요인 보호
+        yt_dlp_error = error
+        print("[TRANSCRIPT_ERROR]", repr(error))
+        print(traceback.format_exc())
 
     fallback_result = _extract_transcript_without_yt_dlp(video_url)
     if fallback_result is not None:

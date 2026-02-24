@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import os
+
 from uuid import uuid4
 
 from fastapi import APIRouter, Body, Header, Query
 from fastapi.responses import JSONResponse
 
-from ...core.response import error_response, success_response
+from ...core.response import build_meta, error_response, success_response
 from .client import (
     SearchQuotaExceededError,
     SearchRateLimitedError,
@@ -31,7 +33,13 @@ from .schemas import (
     SearchTopicOption,
 )
 from .service import search_videos
-from .transcript import TranscriptDependencyError, extract_transcript_from_video_url, resolve_cookie_file_path
+from .transcript import (
+    TranscriptDependencyError,
+    YTDLP_IMPORT_ERROR,
+    build_transcript_health,
+    extract_transcript_from_video_url,
+    resolve_cookie_file_path,
+)
 
 router = APIRouter(prefix="/api/search", tags=["search"])
 
@@ -62,6 +70,15 @@ def _build_transcript_response(
     cookie_path = cookie_file_path.strip()
     cookie_text = cookie_content.strip()
 
+    if not cookie_path and not cookie_text:
+        body = error_response(
+            code="COOKIEFILE_MISSING",
+            message="cookies 파일을 서버에서 찾지 못했습니다. (env YTDLP_COOKIEFILE 또는 search 폴더의 cookies.txt 확인)",
+            request_id=request_id,
+        )
+        body["meta"]["cwd"] = os.getcwd()
+        return JSONResponse(status_code=424, content=body)
+
     try:
         with resolve_cookie_file_path(
             cookie_file_path=(cookie_path if cookie_path else None),
@@ -74,10 +91,11 @@ def _build_transcript_response(
     except TranscriptDependencyError:
         body = error_response(
             code="TRANSCRIPT_DEPENDENCY_MISSING",
-            message="서버 대본 추출 의존성이 부족하거나 외부 차단으로 대본을 가져오지 못했습니다.",
+            message=f"yt-dlp import 실패: {YTDLP_IMPORT_ERROR}",
             request_id=request_id,
         )
-        return JSONResponse(status_code=503, content=body)
+        body["meta"]["hint"] = "Render requirements에 yt-dlp가 포함되어야 합니다."
+        return JSONResponse(status_code=500, content=body)
     except Exception:
         body = error_response(
             code="TRANSCRIPT_FETCH_FAILED",
@@ -110,7 +128,7 @@ def _build_transcript_response(
 @router.get(
     "/transcript",
     response_model=TranscriptSuccessResponse,
-    responses={400: {"model": TranscriptErrorResponse}, 404: {"model": TranscriptErrorResponse}, 503: {"model": TranscriptErrorResponse}},
+    responses={400: {"model": TranscriptErrorResponse}, 404: {"model": TranscriptErrorResponse}, 424: {"model": TranscriptErrorResponse}, 500: {"model": TranscriptErrorResponse}, 503: {"model": TranscriptErrorResponse}},
 )
 def get_video_transcript(
     video_id: str = Query(default="", alias="videoId"),
@@ -129,7 +147,7 @@ def get_video_transcript(
 @router.post(
     "/transcript",
     response_model=TranscriptSuccessResponse,
-    responses={400: {"model": TranscriptErrorResponse}, 404: {"model": TranscriptErrorResponse}, 503: {"model": TranscriptErrorResponse}},
+    responses={400: {"model": TranscriptErrorResponse}, 404: {"model": TranscriptErrorResponse}, 424: {"model": TranscriptErrorResponse}, 500: {"model": TranscriptErrorResponse}, 503: {"model": TranscriptErrorResponse}},
 )
 def post_video_transcript(payload: TranscriptRequest = Body(default_factory=TranscriptRequest)):
     return _build_transcript_response(
@@ -256,3 +274,10 @@ def get_search_videos(
 
     data = SearchResultData(items=items)
     return success_response(data=data.model_dump(by_alias=True), request_id=request_id)
+
+
+@router.get("/transcript/health")
+def get_transcript_health():
+    payload = build_transcript_health()
+    payload["meta"] = build_meta()
+    return JSONResponse(status_code=200, content=payload)

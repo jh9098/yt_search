@@ -24,7 +24,7 @@ class TranscriptApiContractTest(unittest.TestCase):
 
             response = self.client.get(
                 "/api/search/transcript",
-                params={"videoId": "abc123xyz"},
+                params={"videoId": "abc123xyz", "cookieContent": "# Netscape HTTP Cookie File"},
             )
 
         self.assertEqual(response.status_code, 200)
@@ -34,12 +34,23 @@ class TranscriptApiContractTest(unittest.TestCase):
         self.assertIn("transcriptText", body["data"])
 
     def test_get_video_transcript_returns_error_when_target_missing(self) -> None:
-        response = self.client.get("/api/search/transcript")
+        response = self.client.get("/api/search/transcript", params={"cookieContent": "# Netscape HTTP Cookie File"})
 
         self.assertEqual(response.status_code, 400)
         body = response.json()
         self.assertFalse(body["success"])
         self.assertEqual(body["error"]["code"], "TRANSCRIPT_TARGET_REQUIRED")
+
+    def test_get_video_transcript_requires_cookie_when_missing(self) -> None:
+        response = self.client.get(
+            "/api/search/transcript",
+            params={"videoId": "abc123xyz"},
+        )
+
+        self.assertEqual(response.status_code, 424)
+        body = response.json()
+        self.assertFalse(body["success"])
+        self.assertEqual(body["error"]["code"], "COOKIEFILE_MISSING")
 
 
     def test_get_video_transcript_uses_cookie_content_when_provided(self) -> None:
@@ -94,13 +105,22 @@ class TranscriptApiContractTest(unittest.TestCase):
             mocked_extract.return_value = None
             response = self.client.get(
                 "/api/search/transcript",
-                params={"videoId": "no_caption_id"},
+                params={"videoId": "no_caption_id", "cookieContent": "# Netscape HTTP Cookie File"},
             )
 
         self.assertEqual(response.status_code, 404)
         body = response.json()
         self.assertFalse(body["success"])
         self.assertEqual(body["error"]["code"], "TRANSCRIPT_NOT_FOUND")
+
+    def test_transcript_health_contract(self) -> None:
+        response = self.client.get("/api/search/transcript/health")
+
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertTrue(body["ok"])
+        self.assertIn("yt_dlp_import_ok", body)
+        self.assertIn("cookie_found", body)
 
 
 if __name__ == "__main__":
