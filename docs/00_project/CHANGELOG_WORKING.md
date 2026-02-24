@@ -1,3 +1,37 @@
+## 2026-03-16 (FE-5 popstate 복구 안내 UX 완결)
+### 오늘 목표
+- popstate 자동 재조회가 실제로 발생한 경우에만 사용자 안내 문구를 노출하고, 동일 query/view에서는 재조회/안내를 모두 생략
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/search/utils/popStateSyncPolicy.ts` 생성 (popstate 노출/비노출 정책 함수 분리)
+- [x] `frontend/src/domains/search/hooks/useSearchQueryState.ts`에 `onPopStateSearchRestoredNotice` 콜백 추가
+- [x] `frontend/src/App.tsx`에서 popstate 안내 메시지 상태 + 자동 해제(2.6초) 연결
+- [x] `frontend/src/domains/search/components/ResultSummaryBar.tsx`에 복구 안내 인라인 렌더링 추가
+- [x] `frontend/src/domains/search/utils/popStateSyncPolicy.test.ts` 테스트 추가
+- [x] `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] popstate 복구 안내 문구 다국어(i18n) 분리 여부 정책 확정
+
+### 변경/생성 파일
+- `frontend/src/domains/search/utils/popStateSyncPolicy.ts`
+- `frontend/src/domains/search/hooks/useSearchQueryState.ts`
+- `frontend/src/App.tsx`
+- `frontend/src/domains/search/components/ResultSummaryBar.tsx`
+- `frontend/src/domains/search/utils/popStateSyncPolicy.test.ts`
+- `frontend/src/styles.css`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. popstate 복구 안내 문구를 공통 i18n 리소스로 분리할지 정책 확정
+
+### 메모
+- 현재 검색 경로는 백엔드 API 기반이며 Firestore 직접 조회가 없어 read 소모는 0회다.
+- query/view가 바뀌지 않은 popstate 이벤트는 재조회/안내를 모두 생략해, 추후 Firestore 연동 시 불필요 read 발생 가능성을 낮췄다.
+
+---
+
 ## 2026-03-13 (DOC-BATCH: YouTube API v3 + Render 연동 정책 확정)
 ### 오늘 목표
 - 문서 배치 작업으로 YouTube API v3 백엔드 경유 정책, 검색 API 에러 계약, 보안 가드레일을 확정

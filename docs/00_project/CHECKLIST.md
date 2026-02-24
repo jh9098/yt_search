@@ -265,6 +265,14 @@
 - [x] 검색 카드 UI를 썸네일 오버레이/키워드 강조/메타 3줄 구조로 모듈 분리
 - 메모: 현재 변경은 YouTube API 기반이며 Firestore를 조회하지 않아 read 소모는 0회. 또한 초기 자동검색 제거 + 명시적 검색 트리거 유지로 추후 Firestore 연동 시 불필요 read 발생 가능성을 줄임.
 
+
+### 2026-03-16 (FE-5 popstate 복구 안내 UX 완결)
+- [x] popstate 재조회 시 안내 문구 노출 조건을 `query 변경 + autoSearchOnPopState=true`로 고정
+- [x] `useSearchQueryState`에 조건부 안내 콜백을 추가해 동일 query/view에서는 재조회/안내 모두 생략
+- [x] `ResultSummaryBar`에 popstate 복구 인라인 안내 영역을 추가하고 App에서 2.6초 자동 해제 처리
+- [x] `popStateSyncPolicy` 단위 테스트 추가로 재조회/안내 노출 조건 검증
+- 메모: 현재 검색 경로는 백엔드 API 기반으로 Firestore read는 0회. 동일 query/view popstate 재조회 차단을 유지해 추후 Firestore 연동 시 불필요 read 증가를 예방
+
 ### 2026-03-15 (FE-4 popstate 검색 동기화 경량 보강)
 - [x] `useSearchQueryState`에서 popstate 이벤트 시 query/view 변경 여부를 비교해 동일 상태에서는 콜백/상태 업데이트를 생략
 - [x] `App.tsx`에서 `autoSearchOnPopState=true` + 복원 query 기반 `runSearch` 연결

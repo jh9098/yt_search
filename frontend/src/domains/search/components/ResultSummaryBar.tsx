@@ -5,6 +5,7 @@ interface ResultSummaryBarProps {
   onReset: () => void;
   onCopyShareUrl: () => void;
   shareMessage: string | null;
+  popStateNoticeMessage: string | null;
 }
 
 const STATE_LABEL: Record<SearchSummary["resultsState"], string> = {
@@ -20,6 +21,7 @@ export function ResultSummaryBar({
   onReset,
   onCopyShareUrl,
   shareMessage,
+  popStateNoticeMessage,
 }: ResultSummaryBarProps) {
   return (
     <section className="result-summary-bar" aria-label="검색 결과 요약">
@@ -38,6 +40,11 @@ export function ResultSummaryBar({
         상태: {STATE_LABEL[summary.resultsState]}
       </p>
       {shareMessage ? <p className="result-summary-share-message">{shareMessage}</p> : null}
+      {popStateNoticeMessage ? (
+        <p className="result-summary-popstate-notice" role="status" aria-live="polite">
+          {popStateNoticeMessage}
+        </p>
+      ) : null}
     </section>
   );
 }
