@@ -106,6 +106,15 @@ function toSearchString(queryState: SearchQueryState, viewMode: SearchViewMode):
   return built.length > 0 ? `?${built}` : "";
 }
 
+function isSameQueryState(left: SearchQueryState, right: SearchQueryState): boolean {
+  return (
+    left.keyword === right.keyword
+    && left.channel === right.channel
+    && left.topic === right.topic
+    && left.resultLimit === right.resultLimit
+  );
+}
+
 export function useSearchQueryState(options?: UseSearchQueryStateOptions): UseSearchQueryStateResult {
   const autoSearchOnPopState = options?.autoSearchOnPopState ?? false;
   const onPopStateQueryRestored = options?.onPopStateQueryRestored;
@@ -114,6 +123,16 @@ export function useSearchQueryState(options?: UseSearchQueryStateOptions): UseSe
   const [queryState, setQueryState] = useState<SearchQueryState>(initialState.queryState);
   const [viewMode, setViewMode] = useState<SearchViewMode>(initialState.viewMode);
   const lastSearchRef = useRef(window.location.search);
+  const queryStateRef = useRef<SearchQueryState>(initialState.queryState);
+  const viewModeRef = useRef<SearchViewMode>(initialState.viewMode);
+
+  useEffect(() => {
+    queryStateRef.current = queryState;
+  }, [queryState]);
+
+  useEffect(() => {
+    viewModeRef.current = viewMode;
+  }, [viewMode]);
 
   useEffect(() => {
     const nextSearch = toSearchString(queryState, viewMode);
@@ -129,11 +148,20 @@ export function useSearchQueryState(options?: UseSearchQueryStateOptions): UseSe
   useEffect(() => {
     const handlePopState = () => {
       const parsed = parseSearchParams(window.location.search);
+
+      const hasQueryChanged = !isSameQueryState(parsed.queryState, queryStateRef.current);
+      const hasViewModeChanged = parsed.viewMode !== viewModeRef.current;
+
+      if (!hasQueryChanged && !hasViewModeChanged) {
+        lastSearchRef.current = window.location.search;
+        return;
+      }
+
       setQueryState(parsed.queryState);
       setViewMode(parsed.viewMode);
       lastSearchRef.current = window.location.search;
 
-      if (autoSearchOnPopState && onPopStateQueryRestored) {
+      if (hasQueryChanged && autoSearchOnPopState && onPopStateQueryRestored) {
         onPopStateQueryRestored(parsed.queryState);
       }
     };

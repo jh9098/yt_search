@@ -264,3 +264,10 @@
 - [x] YouTube `videos(part=snippet,statistics,contentDetails)` + `channels(part=snippet,statistics)` 연동으로 duration/thumbnail/subscriber/country 수집
 - [x] 검색 카드 UI를 썸네일 오버레이/키워드 강조/메타 3줄 구조로 모듈 분리
 - 메모: 현재 변경은 YouTube API 기반이며 Firestore를 조회하지 않아 read 소모는 0회. 또한 초기 자동검색 제거 + 명시적 검색 트리거 유지로 추후 Firestore 연동 시 불필요 read 발생 가능성을 줄임.
+
+### 2026-03-15 (FE-4 popstate 검색 동기화 경량 보강)
+- [x] `useSearchQueryState`에서 popstate 이벤트 시 query/view 변경 여부를 비교해 동일 상태에서는 콜백/상태 업데이트를 생략
+- [x] `App.tsx`에서 `autoSearchOnPopState=true` + 복원 query 기반 `runSearch` 연결
+- [x] popstate 자동 재조회는 query가 실제로 변경된 경우에만 실행되도록 가드
+- 메모: 현재 검색은 백엔드 API 기반이며 Firestore read는 0회. query 변경 없는 popstate 재조회 차단으로 추후 Firestore 연동 시 불필요 read 증가 위험을 낮춤
+
