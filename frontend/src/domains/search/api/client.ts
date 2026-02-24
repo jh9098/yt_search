@@ -175,11 +175,15 @@ export async function searchVideos(params: SearchApiRequestParams): Promise<Sear
 export async function fetchVideoTranscript(params: {
   videoId: string;
   cookieFilePath?: string;
+  cookieContent?: string;
 }): Promise<TranscriptResultData> {
   const query = new URLSearchParams();
   query.set("videoId", params.videoId);
   if ((params.cookieFilePath ?? "").trim().length > 0) {
     query.set("cookieFilePath", params.cookieFilePath!.trim());
+  }
+  if ((params.cookieContent ?? "").trim().length > 0) {
+    query.set("cookieContent", params.cookieContent!.trim());
   }
 
   const requestPath = `/search/transcript?${query.toString()}`;
