@@ -3,5 +3,5 @@ services:
     name: yt-search-backend
     runtime: python
     rootDir: backend
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -U pip && pip install -r requirements.txt && pip install yt-dlp
     startCommand: gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
