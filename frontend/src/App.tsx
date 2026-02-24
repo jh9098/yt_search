@@ -20,7 +20,14 @@ import { TranscriptModal } from "./domains/search/components/TranscriptModal";
 import { useSearchQueryState } from "./domains/search/hooks/useSearchQueryState";
 import { useVideoSearch } from "./domains/search/hooks/useVideoSearch";
 import { loadUserApiKeys, saveUserApiKeys } from "./domains/search/apiKeyStorage";
-import { loadCookieFilePath, saveCookieFilePath } from "./domains/search/cookiePathStorage";
+import {
+  loadCookieContent,
+  loadCookieFilePath,
+  loadCookieInputMode,
+  saveCookieContent,
+  saveCookieFilePath,
+  saveCookieInputMode,
+} from "./domains/search/cookiePathStorage";
 import { fetchVideoTranscript, SearchApiError } from "./domains/search/api/client";
 import type {
   AnalysisErrorState,
@@ -35,6 +42,7 @@ import type {
   SearchResultCard,
   SearchSummary,
   TranscriptResultData,
+  CookieInputMode,
 } from "./domains/search/types";
 
 
@@ -72,7 +80,9 @@ export function App() {
   const activeSessionRef = useRef(0);
   const isModalOpenRef = useRef(false);
   const [userApiKeys, setUserApiKeys] = useState<string[]>(() => loadUserApiKeys());
+  const [cookieInputMode, setCookieInputMode] = useState<CookieInputMode>(() => loadCookieInputMode());
   const [cookieFilePath, setCookieFilePath] = useState<string>(() => loadCookieFilePath());
+  const [cookieContent, setCookieContent] = useState<string>(() => loadCookieContent());
   const [isTranscriptModalOpen, setIsTranscriptModalOpen] = useState(false);
   const [transcriptStatus, setTranscriptStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [transcriptResult, setTranscriptResult] = useState<TranscriptResultData | null>(null);
@@ -308,9 +318,19 @@ export function App() {
     setUserApiKeys(nextApiKeys);
   };
 
+  const handleCookieInputModeChange = (nextMode: CookieInputMode) => {
+    saveCookieInputMode(nextMode);
+    setCookieInputMode(nextMode);
+  };
+
   const handleSaveCookieFilePath = (nextCookieFilePath: string) => {
     saveCookieFilePath(nextCookieFilePath);
     setCookieFilePath(nextCookieFilePath);
+  };
+
+  const handleSaveCookieContent = (nextCookieContent: string) => {
+    saveCookieContent(nextCookieContent);
+    setCookieContent(nextCookieContent);
   };
 
   const handleExtractTranscript = (card: SearchResultCard) => {
@@ -321,7 +341,8 @@ export function App() {
 
     void fetchVideoTranscript({
       videoId: card.videoId,
-      cookieFilePath,
+      cookieFilePath: cookieInputMode === "path" ? cookieFilePath : undefined,
+      cookieContent: cookieInputMode === "content" ? cookieContent : undefined,
     })
       .then((data) => {
         setTranscriptResult(data);
@@ -367,7 +388,14 @@ export function App() {
             <progress value={estimatedQuotaLeft} max={quotaMax} />
           </div>
           <ApiKeyManager apiKeys={userApiKeys} onSave={handleSaveApiKeys} />
-          <CookieFilePathManager value={cookieFilePath} onSave={handleSaveCookieFilePath} />
+          <CookieFilePathManager
+            inputMode={cookieInputMode}
+            filePathValue={cookieFilePath}
+            contentValue={cookieContent}
+            onModeChange={handleCookieInputModeChange}
+            onPathSave={handleSaveCookieFilePath}
+            onContentSave={handleSaveCookieContent}
+          />
         </div>
       </header>
 

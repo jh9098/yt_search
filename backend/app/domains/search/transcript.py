@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import os
 import re
+import tempfile
+from contextlib import contextmanager
 from dataclasses import dataclass
 
 _CUE_RE = re.compile(r"^\d{2}:\d{2}:\d{2}\.\d{3}\s*-->\s*\d{2}:\d{2}:\d{2}\.\d{3}")
@@ -81,6 +83,30 @@ def _build_ydl_options(cookie_file_path: str | None) -> dict:
         options["proxy"] = proxy_url
 
     return options
+
+
+@contextmanager
+def resolve_cookie_file_path(cookie_file_path: str | None, cookie_content: str | None):
+    cleaned_path = (cookie_file_path or "").strip()
+    if cleaned_path:
+        yield cleaned_path
+        return
+
+    cleaned_content = (cookie_content or "").strip()
+    if not cleaned_content:
+        yield None
+        return
+
+    temp_cookie_file: str | None = None
+    try:
+        with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False, encoding="utf-8") as temp_file:
+            temp_file.write(cleaned_content)
+            temp_cookie_file = temp_file.name
+
+        yield temp_cookie_file
+    finally:
+        if temp_cookie_file and os.path.exists(temp_cookie_file):
+            os.remove(temp_cookie_file)
 
 
 def _pick_vtt_track(subtitles_by_language: dict, preferred_languages: tuple[str, ...]) -> tuple[str | None, str | None]:

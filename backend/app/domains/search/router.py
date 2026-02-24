@@ -30,7 +30,7 @@ from .schemas import (
     SearchTopicOption,
 )
 from .service import search_videos
-from .transcript import TranscriptDependencyError, extract_transcript_from_video_url
+from .transcript import TranscriptDependencyError, extract_transcript_from_video_url, resolve_cookie_file_path
 
 router = APIRouter(prefix="/api/search", tags=["search"])
 
@@ -44,6 +44,7 @@ def get_video_transcript(
     video_id: str = Query(default="", alias="videoId"),
     video_url: str = Query(default="", alias="videoUrl"),
     cookie_file_path: str = Query(default="", alias="cookieFilePath"),
+    cookie_content: str = Query(default="", alias="cookieContent"),
 ):
     request_id = f"req_{uuid4().hex[:12]}"
 
@@ -60,12 +61,17 @@ def get_video_transcript(
         return JSONResponse(status_code=400, content=body)
 
     cookie_path = cookie_file_path.strip()
+    cookie_text = cookie_content.strip()
 
     try:
-        result = extract_transcript_from_video_url(
-            video_url=resolved_video_url,
+        with resolve_cookie_file_path(
             cookie_file_path=(cookie_path if cookie_path else None),
-        )
+            cookie_content=(cookie_text if cookie_text else None),
+        ) as resolved_cookie_file_path:
+            result = extract_transcript_from_video_url(
+                video_url=resolved_video_url,
+                cookie_file_path=resolved_cookie_file_path,
+            )
     except TranscriptDependencyError:
         body = error_response(
             code="TRANSCRIPT_DEPENDENCY_MISSING",

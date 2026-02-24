@@ -155,6 +155,8 @@ export interface SearchSummary {
 }
 
 
+export type CookieInputMode = "path" | "content";
+
 export interface TranscriptResultData {
   videoId: string;
   videoUrl: string;
