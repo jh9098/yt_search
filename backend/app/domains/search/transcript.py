@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import re
 import tempfile
+import json
 from html import unescape
 from urllib.parse import parse_qs, urlparse
 from urllib.request import Request, urlopen
@@ -177,6 +178,10 @@ def extract_transcript_from_video_url(video_url: str, cookie_file_path: str | No
 
 
 def _extract_transcript_without_yt_dlp(video_url: str) -> TranscriptResult | None:
+    player_response_result = _extract_transcript_from_player_response(video_url)
+    if player_response_result is not None:
+        return player_response_result
+
     video_id = _extract_video_id(video_url)
     if not video_id:
         return None
@@ -192,6 +197,140 @@ def _extract_transcript_without_yt_dlp(video_url: str) -> TranscriptResult | Non
             )
 
     return None
+
+
+def _extract_transcript_from_player_response(video_url: str) -> TranscriptResult | None:
+    req = Request(video_url, headers={"User-Agent": "Mozilla/5.0"})
+
+    try:
+        with urlopen(req, timeout=10) as response:
+            html = response.read().decode("utf-8", errors="ignore")
+    except Exception:
+        return None
+
+    player_response_json = _extract_player_response_json_from_html(html)
+    if not player_response_json:
+        return None
+
+    try:
+        payload = json.loads(player_response_json)
+    except json.JSONDecodeError:
+        return None
+
+    tracks = (
+        payload.get("captions", {})
+        .get("playerCaptionsTracklistRenderer", {})
+        .get("captionTracks", [])
+    )
+    if not tracks:
+        return None
+
+    selected_track = _pick_caption_track_from_player_response(tracks)
+    if selected_track is None:
+        return None
+
+    transcript_text = _fetch_caption_track_text(selected_track.get("baseUrl") or "")
+    if not transcript_text:
+        return None
+
+    language = (selected_track.get("languageCode") or "unknown").strip() or "unknown"
+    source = "automatic" if selected_track.get("kind") == "asr" else "subtitle"
+    title = (
+        payload.get("videoDetails", {}).get("title")
+        or _fetch_video_title(_extract_video_id(video_url))
+        or "video"
+    )
+
+    return TranscriptResult(
+        title=title,
+        transcript_text=transcript_text,
+        language=language,
+        source=source,
+    )
+
+
+def _extract_player_response_json_from_html(html: str) -> str | None:
+    marker = "ytInitialPlayerResponse"
+    marker_index = html.find(marker)
+    if marker_index < 0:
+        return None
+
+    assignment_index = html.find("=", marker_index)
+    if assignment_index < 0:
+        return None
+
+    start_index = html.find("{", assignment_index)
+    if start_index < 0:
+        return None
+
+    depth = 0
+    in_string = False
+    escaped = False
+
+    for idx in range(start_index, len(html)):
+        char = html[idx]
+
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            continue
+
+        if char == '"':
+            in_string = True
+            continue
+
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return html[start_index : idx + 1]
+
+    return None
+
+
+def _pick_caption_track_from_player_response(tracks: list[dict]) -> dict | None:
+    if not tracks:
+        return None
+
+    preferred_languages = ("ko", "ko-KR", "ko_KR", "en")
+
+    for lang in preferred_languages:
+        for track in tracks:
+            track_lang = (track.get("languageCode") or "").strip()
+            if track_lang == lang:
+                return track
+
+    for lang in preferred_languages:
+        for track in tracks:
+            track_lang = (track.get("languageCode") or "").strip()
+            if track_lang.startswith(f"{lang}-"):
+                return track
+
+    return tracks[0]
+
+
+def _fetch_caption_track_text(base_url: str) -> str | None:
+    clean_url = unescape(base_url.strip())
+    if clean_url == "":
+        return None
+
+    if "fmt=" not in clean_url:
+        separator = "&" if "?" in clean_url else "?"
+        clean_url = f"{clean_url}{separator}fmt=srv3"
+
+    req = Request(clean_url, headers={"User-Agent": "Mozilla/5.0"})
+    try:
+        with urlopen(req, timeout=10) as response:
+            xml_content = response.read().decode("utf-8", errors="ignore")
+    except Exception:
+        return None
+
+    return _parse_timedtext_xml(xml_content)
 
 
 def _extract_video_id(video_url: str) -> str:
@@ -219,6 +358,10 @@ def _fetch_timedtext(video_id: str, lang: str, automatic: bool) -> str | None:
     except Exception:
         return None
 
+    return _parse_timedtext_xml(xml_content)
+
+
+def _parse_timedtext_xml(xml_content: str) -> str | None:
     if "<text" not in xml_content:
         return None
 
