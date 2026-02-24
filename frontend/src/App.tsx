@@ -64,9 +64,18 @@ const DEFAULT_FILTERS: SearchFilterState = {
 const POLLING_INTERVAL_MS = 1200;
 
 export function App() {
-  const { queryState, setQueryState, viewMode, setViewMode, copyShareUrl } = useSearchQueryState({ autoSearchOnPopState: false });
   const [filters, setFilters] = useState<SearchFilterState>(DEFAULT_FILTERS);
   const { resultsState, searchErrorMessage, visibleCards, runSearch, resetSearch } = useVideoSearch([]);
+  const [userApiKeys, setUserApiKeys] = useState<string[]>(() => loadUserApiKeys());
+
+  const handlePopStateQueryRestored = useCallback((restoredQuery: SearchQueryState) => {
+    void runSearch(restoredQuery, filters, userApiKeys);
+  }, [filters, runSearch, userApiKeys]);
+
+  const { queryState, setQueryState, viewMode, setViewMode, copyShareUrl } = useSearchQueryState({
+    autoSearchOnPopState: true,
+    onPopStateQueryRestored: handlePopStateQueryRestored,
+  });
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [status, setStatus] = useState<AnalysisModalStatus>("loading");
@@ -79,7 +88,6 @@ export function App() {
   const pollTimerRef = useRef<number | null>(null);
   const activeSessionRef = useRef(0);
   const isModalOpenRef = useRef(false);
-  const [userApiKeys, setUserApiKeys] = useState<string[]>(() => loadUserApiKeys());
   const [cookieInputMode, setCookieInputMode] = useState<CookieInputMode>(() => loadCookieInputMode());
   const [cookieFilePath, setCookieFilePath] = useState<string>(() => loadCookieFilePath());
   const [cookieContent, setCookieContent] = useState<string>(() => loadCookieContent());

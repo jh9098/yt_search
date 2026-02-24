@@ -847,3 +847,33 @@
 ### 메모
 - 현재 백엔드 검색 API가 확정 구현되지 않은 환경에서도, 프론트는 명시적 트리거 호출 구조를 유지해 자동 재조회로 인한 Firestore read 급증 위험을 방지하도록 설계했다.
 - 동일 파라미터 재검색은 훅 내부 키 비교로 요청을 건너뛰어 추후 Firestore 연동 시 불필요 read 소모를 줄일 수 있다.
+
+---
+
+## 2026-03-15 (FE-4 popstate 검색 동기화 경량 보강)
+### 오늘 목표
+- 뒤로가기/앞으로가기(popstate) 시 URL 상태와 검색 결과를 조건부 자동 재조회로 동기화하고, 중복 호출을 방지한다.
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/search/hooks/useSearchQueryState.ts`에서 popstate 시 query/view 변경 여부 비교 로직 추가
+- [x] query/view 모두 동일하면 상태 업데이트와 자동 재조회를 생략해 불필요 호출 방지
+- [x] `frontend/src/App.tsx`에서 `autoSearchOnPopState=true` + `onPopStateQueryRestored` 연결
+- [x] popstate 복원 query를 `runSearch`에 전달해 히스토리 이동 시 검색 결과 동기화
+- [x] `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] popstate 재조회 시 사용자 메시지(예: "히스토리 상태를 복구했습니다") 노출 여부 정책 확정
+
+### 변경/생성 파일
+- `frontend/src/domains/search/hooks/useSearchQueryState.ts`
+- `frontend/src/App.tsx`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. popstate 자동 재조회 경로를 포함한 검색 훅 테스트(중복 호출 방지) 케이스 추가
+
+### 메모
+- 현재 구현은 백엔드 검색 API 호출 구조로 Firestore를 직접 조회하지 않아 read 소모는 0회다.
+- query가 바뀌지 않은 popstate 이벤트에서는 재조회하지 않도록 막아, 추후 Firestore 연동 시 불필요 read 소모를 줄일 수 있도록 반영했다.
+
