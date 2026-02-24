@@ -177,17 +177,20 @@ export async function fetchVideoTranscript(params: {
   cookieFilePath?: string;
   cookieContent?: string;
 }): Promise<TranscriptResultData> {
-  const query = new URLSearchParams();
-  query.set("videoId", params.videoId);
-  if ((params.cookieFilePath ?? "").trim().length > 0) {
-    query.set("cookieFilePath", params.cookieFilePath!.trim());
-  }
-  if ((params.cookieContent ?? "").trim().length > 0) {
-    query.set("cookieContent", params.cookieContent!.trim());
-  }
+  const requestPath = "/search/transcript";
+  const payload = {
+    videoId: params.videoId,
+    cookieFilePath: (params.cookieFilePath ?? "").trim(),
+    cookieContent: (params.cookieContent ?? "").trim(),
+  };
 
-  const requestPath = `/search/transcript?${query.toString()}`;
-  const response = await fetchSearchResponse(requestPath);
+  const response = await fetch(buildPrimarySearchUrl(requestPath), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
 
   if (!response.ok) {
     let code = "TRANSCRIPT_FETCH_FAILED";

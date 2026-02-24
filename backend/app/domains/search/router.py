@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from fastapi import APIRouter, Header, Query
+from fastapi import APIRouter, Body, Header, Query
 from fastapi.responses import JSONResponse
 
 from ...core.response import error_response, success_response
@@ -14,6 +14,7 @@ from .client import (
 )
 from .schemas import (
     TranscriptErrorResponse,
+    TranscriptRequest,
     TranscriptResultData,
     TranscriptSuccessResponse,
     SearchCorePreset,
@@ -35,16 +36,14 @@ from .transcript import TranscriptDependencyError, extract_transcript_from_video
 router = APIRouter(prefix="/api/search", tags=["search"])
 
 
-@router.get(
-    "/transcript",
-    response_model=TranscriptSuccessResponse,
-    responses={400: {"model": TranscriptErrorResponse}, 404: {"model": TranscriptErrorResponse}, 503: {"model": TranscriptErrorResponse}},
-)
-def get_video_transcript(
-    video_id: str = Query(default="", alias="videoId"),
-    video_url: str = Query(default="", alias="videoUrl"),
-    cookie_file_path: str = Query(default="", alias="cookieFilePath"),
-    cookie_content: str = Query(default="", alias="cookieContent"),
+
+
+def _build_transcript_response(
+    *,
+    video_id: str,
+    video_url: str,
+    cookie_file_path: str,
+    cookie_content: str,
 ):
     request_id = f"req_{uuid4().hex[:12]}"
 
@@ -107,6 +106,38 @@ def get_video_transcript(
     )
     body = success_response(data=data.model_dump(by_alias=True), request_id=request_id)
     return JSONResponse(status_code=200, content=body)
+
+@router.get(
+    "/transcript",
+    response_model=TranscriptSuccessResponse,
+    responses={400: {"model": TranscriptErrorResponse}, 404: {"model": TranscriptErrorResponse}, 503: {"model": TranscriptErrorResponse}},
+)
+def get_video_transcript(
+    video_id: str = Query(default="", alias="videoId"),
+    video_url: str = Query(default="", alias="videoUrl"),
+    cookie_file_path: str = Query(default="", alias="cookieFilePath"),
+    cookie_content: str = Query(default="", alias="cookieContent"),
+):
+    return _build_transcript_response(
+        video_id=video_id,
+        video_url=video_url,
+        cookie_file_path=cookie_file_path,
+        cookie_content=cookie_content,
+    )
+
+
+@router.post(
+    "/transcript",
+    response_model=TranscriptSuccessResponse,
+    responses={400: {"model": TranscriptErrorResponse}, 404: {"model": TranscriptErrorResponse}, 503: {"model": TranscriptErrorResponse}},
+)
+def post_video_transcript(payload: TranscriptRequest = Body(default_factory=TranscriptRequest)):
+    return _build_transcript_response(
+        video_id=payload.video_id,
+        video_url=payload.video_url,
+        cookie_file_path=payload.cookie_file_path,
+        cookie_content=payload.cookie_content,
+    )
 
 
 @router.get(

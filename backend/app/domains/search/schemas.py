@@ -143,6 +143,13 @@ class TranscriptResultData(BaseModel):
     transcript_text: str = Field(..., alias="transcriptText")
 
 
+class TranscriptRequest(BaseModel):
+    video_id: str = Field(default="", alias="videoId")
+    video_url: str = Field(default="", alias="videoUrl")
+    cookie_file_path: str = Field(default="", alias="cookieFilePath")
+    cookie_content: str = Field(default="", alias="cookieContent")
+
+
 class TranscriptSuccessResponse(BaseModel):
     success: Literal[True]
     data: TranscriptResultData
