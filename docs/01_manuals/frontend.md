@@ -14,6 +14,7 @@ UI/상태/타입/API 연동/에러 처리 품질을 일정하게 유지하기 �
 3. **실패 UX를 정상 UX만큼 중요하게 다룬다**
 4. **긴 콘텐츠는 스크롤 영역을 분리한다**
 5. **도메인별로 컴포넌트/타입/훅을 나눈다**
+6. **검색/에러/안내 문구는 도메인 i18n 리소스 파일로 분리한다** (`domains/search/i18n/searchUiText.ts`)
 
 ---
 
@@ -111,6 +112,11 @@ API 호출 전에 TypeScript 타입/인터페이스를 먼저 정의합니다.
 - `loading` 상태에서는 분석 시작 버튼/재시도 버튼을 모두 `disabled=true`로 처리합니다.
 - 동일 `videoId`에 대한 요청이 `queued/processing`이면 새 요청을 보내지 않고 기존 Job 폴링으로 전환합니다.
 - `loading` 해제는 `success/empty/partial-success/error` 중 하나로 전환된 뒤에만 허용합니다.
+
+### 검색 패널 문구 리소스 분리 규칙 (FE-9)
+- 검색 패널에서 반복되는 문구(요약 바, 오류 패널, popstate 복구 안내, 키워드 검색 라벨)는 `domains/search/i18n/searchUiText.ts`에서 단일 관리한다.
+- 컴포넌트/유틸에서는 문자열 하드코딩 대신 리소스를 import해 사용한다.
+- 문구 변경 시 정책 테스트(`searchErrorUiPolicy.test.ts` 등)가 깨지지 않도록 기존 키를 유지한 채 값만 변경한다.
 
 ### 결과 없음/부분 성공/완전 실패 문구 분리 규칙
 - `empty`: 데이터 부족/필드 부재 중심 문구 사용(시스템 오류 문구 금지).

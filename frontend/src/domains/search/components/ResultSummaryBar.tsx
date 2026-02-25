@@ -1,3 +1,4 @@
+import { SEARCH_UI_TEXT } from "../i18n/searchUiText";
 import type { SearchSummary } from "../types";
 
 interface ResultSummaryBarProps {
@@ -9,13 +10,7 @@ interface ResultSummaryBarProps {
   popStateNoticeMessage: string | null;
 }
 
-const STATE_LABEL: Record<SearchSummary["resultsState"], string> = {
-  idle: "검색어를 입력하고 검색 버튼을 눌러주세요",
-  loading: "검색 중",
-  success: "검색 완료",
-  empty: "검색 결과 없음",
-  error: "검색 오류",
-};
+const STATE_LABEL = SEARCH_UI_TEXT.resultSummary.stateLabel;
 
 export function ResultSummaryBar({
   summary,
@@ -26,24 +21,24 @@ export function ResultSummaryBar({
   popStateNoticeMessage,
 }: ResultSummaryBarProps) {
   return (
-    <section className="result-summary-bar" aria-label="검색 결과 요약">
+    <section className="result-summary-bar" aria-label={SEARCH_UI_TEXT.resultSummary.sectionAriaLabel}>
       <p>
         전체 <strong>{summary.totalCount}</strong>개 중 <strong>{summary.shownCount}</strong>개 표시
       </p>
       <div className="result-summary-actions">
-        <button type="button" onClick={onReset} aria-label="검색 조건 초기화">
-          필터 초기화
+        <button type="button" onClick={onReset} aria-label={SEARCH_UI_TEXT.resultSummary.resetButtonAriaLabel}>
+          {SEARCH_UI_TEXT.resultSummary.resetButtonLabel}
         </button>
-        <button type="button" onClick={onCopyShareUrl} aria-label="현재 검색 조건 URL 복사">
-          URL 복사
+        <button type="button" onClick={onCopyShareUrl} aria-label={SEARCH_UI_TEXT.resultSummary.copyUrlButtonAriaLabel}>
+          {SEARCH_UI_TEXT.resultSummary.copyUrlButtonLabel}
         </button>
       </div>
       <p className="result-summary-state" aria-live="polite">
-        상태: {STATE_LABEL[summary.resultsState]}
+        {SEARCH_UI_TEXT.resultSummary.statePrefix} {STATE_LABEL[summary.resultsState]}
       </p>
       {summary.resultsState === "error" && !isSearchErrorRetryable ? (
         <p className="result-summary-error-guide" role="status" aria-live="polite">
-          재시도보다 검색어/필터 수정이 우선입니다. 조건을 조정한 뒤 다시 검색해 주세요.
+          {SEARCH_UI_TEXT.resultSummary.nonRetryableGuide}
         </p>
       ) : null}
       {shareMessage ? <p className="result-summary-share-message">{shareMessage}</p> : null}

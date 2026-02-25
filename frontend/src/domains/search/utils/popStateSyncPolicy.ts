@@ -1,6 +1,7 @@
+import { SEARCH_UI_TEXT } from "../i18n/searchUiText";
 import type { SearchQueryState, SearchViewMode } from "../types";
 
-export const POPSTATE_RESTORED_MESSAGE = "히스토리 상태를 복구해 검색 결과를 다시 불러왔습니다.";
+export const POPSTATE_RESTORED_MESSAGE = SEARCH_UI_TEXT.resultSummary.popStateRestoredNotice;
 
 interface PopStateSyncInputs {
   parsedQueryState: SearchQueryState;

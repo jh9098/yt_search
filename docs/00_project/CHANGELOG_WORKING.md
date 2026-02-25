@@ -1,3 +1,39 @@
+## 2026-03-20 (FE-9 검색 패널 문구 i18n 리소스 분리)
+### 오늘 목표
+- CHANGELOG 다음 세션 시작점에 따라 검색 패널 입력 유도/오류/복구 안내 문구를 공통 i18n 리소스로 분리해 유지보수 리스크를 낮춘다.
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/search/i18n/searchUiText.ts` 생성: 결과 요약바/오류 패널/popstate 안내/키워드 검색 영역 문구를 단일 객체로 통합
+- [x] `ResultSummaryBar`, `VideoGrid`, `KeywordSearchBar`의 하드코딩 문자열을 공통 리소스 참조로 교체
+- [x] `searchErrorUiPolicy.ts`, `popStateSyncPolicy.ts`가 동일 리소스를 사용하도록 연결해 정책 문구 단일화
+- [x] `docs/01_manuals/frontend.md`에 FE-9 문구 리소스 분리 규칙 추가
+- [x] `npm test -- searchErrorUiPolicy.test.ts popStateSyncPolicy.test.ts`, `npm run build` 검증 완료
+- [x] `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] 없음
+
+### 변경/생성 파일
+- `frontend/src/domains/search/i18n/searchUiText.ts`
+- `frontend/src/domains/search/components/ResultSummaryBar.tsx`
+- `frontend/src/domains/search/components/VideoGrid.tsx`
+- `frontend/src/domains/search/components/KeywordSearchBar.tsx`
+- `frontend/src/domains/search/utils/searchErrorUiPolicy.ts`
+- `frontend/src/domains/search/utils/popStateSyncPolicy.ts`
+- `docs/01_manuals/frontend.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. 검색 에러/상태 문구를 실제 i18n 프레임워크(예: locale 파일)로 확장할지, 현재 상수 기반 유지할지 결정한다.
+
+### 메모
+- 현재 검색 경로는 백엔드 API 기반이며 Firestore read 소모는 0회다.
+- 이번 변경은 UI 문자열 소스만 통합했기 때문에 네트워크/API 호출/저장소 조회 경로에는 영향이 없어 read 소모를 증가시키지 않는다.
+- 정책 문자열이 한 곳에 모여 재시도/입력수정 안내 문구 변경 시 로직 불일치를 줄여, 추후 Firestore 연동 시 잘못된 재시도 루프로 인한 불필요 read 위험을 낮춘다.
+
+---
+
 ## 2026-03-19 (FE-8 retryable=false 입력 포커스/강조)
 ### 오늘 목표
 - FE-7 미완료 항목을 닫기 위해 retryable=false 오류 상태에서 키워드 입력창 포커스/강조를 추가하고 정책을 테스트로 고정한다.
