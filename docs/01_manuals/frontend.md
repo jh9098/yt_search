@@ -123,6 +123,11 @@ API 호출 전에 TypeScript 타입/인터페이스를 먼저 정의합니다.
 - 지원하지 않는 locale 요청은 `DEFAULT_SEARCH_UI_LOCALE`로 fallback해 런타임 에러를 방지한다.
 - 기존 컴포넌트는 `SEARCH_UI_TEXT` 기본 export를 그대로 사용해도 동작하도록 호환성을 유지한다.
 
+### runtime locale 상태 연결 규칙 (FE-11)
+- 앱 시작 시 locale 우선순위는 `localStorage(사용자 선택) -> browser language -> DEFAULT_SEARCH_UI_LOCALE` 순서로 고정한다.
+- locale 선택 UI에서 변경한 값은 `searchUiLocale.ts`를 통해 저장하고, 검색 도메인 컴포넌트에는 `searchUiText`를 props로 주입해 즉시 반영한다.
+- 정책/유틸(`searchErrorUiPolicy`, `popStateSyncPolicy`)도 동일 `searchUiText`를 인자로 받아 locale 일관성을 유지한다.
+
 ### 결과 없음/부분 성공/완전 실패 문구 분리 규칙
 - `empty`: 데이터 부족/필드 부재 중심 문구 사용(시스템 오류 문구 금지).
 - `partial-success`: "일부 결과만 표시"를 명시하고 누락 범위를 안내.
