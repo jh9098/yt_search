@@ -1,3 +1,39 @@
+## 2026-03-21 (FE-10 검색 문구 locale 레이어 확장)
+### 오늘 목표
+- FE-9 다음 세션 시작점에 따라 검색 문구 리소스를 실제 locale 단위로 분리하고, fallback 정책을 테스트로 고정한다.
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/search/i18n/locales/ko.ts`, `en.ts` 생성으로 locale 파일 구조 도입
+- [x] `frontend/src/domains/search/i18n/searchUiText.types.ts` 추가로 locale 리소스 타입을 공용화
+- [x] `frontend/src/domains/search/i18n/searchUiText.ts`를 locale resolver(`getSearchUiText`) + 기본 fallback(`DEFAULT_SEARCH_UI_LOCALE`) 구조로 전환
+- [x] `frontend/src/domains/search/i18n/searchUiText.test.ts` 추가로 기본/지원/미지원 locale 동작 검증
+- [x] `docs/01_manuals/frontend.md`에 FE-10 locale 확장 규칙 추가
+- [x] `npm test -- searchUiText.test.ts searchErrorUiPolicy.test.ts popStateSyncPolicy.test.ts`, `npm run build` 검증 완료
+- [x] `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] 실제 런타임 locale 선택 상태(예: 사용자 설정/브라우저 언어 감지) 연결
+
+### 변경/생성 파일
+- `frontend/src/domains/search/i18n/searchUiText.ts`
+- `frontend/src/domains/search/i18n/searchUiText.types.ts`
+- `frontend/src/domains/search/i18n/locales/ko.ts`
+- `frontend/src/domains/search/i18n/locales/en.ts`
+- `frontend/src/domains/search/i18n/searchUiText.test.ts`
+- `docs/01_manuals/frontend.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. 앱 전역 locale 상태 소스를 정하고(`ko` 기본 + 사용자 설정), `getSearchUiText(locale)`를 실제 UI 선택 상태에 연결한다.
+
+### 메모
+- 현재 검색 경로는 백엔드 API 기반이며 Firestore read 소모는 0회다.
+- 이번 변경은 UI 텍스트 리소스/테스트만 수정해 네트워크 호출/저장소 조회 경로에는 영향이 없다.
+- locale fallback을 코드/테스트로 고정해 잘못된 locale 값으로 인한 재시도 루프를 줄여, 추후 Firestore 연동 시 불필요 read 증가 위험을 낮춘다.
+
+---
+
 ## 2026-03-20 (FE-9 검색 패널 문구 i18n 리소스 분리)
 ### 오늘 목표
 - CHANGELOG 다음 세션 시작점에 따라 검색 패널 입력 유도/오류/복구 안내 문구를 공통 i18n 리소스로 분리해 유지보수 리스크를 낮춘다.

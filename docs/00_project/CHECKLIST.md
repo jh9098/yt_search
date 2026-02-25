@@ -157,6 +157,14 @@
 
 ## I. 완료 로그 (요약)
 
+### 2026-03-21 (FE-10 검색 문구 locale 레이어 확장)
+- [x] `frontend/src/domains/search/i18n/locales/ko.ts`, `en.ts`로 locale 리소스를 분리
+- [x] `searchUiText.ts`에 `getSearchUiText(locale)` + `DEFAULT_SEARCH_UI_LOCALE` fallback을 추가해 상수 기반 구조를 locale 선택 가능한 구조로 확장
+- [x] `searchUiText.types.ts`로 리소스 타입을 분리해 locale 파일 간 필드 누락을 컴파일 단계에서 차단
+- [x] `searchUiText.test.ts` 추가로 기본 locale/지원 locale/미지원 locale fallback 동작을 고정
+- [x] `docs/01_manuals/frontend.md`에 FE-10 locale 확장 규칙 추가
+- 메모: UI 텍스트 리소스/테스트만 변경되어 Firestore read 소모는 0회다. 또한 locale fallback을 고정해 잘못된 locale 값으로 인한 불필요 재요청 루프를 예방해 추후 Firestore 연동 시 read 증가 위험을 줄였다.
+
 ### 2026-03-20 (FE-9 검색 패널 문구 i18n 리소스 분리)
 - [x] `frontend/src/domains/search/i18n/searchUiText.ts` 생성으로 검색 패널/오류/popstate/키워드 입력 문구를 단일 리소스로 분리
 - [x] `ResultSummaryBar`, `VideoGrid`, `KeywordSearchBar`, `searchErrorUiPolicy`, `popStateSyncPolicy`가 공통 문구 리소스를 참조하도록 정리
