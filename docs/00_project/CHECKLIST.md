@@ -157,6 +157,12 @@
 
 ## I. 완료 로그 (요약)
 
+### 2026-03-18 (FE-5 검색 훅 중복 호출 방지 테스트 보강)
+- [x] `frontend/src/domains/search/hooks/useVideoSearch.test.ts` 신규 추가
+- [x] 동일 query/filter/apiKeys 재호출 시 API 호출이 `skipped` 처리되어 중복 호출이 차단되는지 검증
+- [x] query 변경 시 재호출, 에러 후 동일 파라미터 재시도 가능, reset 이후 재호출 가능 시나리오 검증
+- 메모: 현재 검색 경로는 백엔드 API 기반이라 Firestore read는 직접 발생하지 않는다. 다만 동일 요청 중복 호출 차단을 테스트로 고정해 추후 Firestore 연동 시 불필요 read 증가를 예방한다.
+
 ### 2026-03-17 (ANALYSIS 계약 테스트 보강)
 - [x] `ANALYSIS_OUTPUT_INVALID` 시 `success=true + status=failed + data.error.code` 검증 테스트 추가
 - [x] `ANALYSIS_RATE_LIMITED` `Retry-After: 3` 헤더 유지 및 비 rate-limit 오류에서 헤더 미노출 검증 테스트 추가
@@ -285,4 +291,3 @@
 - [x] `App.tsx`에서 `autoSearchOnPopState=true` + 복원 query 기반 `runSearch` 연결
 - [x] popstate 자동 재조회는 query가 실제로 변경된 경우에만 실행되도록 가드
 - 메모: 현재 검색은 백엔드 API 기반이며 Firestore read는 0회. query 변경 없는 popstate 재조회 차단으로 추후 Firestore 연동 시 불필요 read 증가 위험을 낮춤
-

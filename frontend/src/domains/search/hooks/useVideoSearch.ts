@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { searchVideos } from "../api/client";
 import type {
+  SearchApiResponseData,
   SearchFilterState,
   SearchQueryState,
   SearchResultCard,
@@ -10,6 +11,35 @@ import type {
 import { mapSearchErrorMessage } from "../utils/mapSearchErrorMessage";
 
 const SEARCH_FALLBACK_DELAY_MS = 250;
+
+interface VideoSearchExecutorDependencies {
+  searchVideosFn: (params: {
+    q: string;
+    channel: string;
+    topic: SearchQueryState["topic"];
+    resultLimit: SearchQueryState["resultLimit"];
+    sort: SearchFilterState["sort"];
+    period: SearchFilterState["period"];
+    minViews: number;
+    country: string;
+    maxSubscribers: number;
+    subscriberPublicOnly: boolean;
+    durationBucket: SearchFilterState["durationBucket"];
+    shortFormType: SearchFilterState["shortFormType"];
+    scriptType: SearchFilterState["scriptType"];
+    hoverMetric: SearchFilterState["hoverMetric"];
+    minPerformance: number;
+    corePreset: SearchFilterState["corePreset"];
+    apiKeys?: string[];
+  }) => Promise<SearchApiResponseData>;
+  mapErrorMessageFn: (error: unknown) => string;
+  waitFn: (ms: number) => Promise<void>;
+}
+
+type VideoSearchExecutorResult =
+  | { kind: "skipped" }
+  | { kind: "success"; items: SearchResultCard[] }
+  | { kind: "error"; message: string };
 
 function buildRequestKey(query: SearchQueryState, filters: SearchFilterState, apiKeys: string[]): string {
   return [
@@ -35,30 +65,33 @@ function buildRequestKey(query: SearchQueryState, filters: SearchFilterState, ap
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => {
-    window.setTimeout(resolve, ms);
+    globalThis.setTimeout(resolve, ms);
   });
 }
 
-export function useVideoSearch(initialCards: SearchResultCard[]): UseVideoSearchResult {
-  const [resultsState, setResultsState] = useState<SearchResultsState>("idle");
-  const [visibleCards, setVisibleCards] = useState<SearchResultCard[]>(initialCards);
-  const [searchErrorMessage, setSearchErrorMessage] = useState<string | null>(null);
-  const lastRequestKeyRef = useRef<string | null>(null);
+export function createVideoSearchExecutor({
+  searchVideosFn,
+  mapErrorMessageFn,
+  waitFn,
+}: VideoSearchExecutorDependencies) {
+  let lastRequestKey: string | null = null;
 
-  const runSearch = useCallback(async (query: SearchQueryState, filters: SearchFilterState, apiKeys: string[] = []) => {
+  const execute = async (
+    query: SearchQueryState,
+    filters: SearchFilterState,
+    apiKeys: string[] = [],
+  ): Promise<VideoSearchExecutorResult> => {
     const requestKey = buildRequestKey(query, filters, apiKeys);
 
-    if (requestKey === lastRequestKeyRef.current) {
-      return;
+    if (requestKey === lastRequestKey) {
+      return { kind: "skipped" };
     }
 
-    lastRequestKeyRef.current = requestKey;
-    setResultsState("loading");
-    setSearchErrorMessage(null);
+    lastRequestKey = requestKey;
 
     try {
-      await delay(SEARCH_FALLBACK_DELAY_MS);
-      const response = await searchVideos({
+      await waitFn(SEARCH_FALLBACK_DELAY_MS);
+      const response = await searchVideosFn({
         q: query.keyword,
         channel: query.channel,
         topic: query.topic,
@@ -78,18 +111,59 @@ export function useVideoSearch(initialCards: SearchResultCard[]): UseVideoSearch
         apiKeys,
       });
 
-      setVisibleCards(response.items);
-      setResultsState(response.items.length > 0 ? "success" : "empty");
+      return { kind: "success", items: response.items };
     } catch (caughtError) {
-      setVisibleCards([]);
-      setSearchErrorMessage(mapSearchErrorMessage(caughtError));
-      setResultsState("error");
+      lastRequestKey = null;
+      return { kind: "error", message: mapErrorMessageFn(caughtError) };
     }
+  };
+
+  const reset = () => {
+    lastRequestKey = null;
+  };
+
+  return {
+    execute,
+    reset,
+  };
+}
+
+export function useVideoSearch(initialCards: SearchResultCard[]): UseVideoSearchResult {
+  const [resultsState, setResultsState] = useState<SearchResultsState>("idle");
+  const [visibleCards, setVisibleCards] = useState<SearchResultCard[]>(initialCards);
+  const [searchErrorMessage, setSearchErrorMessage] = useState<string | null>(null);
+  const executorRef = useRef(
+    createVideoSearchExecutor({
+      searchVideosFn: searchVideos,
+      mapErrorMessageFn: mapSearchErrorMessage,
+      waitFn: delay,
+    }),
+  );
+
+  const runSearch = useCallback(async (query: SearchQueryState, filters: SearchFilterState, apiKeys: string[] = []) => {
+    setResultsState("loading");
+    setSearchErrorMessage(null);
+
+    const result = await executorRef.current.execute(query, filters, apiKeys);
+
+    if (result.kind === "skipped") {
+      return;
+    }
+
+    if (result.kind === "error") {
+      setVisibleCards([]);
+      setSearchErrorMessage(result.message);
+      setResultsState("error");
+      return;
+    }
+
+    setVisibleCards(result.items);
+    setResultsState(result.items.length > 0 ? "success" : "empty");
   }, []);
 
 
   const resetSearch = useCallback(() => {
-    lastRequestKeyRef.current = null;
+    executorRef.current.reset();
     setVisibleCards([]);
     setSearchErrorMessage(null);
     setResultsState("idle");

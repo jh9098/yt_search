@@ -1,3 +1,33 @@
+## 2026-03-18 (FE-5 useVideoSearch 중복 호출 방지 테스트 보강)
+### 오늘 목표
+- `useVideoSearch`의 중복 호출 차단/재호출 가능 조건을 테스트로 고정해 popstate 자동 재조회 경로 안정성을 높인다.
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/search/hooks/useVideoSearch.ts`에 테스트 가능한 실행기(`createVideoSearchExecutor`) 분리
+- [x] `frontend/src/domains/search/hooks/useVideoSearch.test.ts` 신규 추가
+- [x] 동일 query/filter/apiKeys 재호출 시 `skipped` 처리되어 API 중복 호출이 차단되는지 검증
+- [x] query 변경 시 재호출, 에러 후 동일 파라미터 재시도 가능, reset 이후 재호출 가능 시나리오 검증
+- [x] `frontend` 테스트 실행으로 회귀 확인 (`npm test -- useVideoSearch.test.ts popStateSyncPolicy.test.ts`)
+- [x] `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] `useVideoSearch` 훅 레벨(React 렌더링 포함) 테스트 추가 여부 검토
+
+### 변경/생성 파일
+- `frontend/src/domains/search/hooks/useVideoSearch.ts`
+- `frontend/src/domains/search/hooks/useVideoSearch.test.ts`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. 백엔드 검색 API 에러 코드/메시지 계약(`DOMAIN_REASON`) 테스트를 `backend/tests/test_search_api.py`에 보강
+
+### 메모
+- 현재 검색 경로는 백엔드 API 기반이라 Firestore 직접 조회(read)는 0회다.
+- 이번 테스트 보강으로 동일 요청 중복 호출 차단/재시도 조건이 고정되어, 추후 Firestore 연동 시 불필요 read 소모 증가를 예방한다.
+
+---
+
 ## 2026-03-17 (ANALYSIS-BATCH: 실패/Retry-After/partial-success 계약 테스트 보강)
 ### 오늘 목표
 - D-3/D-5 문서 계약 기준으로 analysis API 테스트를 3개 시나리오(실패/Retry-After/partial-success)로 보강
@@ -939,4 +969,3 @@
 ### 메모
 - 현재 구현은 백엔드 검색 API 호출 구조로 Firestore를 직접 조회하지 않아 read 소모는 0회다.
 - query가 바뀌지 않은 popstate 이벤트에서는 재조회하지 않도록 막아, 추후 Firestore 연동 시 불필요 read 소모를 줄일 수 있도록 반영했다.
-
