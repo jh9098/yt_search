@@ -157,6 +157,13 @@
 
 ## I. 완료 로그 (요약)
 
+### 2026-03-18 (FE-6 검색 에러 매핑/재시도 가능 여부 테스트 보강)
+- [x] `frontend/src/domains/search/utils/mapSearchError.ts` 생성 및 검색 에러코드별 `message/retryable` 정책 고정
+- [x] `useVideoSearch`에 `isSearchErrorRetryable` 상태 추가 및 executor 에러 결과를 `message + retryable` 구조로 확장
+- [x] `useVideoSearch.test.ts`에 retry 가능/불가 매핑 전달 테스트 2건 추가
+- [x] `mapSearchError.test.ts` 신규 추가로 `SEARCH_QUOTA_EXCEEDED`, `COMMON_INVALID_REQUEST`, unknown code 정책 검증
+- 메모: 현재 검색 경로는 백엔드 API 기반이라 Firestore read는 0회다. retryable 정책을 코드/테스트에 고정해 재시도 불가 오류에서 불필요 read 소모가 발생하지 않도록 대비했다.
+
 ### 2026-03-18 (FE-5 검색 훅 중복 호출 방지 테스트 보강)
 - [x] `frontend/src/domains/search/hooks/useVideoSearch.test.ts` 신규 추가
 - [x] 동일 query/filter/apiKeys 재호출 시 API 호출이 `skipped` 처리되어 중복 호출이 차단되는지 검증

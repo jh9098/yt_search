@@ -1,3 +1,39 @@
+## 2026-03-18 (FE-6 검색 에러 매핑/재시도 가능 여부 테스트 보강)
+### 오늘 목표
+- 이전 세션 미완료 항목(검색 에러코드별 재시도 가능 여부 테스트)을 `useVideoSearch` 경로에서 완료하고 API-UI 계약을 고정
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/search/utils/mapSearchError.ts` 추가: 검색 에러코드별 사용자 메시지 + `retryable` 정책 매핑 구현
+- [x] `useVideoSearch` 실행기(`createVideoSearchExecutor`)가 에러 발생 시 `message`와 `retryable`을 함께 전달하도록 확장
+- [x] `useVideoSearch` 상태에 `isSearchErrorRetryable` 값을 추가해 UI 분기에서 재시도 가능 여부를 사용할 수 있도록 준비
+- [x] `frontend/src/domains/search/hooks/useVideoSearch.test.ts`에 retry 가능/불가 매핑 전달 테스트 2건 추가
+- [x] `frontend/src/domains/search/utils/mapSearchError.test.ts` 신규 추가로 검색 에러코드 정책 고정 테스트 3건 추가
+- [x] `npm test -- useVideoSearch.test.ts mapSearchError.test.ts mapSearchErrorMessage.test.ts`, `npm run build`로 회귀 확인
+- [x] `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] `VideoGrid` 에러 UI에 `isSearchErrorRetryable=false`일 때 입력 수정 유도 액션(예: 필터 강조) 분기 추가
+
+### 변경/생성 파일
+- `frontend/src/domains/search/utils/mapSearchError.ts`
+- `frontend/src/domains/search/utils/mapSearchError.test.ts`
+- `frontend/src/domains/search/utils/mapSearchErrorMessage.ts`
+- `frontend/src/domains/search/utils/mapSearchErrorMessage.test.ts`
+- `frontend/src/domains/search/hooks/useVideoSearch.ts`
+- `frontend/src/domains/search/hooks/useVideoSearch.test.ts`
+- `frontend/src/domains/search/types.ts`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. `VideoGrid`/요약바에서 `isSearchErrorRetryable`을 소비해 재시도 가능/불가 UX를 분기하고, 관련 컴포넌트 테스트를 추가
+
+### 메모
+- 현재 검색 경로는 백엔드 API 기반이라 Firestore read 소모는 0회다.
+- 에러코드별 retryable 정책을 프론트 테스트로 고정해, 추후 Firestore 연동 시 재시도 불가 오류에서 불필요 재조회로 인한 read 증가를 예방한다.
+
+---
+
 ## 2026-03-18 (BE-SEARCH 계약 테스트 보강: 에러 코드/메시지)
 ### 오늘 목표
 - CHANGELOG 다음 세션 시작점에 맞춰 `GET /api/search/videos`의 에러 코드/메시지 계약 테스트를 보강

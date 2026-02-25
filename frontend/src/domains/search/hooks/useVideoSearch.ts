@@ -8,7 +8,7 @@ import type {
   SearchResultsState,
   UseVideoSearchResult,
 } from "../types";
-import { mapSearchErrorMessage } from "../utils/mapSearchErrorMessage";
+import { mapSearchError } from "../utils/mapSearchError";
 
 const SEARCH_FALLBACK_DELAY_MS = 250;
 
@@ -32,14 +32,14 @@ interface VideoSearchExecutorDependencies {
     corePreset: SearchFilterState["corePreset"];
     apiKeys?: string[];
   }) => Promise<SearchApiResponseData>;
-  mapErrorMessageFn: (error: unknown) => string;
+  mapErrorFn: (error: unknown) => { message: string; retryable: boolean };
   waitFn: (ms: number) => Promise<void>;
 }
 
 type VideoSearchExecutorResult =
   | { kind: "skipped" }
   | { kind: "success"; items: SearchResultCard[] }
-  | { kind: "error"; message: string };
+  | { kind: "error"; message: string; retryable: boolean };
 
 function buildRequestKey(query: SearchQueryState, filters: SearchFilterState, apiKeys: string[]): string {
   return [
@@ -71,7 +71,7 @@ function delay(ms: number): Promise<void> {
 
 export function createVideoSearchExecutor({
   searchVideosFn,
-  mapErrorMessageFn,
+  mapErrorFn,
   waitFn,
 }: VideoSearchExecutorDependencies) {
   let lastRequestKey: string | null = null;
@@ -114,7 +114,8 @@ export function createVideoSearchExecutor({
       return { kind: "success", items: response.items };
     } catch (caughtError) {
       lastRequestKey = null;
-      return { kind: "error", message: mapErrorMessageFn(caughtError) };
+      const mappedError = mapErrorFn(caughtError);
+      return { kind: "error", message: mappedError.message, retryable: mappedError.retryable };
     }
   };
 
@@ -132,10 +133,11 @@ export function useVideoSearch(initialCards: SearchResultCard[]): UseVideoSearch
   const [resultsState, setResultsState] = useState<SearchResultsState>("idle");
   const [visibleCards, setVisibleCards] = useState<SearchResultCard[]>(initialCards);
   const [searchErrorMessage, setSearchErrorMessage] = useState<string | null>(null);
+  const [isSearchErrorRetryable, setIsSearchErrorRetryable] = useState<boolean>(true);
   const executorRef = useRef(
     createVideoSearchExecutor({
       searchVideosFn: searchVideos,
-      mapErrorMessageFn: mapSearchErrorMessage,
+      mapErrorFn: mapSearchError,
       waitFn: delay,
     }),
   );
@@ -143,6 +145,7 @@ export function useVideoSearch(initialCards: SearchResultCard[]): UseVideoSearch
   const runSearch = useCallback(async (query: SearchQueryState, filters: SearchFilterState, apiKeys: string[] = []) => {
     setResultsState("loading");
     setSearchErrorMessage(null);
+    setIsSearchErrorRetryable(true);
 
     const result = await executorRef.current.execute(query, filters, apiKeys);
 
@@ -154,6 +157,7 @@ export function useVideoSearch(initialCards: SearchResultCard[]): UseVideoSearch
       setVisibleCards([]);
       setSearchErrorMessage(result.message);
       setResultsState("error");
+      setIsSearchErrorRetryable(result.retryable);
       return;
     }
 
@@ -166,6 +170,7 @@ export function useVideoSearch(initialCards: SearchResultCard[]): UseVideoSearch
     executorRef.current.reset();
     setVisibleCards([]);
     setSearchErrorMessage(null);
+    setIsSearchErrorRetryable(true);
     setResultsState("idle");
   }, []);
 
@@ -173,10 +178,11 @@ export function useVideoSearch(initialCards: SearchResultCard[]): UseVideoSearch
     () => ({
       resultsState,
       searchErrorMessage,
+      isSearchErrorRetryable,
       visibleCards,
       runSearch,
       resetSearch,
     }),
-    [resetSearch, resultsState, runSearch, searchErrorMessage, visibleCards],
+    [isSearchErrorRetryable, resetSearch, resultsState, runSearch, searchErrorMessage, visibleCards],
   );
 }
