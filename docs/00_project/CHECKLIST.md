@@ -291,3 +291,10 @@
 - [x] `App.tsx`에서 `autoSearchOnPopState=true` + 복원 query 기반 `runSearch` 연결
 - [x] popstate 자동 재조회는 query가 실제로 변경된 경우에만 실행되도록 가드
 - 메모: 현재 검색은 백엔드 API 기반이며 Firestore read는 0회. query 변경 없는 popstate 재조회 차단으로 추후 Firestore 연동 시 불필요 read 증가 위험을 낮춤
+
+
+### 2026-03-18 (백엔드 검색 에러 계약 테스트 보강)
+- [x] `backend/tests/test_search_api.py`에 quota/rate-limit/upstream unavailable/upstream error 계약 테스트 4건 추가
+- [x] 검색 에러코드별 상태코드(503/502)와 고정 사용자 메시지 일치 여부 검증
+- 메모: 테스트 보강 작업으로 런타임 로직/저장소 경로는 변경하지 않았고 Firestore read는 0회. 추후 Firestore 연동 시에도 에러 응답 계약이 고정돼 재시도 분기 오작동으로 인한 불필요 read 증가 위험을 줄임.
+

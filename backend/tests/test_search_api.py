@@ -6,6 +6,12 @@ from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
+from backend.app.domains.search.client import (
+    SearchQuotaExceededError,
+    SearchRateLimitedError,
+    SearchUpstreamError,
+    SearchUpstreamUnavailableError,
+)
 from backend.app.domains.search.schemas import SearchVideoRecord
 from backend.app.main import app
 
@@ -120,6 +126,66 @@ class SearchApiContractTest(unittest.TestCase):
         body = response.json()
         self.assertTrue(body["success"])
         self.assertEqual(body["data"]["items"], [])
+
+    def test_get_search_videos_returns_quota_exceeded_contract(self) -> None:
+        with patch("backend.app.domains.search.router.search_videos") as mocked_search:
+            mocked_search.side_effect = SearchQuotaExceededError()
+
+            response = self.client.get(
+                "/api/search/videos",
+                params={"q": "가족", "sort": "subscriberAsc", "period": "7d", "minViews": 0, "durationBucket": "all", "corePreset": "none"},
+            )
+
+        self.assertEqual(response.status_code, 503)
+        body = response.json()
+        self.assertFalse(body["success"])
+        self.assertEqual(body["error"]["code"], "SEARCH_QUOTA_EXCEEDED")
+        self.assertEqual(body["error"]["message"], "검색 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.")
+
+    def test_get_search_videos_returns_rate_limited_contract(self) -> None:
+        with patch("backend.app.domains.search.router.search_videos") as mocked_search:
+            mocked_search.side_effect = SearchRateLimitedError()
+
+            response = self.client.get(
+                "/api/search/videos",
+                params={"q": "가족", "sort": "subscriberAsc", "period": "7d", "minViews": 0, "durationBucket": "all", "corePreset": "none"},
+            )
+
+        self.assertEqual(response.status_code, 503)
+        body = response.json()
+        self.assertFalse(body["success"])
+        self.assertEqual(body["error"]["code"], "SEARCH_RATE_LIMITED")
+        self.assertEqual(body["error"]["message"], "검색 요청이 많아 잠시 지연되고 있습니다. 잠시 후 다시 시도해 주세요.")
+
+    def test_get_search_videos_returns_upstream_unavailable_contract(self) -> None:
+        with patch("backend.app.domains.search.router.search_videos") as mocked_search:
+            mocked_search.side_effect = SearchUpstreamUnavailableError()
+
+            response = self.client.get(
+                "/api/search/videos",
+                params={"q": "가족", "sort": "subscriberAsc", "period": "7d", "minViews": 0, "durationBucket": "all", "corePreset": "none"},
+            )
+
+        self.assertEqual(response.status_code, 503)
+        body = response.json()
+        self.assertFalse(body["success"])
+        self.assertEqual(body["error"]["code"], "SEARCH_UPSTREAM_UNAVAILABLE")
+        self.assertEqual(body["error"]["message"], "검색 서비스 연결이 원활하지 않습니다. 잠시 후 다시 시도해 주세요.")
+
+    def test_get_search_videos_returns_upstream_error_contract(self) -> None:
+        with patch("backend.app.domains.search.router.search_videos") as mocked_search:
+            mocked_search.side_effect = SearchUpstreamError(message="bad gateway")
+
+            response = self.client.get(
+                "/api/search/videos",
+                params={"q": "가족", "sort": "subscriberAsc", "period": "7d", "minViews": 0, "durationBucket": "all", "corePreset": "none"},
+            )
+
+        self.assertEqual(response.status_code, 502)
+        body = response.json()
+        self.assertFalse(body["success"])
+        self.assertEqual(body["error"]["code"], "SEARCH_UPSTREAM_ERROR")
+        self.assertEqual(body["error"]["message"], "검색 중 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.")
 
 
 if __name__ == "__main__":
