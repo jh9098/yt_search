@@ -1,3 +1,32 @@
+## 2026-03-18 (BE-SEARCH 계약 테스트 보강: 에러 코드/메시지)
+### 오늘 목표
+- CHANGELOG 다음 세션 시작점에 맞춰 `GET /api/search/videos`의 에러 코드/메시지 계약 테스트를 보강
+
+### 진행 내용 (완료)
+- [x] `backend/tests/test_search_api.py`에 `SEARCH_QUOTA_EXCEEDED`(503) 계약 테스트 추가
+- [x] `SEARCH_RATE_LIMITED`(503), `SEARCH_UPSTREAM_UNAVAILABLE`(503), `SEARCH_UPSTREAM_ERROR`(502) 계약 테스트 추가
+- [x] 각 시나리오별 `success=false`, `error.code`, 고정 사용자 메시지 검증
+- [x] `python -m unittest backend.tests.test_search_api` 실행으로 회귀 확인
+- [x] `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] 검색 에러코드가 프론트 토스트/인라인 분기에 정확히 연결되는 FE 단위 테스트 추가
+
+### 변경/생성 파일
+- `backend/tests/test_search_api.py`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. 프론트 `useVideoSearch` 에러 매핑 테스트에 검색 에러코드별 재시도 가능 여부를 추가해 API-UI 계약을 닫기
+
+### 메모
+- 이번 변경은 테스트/문서만 수정했으며 검색 런타임 로직과 저장소는 변경하지 않았다.
+- 현재 백엔드 검색 경로는 YouTube API 프록시 기반이며 Firestore read 소모는 0회다.
+- 계약 테스트 고정으로 에러 시 잘못된 재시도 루프를 줄여, 추후 Firestore 연동 시 불필요 read 소모 증가 위험을 예방한다.
+
+---
+
 ## 2026-03-18 (FE-5 useVideoSearch 중복 호출 방지 테스트 보강)
 ### 오늘 목표
 - `useVideoSearch`의 중복 호출 차단/재호출 가능 조건을 테스트로 고정해 popstate 자동 재조회 경로 안정성을 높인다.
