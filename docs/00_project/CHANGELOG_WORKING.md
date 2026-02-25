@@ -1,3 +1,37 @@
+## 2026-03-19 (FE-8 retryable=false 입력 포커스/강조)
+### 오늘 목표
+- FE-7 미완료 항목을 닫기 위해 retryable=false 오류 상태에서 키워드 입력창 포커스/강조를 추가하고 정책을 테스트로 고정한다.
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/search/utils/searchInputAttentionPolicy.ts` 추가: 입력 주의 유도 필요 조건 및 1회성 포커스 트리거 정책 분리
+- [x] `frontend/src/domains/search/utils/searchInputAttentionPolicy.test.ts` 추가: 대상 상태 판정/중복 트리거 방지 테스트 3건 고정
+- [x] `frontend/src/App.tsx`에 오류 전환 감지 `useEffect` 추가, retryable=false 첫 진입 시 키워드 입력 자동 포커스 연결
+- [x] `frontend/src/domains/search/components/KeywordSearchBar.tsx`에 `aria-invalid`와 강조 클래스/입력 ref 연결
+- [x] `frontend/src/styles.css`에 `search-input-attention` 스타일 추가
+- [x] `npm test -- searchInputAttentionPolicy.test.ts useVideoSearch.test.ts mapSearchError.test.ts searchErrorUiPolicy.test.ts`, `npm run build` 검증 완료
+- [x] `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] 없음
+
+### 변경/생성 파일
+- `frontend/src/domains/search/utils/searchInputAttentionPolicy.ts`
+- `frontend/src/domains/search/utils/searchInputAttentionPolicy.test.ts`
+- `frontend/src/App.tsx`
+- `frontend/src/domains/search/components/KeywordSearchBar.tsx`
+- `frontend/src/styles.css`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. 검색 패널 입력 유도 문구를 i18n 리소스로 분리할지 정책 확정
+
+### 메모
+- 현재 검색 경로는 백엔드 API 기반이며 Firestore read 소모는 0회다.
+- retryable=false 상태에서 자동 재검색을 추가하지 않고 입력 수정으로 유도해, 추후 Firestore 연동 시 불필요 read 재시도 위험을 줄였다.
+
+---
+
 ## 2026-03-19 (FE-7 검색 에러 retryable UX 분기)
 ### 오늘 목표
 - FE-6 후속으로 `VideoGrid`/`ResultSummaryBar`에서 `isSearchErrorRetryable`을 실제 UX 분기에 연결한다.

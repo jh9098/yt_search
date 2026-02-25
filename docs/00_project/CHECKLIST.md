@@ -157,6 +157,13 @@
 
 ## I. 완료 로그 (요약)
 
+### 2026-03-19 (FE-8 retryable=false 입력 포커스/강조)
+- [x] `searchInputAttentionPolicy.ts` + 테스트 추가로 비재시도 오류 시 입력 주의 유도 트리거를 정책화
+- [x] `App.tsx`에서 `resultsState=error` + `isSearchErrorRetryable=false` 최초 진입 시 키워드 입력 자동 포커스 연결
+- [x] `KeywordSearchBar`에 `aria-invalid` + 강조 스타일 클래스 연결로 입력 수정 유도 강화
+- [x] `styles.css`에 `search-input-attention` 스타일 추가
+- 메모: 현재 검색 경로는 백엔드 API 기반이라 Firestore read는 0회다. 비재시도 오류에서 즉시 재호출 대신 입력 수정으로 유도해 추후 Firestore 연동 시 불필요 read 소모 위험을 낮췄다.
+
 ### 2026-03-19 (FE-7 검색 에러 retryable UX 분기 반영)
 - [x] `VideoGrid` 오류 상태에 retryable 여부 기반 보조 문구/액션 버튼 분기 추가
 - [x] retryable=true는 "같은 조건으로 다시 검색", retryable=false는 "검색 조건 초기화" 액션으로 고정
