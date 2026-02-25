@@ -1,5 +1,6 @@
 import { SearchResultTable } from "./SearchResultTable";
 import { VideoCard } from "./VideoCard";
+import { SEARCH_UI_TEXT } from "../i18n/searchUiText";
 import { getSearchErrorUiPolicy } from "../utils/searchErrorUiPolicy";
 import type { SearchHoverMetric, SearchResultCard, SearchResultsState, SearchViewMode } from "../types";
 
@@ -48,7 +49,7 @@ export function VideoGrid({
     return (
       <div className="results-placeholder results-placeholder-error" role="alert">
         <p className="results-error-message">
-          {errorMessage ?? "검색 중 문제가 발생했습니다. 필터를 조정한 뒤 검색 버튼으로 다시 시도해 주세요."}
+          {errorMessage ?? SEARCH_UI_TEXT.errorPanel.fallbackErrorMessage}
         </p>
         <p className="results-error-helper">{errorUiPolicy.helperMessage}</p>
         <div className="results-error-actions">
@@ -65,7 +66,7 @@ export function VideoGrid({
   }
 
   if (resultsState === "empty") {
-    return <div className="results-placeholder">조건에 맞는 영상이 없습니다. 필터를 완화하고 다시 검색해 보세요.</div>;
+    return <div className="results-placeholder">{SEARCH_UI_TEXT.errorPanel.emptyResultMessage}</div>;
   }
 
   if (viewMode === "list") {

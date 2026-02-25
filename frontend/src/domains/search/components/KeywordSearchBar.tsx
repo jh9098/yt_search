@@ -1,4 +1,6 @@
 import type React from "react";
+import { SEARCH_UI_TEXT } from "../i18n/searchUiText";
+
 interface KeywordSearchBarProps {
   keyword: string;
   resultLimit: 50 | 150 | 250;
@@ -11,9 +13,9 @@ interface KeywordSearchBarProps {
 }
 
 const LIMIT_OPTIONS: Array<{ value: 50 | 150 | 250; label: string }> = [
-  { value: 50, label: "50개 (라이트)" },
-  { value: 150, label: "150개 (표준)" },
-  { value: 250, label: "250개 (정밀)" },
+  { value: 50, label: SEARCH_UI_TEXT.keywordSearch.resultLimitOptions.light },
+  { value: 150, label: SEARCH_UI_TEXT.keywordSearch.resultLimitOptions.standard },
+  { value: 250, label: SEARCH_UI_TEXT.keywordSearch.resultLimitOptions.precise },
 ];
 
 export function KeywordSearchBar({
@@ -27,9 +29,9 @@ export function KeywordSearchBar({
   onSearch,
 }: KeywordSearchBarProps) {
   return (
-    <div className="search-input-group" aria-label="키워드 검색 영역">
+    <div className="search-input-group" aria-label={SEARCH_UI_TEXT.keywordSearch.sectionAriaLabel}>
       <label htmlFor="keyword-search-input" className="search-label">
-        키워드 검색
+        {SEARCH_UI_TEXT.keywordSearch.label}
       </label>
       <div className="search-input-row">
         <input
@@ -38,19 +40,24 @@ export function KeywordSearchBar({
           ref={keywordInputRef}
           value={keyword}
           onChange={(event) => onKeywordChange(event.target.value)}
-          placeholder="예: 가족 사연"
-          aria-label="키워드 입력"
+          placeholder={SEARCH_UI_TEXT.keywordSearch.inputPlaceholder}
+          aria-label={SEARCH_UI_TEXT.keywordSearch.inputAriaLabel}
           aria-invalid={isAttentionRequired}
         />
-        <button type="button" onClick={onSearch} disabled={isDisabled} aria-label="키워드 검색 실행">
-          키워드 검색
+        <button
+          type="button"
+          onClick={onSearch}
+          disabled={isDisabled}
+          aria-label={SEARCH_UI_TEXT.keywordSearch.submitButtonAriaLabel}
+        >
+          {SEARCH_UI_TEXT.keywordSearch.submitButtonLabel}
         </button>
         <select
           className="search-select"
           value={resultLimit}
           disabled={isDisabled}
           onChange={(event) => onLimitChange(Number(event.target.value) as 50 | 150 | 250)}
-          aria-label="검색 개수 제한"
+          aria-label={SEARCH_UI_TEXT.keywordSearch.resultLimitAriaLabel}
         >
           {LIMIT_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>

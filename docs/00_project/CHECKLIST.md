@@ -157,6 +157,12 @@
 
 ## I. 완료 로그 (요약)
 
+### 2026-03-20 (FE-9 검색 패널 문구 i18n 리소스 분리)
+- [x] `frontend/src/domains/search/i18n/searchUiText.ts` 생성으로 검색 패널/오류/popstate/키워드 입력 문구를 단일 리소스로 분리
+- [x] `ResultSummaryBar`, `VideoGrid`, `KeywordSearchBar`, `searchErrorUiPolicy`, `popStateSyncPolicy`가 공통 문구 리소스를 참조하도록 정리
+- [x] `docs/01_manuals/frontend.md`에 검색 패널 문구 관리 규칙(FE-9) 추가
+- 메모: 현재 검색 경로는 백엔드 API 기반이라 Firestore read는 0회다. 이번 변경은 UI 문구 참조 구조만 정리해 read 소모를 늘리지 않으며, 향후 문구 변경 시 재시도 정책 오작동으로 인한 불필요 재조회(read) 위험을 줄인다.
+
 ### 2026-03-19 (FE-8 retryable=false 입력 포커스/강조)
 - [x] `searchInputAttentionPolicy.ts` + 테스트 추가로 비재시도 오류 시 입력 주의 유도 트리거를 정책화
 - [x] `App.tsx`에서 `resultsState=error` + `isSearchErrorRetryable=false` 최초 진입 시 키워드 입력 자동 포커스 연결
