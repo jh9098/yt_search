@@ -1,20 +1,28 @@
-import { SEARCH_UI_TEXT } from "../i18n/searchUiText";
+import type { SearchUiText } from "../i18n/searchUiText.types";
 
 interface SearchErrorUiPolicy {
   helperMessage: string;
   primaryActionLabel: string;
 }
 
-const RETRYABLE_POLICY: SearchErrorUiPolicy = {
-  helperMessage: SEARCH_UI_TEXT.errorPanel.retryableHelperMessage,
-  primaryActionLabel: SEARCH_UI_TEXT.errorPanel.retryablePrimaryActionLabel,
-};
+interface SearchErrorUiPolicyInput {
+  isRetryable: boolean;
+  searchUiText: SearchUiText;
+}
 
-const NON_RETRYABLE_POLICY: SearchErrorUiPolicy = {
-  helperMessage: SEARCH_UI_TEXT.errorPanel.nonRetryableHelperMessage,
-  primaryActionLabel: SEARCH_UI_TEXT.errorPanel.nonRetryablePrimaryActionLabel,
-};
+export function getSearchErrorUiPolicy({
+  isRetryable,
+  searchUiText,
+}: SearchErrorUiPolicyInput): SearchErrorUiPolicy {
+  if (isRetryable) {
+    return {
+      helperMessage: searchUiText.errorPanel.retryableHelperMessage,
+      primaryActionLabel: searchUiText.errorPanel.retryablePrimaryActionLabel,
+    };
+  }
 
-export function getSearchErrorUiPolicy(isRetryable: boolean): SearchErrorUiPolicy {
-  return isRetryable ? RETRYABLE_POLICY : NON_RETRYABLE_POLICY;
+  return {
+    helperMessage: searchUiText.errorPanel.nonRetryableHelperMessage,
+    primaryActionLabel: searchUiText.errorPanel.nonRetryablePrimaryActionLabel,
+  };
 }

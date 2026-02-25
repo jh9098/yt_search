@@ -157,6 +157,14 @@
 
 ## I. 완료 로그 (요약)
 
+### 2026-03-21 (FE-11 검색 UI runtime locale 상태 연결)
+- [x] `searchUiLocale.ts` 추가로 locale 해석/저장(`localStorage`) 정책을 모듈화
+- [x] `App.tsx`에 locale 상태(`searchUiLocale`)와 선택 UI(`SearchLocaleSelector`)를 연결하고, 브라우저 언어 fallback을 적용
+- [x] `KeywordSearchBar`, `ResultSummaryBar`, `VideoGrid`가 `searchUiText` props 기반으로 렌더링되도록 전환
+- [x] `searchErrorUiPolicy`, `popStateSyncPolicy`를 locale 텍스트 주입형 함수로 전환해 정책 문구도 런타임 locale을 따르도록 정합성 확보
+- [x] `searchUiLocale.test.ts` 포함 관련 테스트/빌드 통과
+- 메모: 본 변경은 프론트 i18n 상태/문구 렌더링 계층만 다루므로 Firestore read 소모는 0회다. 또한 locale 혼선으로 인한 잘못된 재시도 문구 노출을 줄여, 추후 Firestore 연동 시 불필요 재조회(read) 유발 가능성을 낮춘다.
+
 ### 2026-03-21 (FE-10 검색 문구 locale 레이어 확장)
 - [x] `frontend/src/domains/search/i18n/locales/ko.ts`, `en.ts`로 locale 리소스를 분리
 - [x] `searchUiText.ts`에 `getSearchUiText(locale)` + `DEFAULT_SEARCH_UI_LOCALE` fallback을 추가해 상수 기반 구조를 locale 선택 가능한 구조로 확장

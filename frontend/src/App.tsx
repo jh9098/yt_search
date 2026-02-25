@@ -18,7 +18,7 @@ import { ApiKeyManager } from "./domains/search/components/ApiKeyManager";
 import { CookieFilePathManager } from "./domains/search/components/CookieFilePathManager";
 import { TranscriptModal } from "./domains/search/components/TranscriptModal";
 import { useSearchQueryState } from "./domains/search/hooks/useSearchQueryState";
-import { POPSTATE_RESTORED_MESSAGE } from "./domains/search/utils/popStateSyncPolicy";
+import { getPopStateRestoredMessage } from "./domains/search/utils/popStateSyncPolicy";
 import { useVideoSearch } from "./domains/search/hooks/useVideoSearch";
 import {
   isSearchInputAttentionRequired,
@@ -34,6 +34,9 @@ import {
   saveCookieInputMode,
 } from "./domains/search/cookiePathStorage";
 import { fetchVideoTranscript, SearchApiError } from "./domains/search/api/client";
+import { SearchLocaleSelector } from "./domains/search/components/SearchLocaleSelector";
+import { getSearchUiText, type SearchUiLocale } from "./domains/search/i18n/searchUiText";
+import { loadSearchUiLocale, saveSearchUiLocale } from "./domains/search/i18n/searchUiLocale";
 import type {
   AnalysisErrorState,
   AnalysisLoadingState,
@@ -80,6 +83,8 @@ export function App() {
     resetSearch,
   } = useVideoSearch([]);
   const [userApiKeys, setUserApiKeys] = useState<string[]>(() => loadUserApiKeys());
+  const [searchUiLocale, setSearchUiLocale] = useState<SearchUiLocale>(() => loadSearchUiLocale());
+  const searchUiText = useMemo(() => getSearchUiText(searchUiLocale), [searchUiLocale]);
 
   const handlePopStateQueryRestored = useCallback((restoredQuery: SearchQueryState) => {
     void runSearch(restoredQuery, filters, userApiKeys);
@@ -91,12 +96,12 @@ export function App() {
       popStateNoticeTimerRef.current = null;
     }
 
-    setPopStateNoticeMessage(POPSTATE_RESTORED_MESSAGE);
+    setPopStateNoticeMessage(getPopStateRestoredMessage(searchUiText));
     popStateNoticeTimerRef.current = window.setTimeout(() => {
       setPopStateNoticeMessage(null);
       popStateNoticeTimerRef.current = null;
     }, POPSTATE_NOTICE_DURATION_MS);
-  }, []);
+  }, [searchUiText]);
 
   const { queryState, setQueryState, viewMode, setViewMode, copyShareUrl } = useSearchQueryState({
     autoSearchOnPopState: true,
@@ -383,6 +388,11 @@ export function App() {
     setUserApiKeys(nextApiKeys);
   };
 
+  const handleSearchUiLocaleChange = (nextLocale: SearchUiLocale) => {
+    saveSearchUiLocale(nextLocale);
+    setSearchUiLocale(nextLocale);
+  };
+
   const handleCookieInputModeChange = (nextMode: CookieInputMode) => {
     saveCookieInputMode(nextMode);
     setCookieInputMode(nextMode);
@@ -447,6 +457,7 @@ export function App() {
           <p className="app-subtitle">검색 결과에서 바로 AI 소재 분석을 실행할 수 있습니다.</p>
         </div>
         <div className="app-header-tools">
+          <SearchLocaleSelector locale={searchUiLocale} onChange={handleSearchUiLocaleChange} />
           <div className="quota-indicator" aria-label="추정 할당량 잔량">
             <p className="quota-title">추정 할당량 잔량</p>
             <p className="quota-value">{estimatedQuotaLeft.toLocaleString()} / {quotaMax.toLocaleString()} pt</p>
@@ -466,6 +477,7 @@ export function App() {
 
       <section className="search-panel" aria-label="탐색 검색 패널">
         <KeywordSearchBar
+          searchUiText={searchUiText}
           keyword={queryState.keyword}
           resultLimit={queryState.resultLimit}
           isDisabled={isSearchLoading}
@@ -517,6 +529,7 @@ export function App() {
 
       <section className="search-section" aria-label="검색 결과">
         <ResultSummaryBar
+          searchUiText={searchUiText}
           summary={summary}
           isSearchErrorRetryable={isSearchErrorRetryable}
           onReset={handleResetAll}
@@ -527,6 +540,7 @@ export function App() {
           popStateNoticeMessage={popStateNoticeMessage}
         />
         <VideoGrid
+          searchUiText={searchUiText}
           cards={visibleCards}
           resultsState={resultsState}
           errorMessage={searchErrorMessage}

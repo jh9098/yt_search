@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { evaluatePopStateSync, isSameQueryState } from "./popStateSyncPolicy";
+import { getSearchUiText } from "../i18n/searchUiText";
+import { evaluatePopStateSync, getPopStateRestoredMessage, isSameQueryState } from "./popStateSyncPolicy";
 
 describe("isSameQueryState", () => {
   it("모든 필드가 같으면 true를 반환한다", () => {
@@ -62,5 +63,13 @@ describe("evaluatePopStateSync", () => {
     expect(decision.shouldApplyState).toBe(true);
     expect(decision.shouldTriggerSearch).toBe(false);
     expect(decision.shouldShowRestoredNotice).toBe(false);
+  });
+});
+
+
+describe("getPopStateRestoredMessage", () => {
+  it("선택 locale에 맞는 복구 안내 문구를 반환한다", () => {
+    expect(getPopStateRestoredMessage(getSearchUiText("ko"))).toContain("히스토리 상태를 복구");
+    expect(getPopStateRestoredMessage(getSearchUiText("en"))).toContain("Restored");
   });
 });
