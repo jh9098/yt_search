@@ -1,7 +1,8 @@
 import type React from "react";
-import { SEARCH_UI_TEXT } from "../i18n/searchUiText";
+import type { SearchUiText } from "../i18n/searchUiText.types";
 
 interface KeywordSearchBarProps {
+  searchUiText: SearchUiText;
   keyword: string;
   resultLimit: 50 | 150 | 250;
   isDisabled: boolean;
@@ -12,13 +13,8 @@ interface KeywordSearchBarProps {
   onSearch: () => void;
 }
 
-const LIMIT_OPTIONS: Array<{ value: 50 | 150 | 250; label: string }> = [
-  { value: 50, label: SEARCH_UI_TEXT.keywordSearch.resultLimitOptions.light },
-  { value: 150, label: SEARCH_UI_TEXT.keywordSearch.resultLimitOptions.standard },
-  { value: 250, label: SEARCH_UI_TEXT.keywordSearch.resultLimitOptions.precise },
-];
-
 export function KeywordSearchBar({
+  searchUiText,
   keyword,
   resultLimit,
   isDisabled,
@@ -28,10 +24,16 @@ export function KeywordSearchBar({
   onLimitChange,
   onSearch,
 }: KeywordSearchBarProps) {
+  const limitOptions: Array<{ value: 50 | 150 | 250; label: string }> = [
+    { value: 50, label: searchUiText.keywordSearch.resultLimitOptions.light },
+    { value: 150, label: searchUiText.keywordSearch.resultLimitOptions.standard },
+    { value: 250, label: searchUiText.keywordSearch.resultLimitOptions.precise },
+  ];
+
   return (
-    <div className="search-input-group" aria-label={SEARCH_UI_TEXT.keywordSearch.sectionAriaLabel}>
+    <div className="search-input-group" aria-label={searchUiText.keywordSearch.sectionAriaLabel}>
       <label htmlFor="keyword-search-input" className="search-label">
-        {SEARCH_UI_TEXT.keywordSearch.label}
+        {searchUiText.keywordSearch.label}
       </label>
       <div className="search-input-row">
         <input
@@ -40,26 +42,26 @@ export function KeywordSearchBar({
           ref={keywordInputRef}
           value={keyword}
           onChange={(event) => onKeywordChange(event.target.value)}
-          placeholder={SEARCH_UI_TEXT.keywordSearch.inputPlaceholder}
-          aria-label={SEARCH_UI_TEXT.keywordSearch.inputAriaLabel}
+          placeholder={searchUiText.keywordSearch.inputPlaceholder}
+          aria-label={searchUiText.keywordSearch.inputAriaLabel}
           aria-invalid={isAttentionRequired}
         />
         <button
           type="button"
           onClick={onSearch}
           disabled={isDisabled}
-          aria-label={SEARCH_UI_TEXT.keywordSearch.submitButtonAriaLabel}
+          aria-label={searchUiText.keywordSearch.submitButtonAriaLabel}
         >
-          {SEARCH_UI_TEXT.keywordSearch.submitButtonLabel}
+          {searchUiText.keywordSearch.submitButtonLabel}
         </button>
         <select
           className="search-select"
           value={resultLimit}
           disabled={isDisabled}
           onChange={(event) => onLimitChange(Number(event.target.value) as 50 | 150 | 250)}
-          aria-label={SEARCH_UI_TEXT.keywordSearch.resultLimitAriaLabel}
+          aria-label={searchUiText.keywordSearch.resultLimitAriaLabel}
         >
-          {LIMIT_OPTIONS.map((option) => (
+          {limitOptions.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>

@@ -1,10 +1,11 @@
 import { SearchResultTable } from "./SearchResultTable";
 import { VideoCard } from "./VideoCard";
-import { SEARCH_UI_TEXT } from "../i18n/searchUiText";
 import { getSearchErrorUiPolicy } from "../utils/searchErrorUiPolicy";
+import type { SearchUiText } from "../i18n/searchUiText.types";
 import type { SearchHoverMetric, SearchResultCard, SearchResultsState, SearchViewMode } from "../types";
 
 interface VideoGridProps {
+  searchUiText: SearchUiText;
   cards: SearchResultCard[];
   resultsState: SearchResultsState;
   viewMode: SearchViewMode;
@@ -20,6 +21,7 @@ interface VideoGridProps {
 }
 
 export function VideoGrid({
+  searchUiText,
   cards,
   resultsState,
   viewMode,
@@ -44,12 +46,15 @@ export function VideoGrid({
   }
 
   if (resultsState === "error") {
-    const errorUiPolicy = getSearchErrorUiPolicy(isErrorRetryable);
+    const errorUiPolicy = getSearchErrorUiPolicy({
+      isRetryable: isErrorRetryable,
+      searchUiText,
+    });
 
     return (
       <div className="results-placeholder results-placeholder-error" role="alert">
         <p className="results-error-message">
-          {errorMessage ?? SEARCH_UI_TEXT.errorPanel.fallbackErrorMessage}
+          {errorMessage ?? searchUiText.errorPanel.fallbackErrorMessage}
         </p>
         <p className="results-error-helper">{errorUiPolicy.helperMessage}</p>
         <div className="results-error-actions">
@@ -66,7 +71,7 @@ export function VideoGrid({
   }
 
   if (resultsState === "empty") {
-    return <div className="results-placeholder">{SEARCH_UI_TEXT.errorPanel.emptyResultMessage}</div>;
+    return <div className="results-placeholder">{searchUiText.errorPanel.emptyResultMessage}</div>;
   }
 
   if (viewMode === "list") {

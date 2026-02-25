@@ -1,3 +1,46 @@
+## 2026-03-21 (FE-11 검색 UI runtime locale 상태 연결)
+### 오늘 목표
+- FE-10의 다음 세션 시작점에 따라 `getSearchUiText(locale)`를 실제 런타임 locale 상태(사용자 선택/브라우저 언어)에 연결한다.
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/search/i18n/searchUiLocale.ts` 생성: locale 정규화(`en-US` -> `en`) + 저장값/브라우저값 fallback 규칙 구현
+- [x] `frontend/src/domains/search/components/SearchLocaleSelector.tsx` 생성 및 `App.tsx` 헤더 도구 영역에 locale 선택 UI 연결
+- [x] `App.tsx`에서 locale 상태를 관리하고 `searchUiText`를 `KeywordSearchBar`/`ResultSummaryBar`/`VideoGrid`로 주입
+- [x] `searchErrorUiPolicy.ts`, `popStateSyncPolicy.ts`를 locale 텍스트 인자 주입형으로 전환해 정책 문구도 런타임 locale을 따르도록 수정
+- [x] `searchUiLocale.test.ts` 신규 추가 + 기존 관련 테스트/빌드 검증 완료
+- [x] `docs/01_manuals/frontend.md`, `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] 앱 전체(검색 외 영역: 헤더/분석 모달/대본 모달) locale 확장
+
+### 변경/생성 파일
+- `frontend/src/domains/search/i18n/searchUiLocale.ts`
+- `frontend/src/domains/search/i18n/searchUiLocale.test.ts`
+- `frontend/src/domains/search/components/SearchLocaleSelector.tsx`
+- `frontend/src/App.tsx`
+- `frontend/src/domains/search/components/KeywordSearchBar.tsx`
+- `frontend/src/domains/search/components/ResultSummaryBar.tsx`
+- `frontend/src/domains/search/components/VideoGrid.tsx`
+- `frontend/src/domains/search/utils/searchErrorUiPolicy.ts`
+- `frontend/src/domains/search/utils/searchErrorUiPolicy.test.ts`
+- `frontend/src/domains/search/utils/popStateSyncPolicy.ts`
+- `frontend/src/domains/search/utils/popStateSyncPolicy.test.ts`
+- `frontend/src/domains/search/i18n/searchUiText.ts`
+- `frontend/src/styles.css`
+- `docs/01_manuals/frontend.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. `SEARCH_UI_TEXT`를 직접 참조하는 남은 모듈이 없는지 점검하고, 검색 도메인 외 UI(요약 메시지/헤더/모달)까지 locale 리소스를 확장할 범위를 문서로 먼저 확정한다.
+
+### 메모
+- 현재 검색 경로는 백엔드 API 기반이며 Firestore read 소모는 0회다.
+- 이번 변경은 locale 상태/문구 렌더링 경로만 조정해 네트워크 호출/저장소 조회 로직에는 영향이 없다.
+- locale 기준 문구가 일관되게 적용되면서 잘못된 재시도 안내에 따른 불필요 재요청 가능성을 줄여, 추후 Firestore 연동 시 read 증가 리스크를 낮췄다.
+
+---
+
 ## 2026-03-21 (FE-10 검색 문구 locale 레이어 확장)
 ### 오늘 목표
 - FE-9 다음 세션 시작점에 따라 검색 문구 리소스를 실제 locale 단위로 분리하고, fallback 정책을 테스트로 고정한다.

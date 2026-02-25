@@ -13,13 +13,17 @@ const SEARCH_UI_TEXT_BY_LOCALE: Record<SearchUiLocale, SearchUiText> = {
   en: SEARCH_UI_TEXT_EN,
 };
 
+export function isSearchUiLocale(value: string): value is SearchUiLocale {
+  return SEARCH_UI_LOCALES.includes(value as SearchUiLocale);
+}
+
 export const getSearchUiText = (locale?: string): SearchUiText => {
   if (!locale) {
     return SEARCH_UI_TEXT_BY_LOCALE[DEFAULT_SEARCH_UI_LOCALE];
   }
 
-  if (locale in SEARCH_UI_TEXT_BY_LOCALE) {
-    return SEARCH_UI_TEXT_BY_LOCALE[locale as SearchUiLocale];
+  if (isSearchUiLocale(locale)) {
+    return SEARCH_UI_TEXT_BY_LOCALE[locale];
   }
 
   return SEARCH_UI_TEXT_BY_LOCALE[DEFAULT_SEARCH_UI_LOCALE];
