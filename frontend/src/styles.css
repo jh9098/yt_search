@@ -158,6 +158,12 @@ body {
   font-size: 0.85rem;
 }
 
+.result-summary-error-guide {
+  margin: 0;
+  color: #fca5a5;
+  font-size: 0.85rem;
+}
+
 .result-summary-popstate-notice {
   margin: 0;
   color: #86efac;
@@ -260,6 +266,20 @@ body {
 .results-placeholder-error {
   border-color: #ef4444;
   color: #fecaca;
+}
+
+.results-error-message {
+  margin: 0;
+}
+
+.results-error-helper {
+  margin: 8px 0 0;
+  color: #fee2e2;
+  font-size: 0.9rem;
+}
+
+.results-error-actions {
+  margin-top: 14px;
 }
 
 .analyze-button {

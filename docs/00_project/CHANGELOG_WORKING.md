@@ -1,3 +1,38 @@
+## 2026-03-19 (FE-7 검색 에러 retryable UX 분기)
+### 오늘 목표
+- FE-6 후속으로 `VideoGrid`/`ResultSummaryBar`에서 `isSearchErrorRetryable`을 실제 UX 분기에 연결한다.
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/search/utils/searchErrorUiPolicy.ts` 추가: retryable 여부에 따른 보조 문구/버튼 라벨 정책 모듈화
+- [x] `VideoGrid` 에러 UI에 정책 기반 버튼 연결(`같은 조건으로 다시 검색` vs `검색 조건 초기화`)
+- [x] `ResultSummaryBar`에 retryable=false 전용 입력 수정 안내 문구 추가
+- [x] `App.tsx`에서 `isSearchErrorRetryable`를 요약바/그리드로 전달하도록 연결
+- [x] `searchErrorUiPolicy.test.ts` 추가 및 기존 검색 훅/에러 매핑 테스트 재실행
+- [x] `npm test -- useVideoSearch.test.ts mapSearchError.test.ts searchErrorUiPolicy.test.ts`, `npm run build` 검증 완료
+- [x] `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] retryable=false일 때 키워드 입력창 자동 포커스/하이라이트 같은 상호작용 강화
+
+### 변경/생성 파일
+- `frontend/src/domains/search/utils/searchErrorUiPolicy.ts`
+- `frontend/src/domains/search/utils/searchErrorUiPolicy.test.ts`
+- `frontend/src/domains/search/components/VideoGrid.tsx`
+- `frontend/src/domains/search/components/ResultSummaryBar.tsx`
+- `frontend/src/App.tsx`
+- `frontend/src/styles.css`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. retryable=false 분기에서 검색 패널(키워드/필터) 자동 포커스 또는 시각 강조를 추가하고, 정책을 테스트로 고정한다.
+
+### 메모
+- 현재 검색 경로는 백엔드 API 기반이며 Firestore read 소모는 0회다.
+- retryable=false 오류에서 재요청 대신 입력 수정/초기화로 유도해, 추후 Firestore 연동 시 불필요 read 재시도를 줄이도록 반영했다.
+
+---
+
 ## 2026-03-18 (FE-6 검색 에러 매핑/재시도 가능 여부 테스트 보강)
 ### 오늘 목표
 - 이전 세션 미완료 항목(검색 에러코드별 재시도 가능 여부 테스트)을 `useVideoSearch` 경로에서 완료하고 API-UI 계약을 고정

@@ -67,7 +67,14 @@ const POPSTATE_NOTICE_DURATION_MS = 2600;
 
 export function App() {
   const [filters, setFilters] = useState<SearchFilterState>(DEFAULT_FILTERS);
-  const { resultsState, searchErrorMessage, visibleCards, runSearch, resetSearch } = useVideoSearch([]);
+  const {
+    resultsState,
+    searchErrorMessage,
+    isSearchErrorRetryable,
+    visibleCards,
+    runSearch,
+    resetSearch,
+  } = useVideoSearch([]);
   const [userApiKeys, setUserApiKeys] = useState<string[]>(() => loadUserApiKeys());
 
   const handlePopStateQueryRestored = useCallback((restoredQuery: SearchQueryState) => {
@@ -485,6 +492,7 @@ export function App() {
       <section className="search-section" aria-label="검색 결과">
         <ResultSummaryBar
           summary={summary}
+          isSearchErrorRetryable={isSearchErrorRetryable}
           onReset={handleResetAll}
           onCopyShareUrl={() => {
             void handleCopyShareUrl();
@@ -496,9 +504,12 @@ export function App() {
           cards={visibleCards}
           resultsState={resultsState}
           errorMessage={searchErrorMessage}
+          isErrorRetryable={isSearchErrorRetryable}
           viewMode={viewMode}
           keyword={queryState.keyword}
           isAnalyzeDisabled={isAnalyzeButtonDisabled}
+          onRetrySearch={handleKeywordSearch}
+          onResetSearchConditions={handleResetAll}
           onAnalyze={openAnalysisModal}
           onExtractTranscript={handleExtractTranscript}
           hoverMetric={filters.hoverMetric}

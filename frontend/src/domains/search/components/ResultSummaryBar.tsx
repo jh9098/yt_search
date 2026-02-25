@@ -2,6 +2,7 @@ import type { SearchSummary } from "../types";
 
 interface ResultSummaryBarProps {
   summary: SearchSummary;
+  isSearchErrorRetryable: boolean;
   onReset: () => void;
   onCopyShareUrl: () => void;
   shareMessage: string | null;
@@ -18,6 +19,7 @@ const STATE_LABEL: Record<SearchSummary["resultsState"], string> = {
 
 export function ResultSummaryBar({
   summary,
+  isSearchErrorRetryable,
   onReset,
   onCopyShareUrl,
   shareMessage,
@@ -39,6 +41,11 @@ export function ResultSummaryBar({
       <p className="result-summary-state" aria-live="polite">
         상태: {STATE_LABEL[summary.resultsState]}
       </p>
+      {summary.resultsState === "error" && !isSearchErrorRetryable ? (
+        <p className="result-summary-error-guide" role="status" aria-live="polite">
+          재시도보다 검색어/필터 수정이 우선입니다. 조건을 조정한 뒤 다시 검색해 주세요.
+        </p>
+      ) : null}
       {shareMessage ? <p className="result-summary-share-message">{shareMessage}</p> : null}
       {popStateNoticeMessage ? (
         <p className="result-summary-popstate-notice" role="status" aria-live="polite">

@@ -1,5 +1,6 @@
 import { SearchResultTable } from "./SearchResultTable";
 import { VideoCard } from "./VideoCard";
+import { getSearchErrorUiPolicy } from "../utils/searchErrorUiPolicy";
 import type { SearchHoverMetric, SearchResultCard, SearchResultsState, SearchViewMode } from "../types";
 
 interface VideoGridProps {
@@ -7,8 +8,11 @@ interface VideoGridProps {
   resultsState: SearchResultsState;
   viewMode: SearchViewMode;
   errorMessage: string | null;
+  isErrorRetryable: boolean;
   keyword: string;
   isAnalyzeDisabled: boolean;
+  onRetrySearch: () => void;
+  onResetSearchConditions: () => void;
   onAnalyze: (card: SearchResultCard) => void;
   onExtractTranscript: (card: SearchResultCard) => void;
   hoverMetric: SearchHoverMetric;
@@ -19,8 +23,11 @@ export function VideoGrid({
   resultsState,
   viewMode,
   errorMessage,
+  isErrorRetryable,
   keyword,
   isAnalyzeDisabled,
+  onRetrySearch,
+  onResetSearchConditions,
   onAnalyze,
   onExtractTranscript,
   hoverMetric,
@@ -36,9 +43,23 @@ export function VideoGrid({
   }
 
   if (resultsState === "error") {
+    const errorUiPolicy = getSearchErrorUiPolicy(isErrorRetryable);
+
     return (
       <div className="results-placeholder results-placeholder-error" role="alert">
-        {errorMessage ?? "검색 중 문제가 발생했습니다. 필터를 조정한 뒤 검색 버튼으로 다시 시도해 주세요."}
+        <p className="results-error-message">
+          {errorMessage ?? "검색 중 문제가 발생했습니다. 필터를 조정한 뒤 검색 버튼으로 다시 시도해 주세요."}
+        </p>
+        <p className="results-error-helper">{errorUiPolicy.helperMessage}</p>
+        <div className="results-error-actions">
+          <button
+            type="button"
+            onClick={isErrorRetryable ? onRetrySearch : onResetSearchConditions}
+            aria-label={errorUiPolicy.primaryActionLabel}
+          >
+            {errorUiPolicy.primaryActionLabel}
+          </button>
+        </div>
       </div>
     );
   }
