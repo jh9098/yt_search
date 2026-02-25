@@ -1,3 +1,32 @@
+## 2026-03-17 (ANALYSIS-BATCH: 실패/Retry-After/partial-success 계약 테스트 보강)
+### 오늘 목표
+- D-3/D-5 문서 계약 기준으로 analysis API 테스트를 3개 시나리오(실패/Retry-After/partial-success)로 보강
+
+### 진행 내용 (완료)
+- [x] `backend/tests/test_analysis_api.py`에 `ANALYSIS_OUTPUT_INVALID` 계약 테스트 추가 (`success=true`, `status=failed`, `data.error.code` 검증)
+- [x] `ANALYSIS_RATE_LIMITED`의 `Retry-After` 헤더 유지 + 비 rate-limit 오류에서 헤더 미노출 테스트 추가
+- [x] 허용 누락 필드 보정(`summary.weakPoints`, `contentIdeas`, `recommendedKeywords`, `meta.warnings`) 후 `status=completed` + `meta.warnings` 검증 테스트 추가
+- [x] 기존 analysis API 계약 테스트 회귀 실행 완료 (`python -m unittest backend.tests.test_analysis_api`)
+- [x] `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] `GET /api/analysis/jobs/{jobId}` 경로에서 `status=failed` 상태 조회 계약에 대한 전용 테스트 케이스 분리
+
+### 변경/생성 파일
+- `backend/tests/test_analysis_api.py`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. `GET /api/analysis/jobs/{jobId}`의 failed/completed 상태 조회 계약 테스트를 분리해 create/status 양쪽 계약 회귀를 독립 검증
+
+### 메모
+- 이번 변경은 테스트 코드만 보강했으며 backend 도메인 로직/DB 구조/프론트 UI는 변경하지 않았다.
+- 현재 analysis 경로는 in-memory 저장소 기반이라 Firestore read 소모는 0회다.
+- 계약 테스트 보강으로 실패 응답 처리와 재시도 헤더 정책이 고정되어, 추후 Firestore 연동 시 무의미한 재요청/재조회로 인한 read 증가 위험을 낮춘다.
+
+---
+
 ## 2026-03-16 (FE-5 popstate 복구 안내 UX 완결)
 ### 오늘 목표
 - popstate 자동 재조회가 실제로 발생한 경우에만 사용자 안내 문구를 노출하고, 동일 query/view에서는 재조회/안내를 모두 생략

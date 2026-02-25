@@ -157,6 +157,13 @@
 
 ## I. 완료 로그 (요약)
 
+### 2026-03-17 (ANALYSIS 계약 테스트 보강)
+- [x] `ANALYSIS_OUTPUT_INVALID` 시 `success=true + status=failed + data.error.code` 검증 테스트 추가
+- [x] `ANALYSIS_RATE_LIMITED` `Retry-After: 3` 헤더 유지 및 비 rate-limit 오류에서 헤더 미노출 검증 테스트 추가
+- [x] 허용 누락 필드(`summary.weakPoints`, `contentIdeas`, `recommendedKeywords`, `meta.warnings`) 보정 후 `status=completed` + warnings 검증 테스트 추가
+- 메모: 현재 analysis 저장소는 in-memory이므로 Firestore read는 0회이며, 계약 테스트 보강은 추후 Firestore 연동 시 불필요 재시도/중복 조회로 인한 read 증가를 예방하는 안전장치 역할을 한다.
+
+
 ### 2026-03-12 (FE-3 검색 API 최소 연결)
 - [x] `search/api/client.ts` 추가로 검색 API 요청/에러 파싱 경로 구성 (`VITE_API_BASE_URL`, `VITE_SEARCH_API_PATH` 지원)
 - [x] `useVideoSearch` 훅 추가로 `loading/empty/error/success` 상태 관리 및 동일 파라미터 중복 호출 가드 반영
