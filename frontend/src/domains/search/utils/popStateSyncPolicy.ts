@@ -1,7 +1,5 @@
-import { SEARCH_UI_TEXT } from "../i18n/searchUiText";
+import type { SearchUiText } from "../i18n/searchUiText.types";
 import type { SearchQueryState, SearchViewMode } from "../types";
-
-export const POPSTATE_RESTORED_MESSAGE = SEARCH_UI_TEXT.resultSummary.popStateRestoredNotice;
 
 interface PopStateSyncInputs {
   parsedQueryState: SearchQueryState;
@@ -17,6 +15,10 @@ export interface PopStateSyncDecision {
   shouldApplyState: boolean;
   shouldTriggerSearch: boolean;
   shouldShowRestoredNotice: boolean;
+}
+
+export function getPopStateRestoredMessage(searchUiText: SearchUiText): string {
+  return searchUiText.resultSummary.popStateRestoredNotice;
 }
 
 export function isSameQueryState(left: SearchQueryState, right: SearchQueryState): boolean {
@@ -42,4 +44,3 @@ export function evaluatePopStateSync(inputs: PopStateSyncInputs): PopStateSyncDe
     shouldShowRestoredNotice: shouldTriggerSearch,
   };
 }
-
