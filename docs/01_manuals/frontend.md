@@ -118,6 +118,11 @@ API 호출 전에 TypeScript 타입/인터페이스를 먼저 정의합니다.
 - 컴포넌트/유틸에서는 문자열 하드코딩 대신 리소스를 import해 사용한다.
 - 문구 변경 시 정책 테스트(`searchErrorUiPolicy.test.ts` 등)가 깨지지 않도록 기존 키를 유지한 채 값만 변경한다.
 
+### locale 확장 규칙 (FE-10)
+- `domains/search/i18n/locales/{locale}.ts` 단위로 locale 리소스를 분리하고, `searchUiText.ts`는 locale 선택/기본 fallback만 담당한다.
+- 지원하지 않는 locale 요청은 `DEFAULT_SEARCH_UI_LOCALE`로 fallback해 런타임 에러를 방지한다.
+- 기존 컴포넌트는 `SEARCH_UI_TEXT` 기본 export를 그대로 사용해도 동작하도록 호환성을 유지한다.
+
 ### 결과 없음/부분 성공/완전 실패 문구 분리 규칙
 - `empty`: 데이터 부족/필드 부재 중심 문구 사용(시스템 오류 문구 금지).
 - `partial-success`: "일부 결과만 표시"를 명시하고 누락 범위를 안내.
