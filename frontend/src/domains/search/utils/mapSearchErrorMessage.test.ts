@@ -3,13 +3,13 @@ import { SearchApiError } from "../api/client";
 import { mapSearchErrorMessage } from "./mapSearchErrorMessage";
 
 describe("mapSearchErrorMessage", () => {
-  it("SEARCH_UPSTREAM_UNAVAILABLE 코드를 사용자 안내 문구로 변환한다", () => {
+  it("SEARCH_UPSTREAM_UNAVAILABLE 코드를 고정 사용자 안내 문구로 변환한다", () => {
     const error = new SearchApiError({
       code: "SEARCH_UPSTREAM_UNAVAILABLE",
       message: "generic",
     });
 
-    expect(mapSearchErrorMessage(error)).toContain("YOUTUBE_API_KEY");
+    expect(mapSearchErrorMessage(error)).toBe("검색 서비스 연결이 원활하지 않습니다. 잠시 후 다시 시도해 주세요.");
   });
 
   it("알 수 없는 코드에서는 서버 메시지를 그대로 노출한다", () => {
