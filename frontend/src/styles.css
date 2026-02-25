@@ -65,6 +65,16 @@ body {
   padding: 10px;
 }
 
+.search-input-attention {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+}
+
+.search-input-attention:focus {
+  outline: 2px solid #f59e0b;
+  outline-offset: 1px;
+}
+
 .search-section {
   margin-top: 16px;
 }

@@ -1,7 +1,10 @@
+import type React from "react";
 interface KeywordSearchBarProps {
   keyword: string;
   resultLimit: 50 | 150 | 250;
   isDisabled: boolean;
+  isAttentionRequired: boolean;
+  keywordInputRef: React.RefObject<HTMLInputElement>;
   onKeywordChange: (value: string) => void;
   onLimitChange: (value: 50 | 150 | 250) => void;
   onSearch: () => void;
@@ -17,6 +20,8 @@ export function KeywordSearchBar({
   keyword,
   resultLimit,
   isDisabled,
+  isAttentionRequired,
+  keywordInputRef,
   onKeywordChange,
   onLimitChange,
   onSearch,
@@ -29,11 +34,13 @@ export function KeywordSearchBar({
       <div className="search-input-row">
         <input
           id="keyword-search-input"
-          className="search-input"
+          className={isAttentionRequired ? "search-input search-input-attention" : "search-input"}
+          ref={keywordInputRef}
           value={keyword}
           onChange={(event) => onKeywordChange(event.target.value)}
           placeholder="예: 가족 사연"
           aria-label="키워드 입력"
+          aria-invalid={isAttentionRequired}
         />
         <button type="button" onClick={onSearch} disabled={isDisabled} aria-label="키워드 검색 실행">
           키워드 검색

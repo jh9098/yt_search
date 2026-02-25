@@ -20,6 +20,10 @@ import { TranscriptModal } from "./domains/search/components/TranscriptModal";
 import { useSearchQueryState } from "./domains/search/hooks/useSearchQueryState";
 import { POPSTATE_RESTORED_MESSAGE } from "./domains/search/utils/popStateSyncPolicy";
 import { useVideoSearch } from "./domains/search/hooks/useVideoSearch";
+import {
+  isSearchInputAttentionRequired,
+  shouldTriggerSearchInputAttention,
+} from "./domains/search/utils/searchInputAttentionPolicy";
 import { loadUserApiKeys, saveUserApiKeys } from "./domains/search/apiKeyStorage";
 import {
   loadCookieContent,
@@ -120,6 +124,8 @@ export function App() {
   const [transcriptStatus, setTranscriptStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [transcriptResult, setTranscriptResult] = useState<TranscriptResultData | null>(null);
   const [transcriptErrorMessage, setTranscriptErrorMessage] = useState<string | null>(null);
+  const keywordInputRef = useRef<HTMLInputElement | null>(null);
+  const previousSearchAttentionSnapshotRef = useRef<{ resultsState: typeof resultsState; isSearchErrorRetryable: boolean } | null>(null);
 
   useEffect(() => {
     isModalOpenRef.current = isModalOpen;
@@ -132,6 +138,24 @@ export function App() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    const currentSnapshot = {
+      resultsState,
+      isSearchErrorRetryable,
+    };
+
+    const shouldFocusKeywordInput = shouldTriggerSearchInputAttention({
+      previous: previousSearchAttentionSnapshotRef.current,
+      current: currentSnapshot,
+    });
+
+    if (shouldFocusKeywordInput) {
+      keywordInputRef.current?.focus();
+    }
+
+    previousSearchAttentionSnapshotRef.current = currentSnapshot;
+  }, [isSearchErrorRetryable, resultsState]);
 
   const selectedCard = useMemo(
     () => visibleCards.find((card) => card.videoId === selectedVideoId) ?? null,
@@ -445,6 +469,8 @@ export function App() {
           keyword={queryState.keyword}
           resultLimit={queryState.resultLimit}
           isDisabled={isSearchLoading}
+          isAttentionRequired={isSearchInputAttentionRequired({ resultsState, isSearchErrorRetryable })}
+          keywordInputRef={keywordInputRef}
           onKeywordChange={(keyword) => {
             setQueryState((previous) => ({ ...previous, keyword }));
           }}
