@@ -157,6 +157,13 @@
 
 ## I. 완료 로그 (요약)
 
+### 2026-03-19 (FE-7 검색 에러 retryable UX 분기 반영)
+- [x] `VideoGrid` 오류 상태에 retryable 여부 기반 보조 문구/액션 버튼 분기 추가
+- [x] retryable=true는 "같은 조건으로 다시 검색", retryable=false는 "검색 조건 초기화" 액션으로 고정
+- [x] `ResultSummaryBar`에 retryable=false 전용 입력 수정 안내 문구 추가
+- [x] `searchErrorUiPolicy.ts` + 단위 테스트 추가로 에러 UX 정책 문자열을 모듈화
+- 메모: 현재 검색 경로는 백엔드 API 기반이라 Firestore read는 0회다. 재시도 불가 오류에서 즉시 재요청을 막고 입력 수정으로 유도해 추후 Firestore 연동 시 불필요 read 증가를 예방한다.
+
 ### 2026-03-18 (FE-6 검색 에러 매핑/재시도 가능 여부 테스트 보강)
 - [x] `frontend/src/domains/search/utils/mapSearchError.ts` 생성 및 검색 에러코드별 `message/retryable` 정책 고정
 - [x] `useVideoSearch`에 `isSearchErrorRetryable` 상태 추가 및 executor 에러 결과를 `message + retryable` 구조로 확장
@@ -304,4 +311,3 @@
 - [x] `backend/tests/test_search_api.py`에 quota/rate-limit/upstream unavailable/upstream error 계약 테스트 4건 추가
 - [x] 검색 에러코드별 상태코드(503/502)와 고정 사용자 메시지 일치 여부 검증
 - 메모: 테스트 보강 작업으로 런타임 로직/저장소 경로는 변경하지 않았고 Firestore read는 0회. 추후 Firestore 연동 시에도 에러 응답 계약이 고정돼 재시도 분기 오작동으로 인한 불필요 read 증가 위험을 줄임.
-
