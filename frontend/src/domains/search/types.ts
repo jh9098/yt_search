@@ -2,7 +2,7 @@ export type SearchResultsState = "idle" | "loading" | "success" | "empty" | "err
 
 export type SearchViewMode = "grid" | "list";
 
-export type SearchSortOption = "subscriberAsc" | "relevance" | "views" | "latest";
+export type SearchSortOption = "subscriberAsc" | "relevance" | "views" | "latest" | "recommended" | "performanceOnly" | "opportunityOnly";
 export type SearchPeriodOption = "24h" | "7d" | "30d" | "90d" | "180d" | "365d" | "730d" | "all";
 export type SearchDurationBucket = "all" | "under4m" | "4to20m" | "over20m";
 export type SearchShortFormType =
@@ -44,7 +44,10 @@ export type SearchTableSortKey =
   | "annualSubscriberGrowth"
   | "uploadsPerWeek"
   | "countryCode"
-  | "channelGrade";
+  | "channelGrade"
+  | "performanceScore"
+  | "exposureScore"
+  | "isHotVideo";
 
 export interface SearchFilterState {
   sort: SearchSortOption;
@@ -79,6 +82,8 @@ export interface SearchResultCard {
   viewCountText: string;
   subscriberCount: number;
   subscriberCountText: string;
+  likeCount: number;
+  commentCount: number;
   channelPublishedDateText: string;
   countryCode: string;
   totalVideoCountText: string;
@@ -90,6 +95,13 @@ export interface SearchResultCard {
   hasScript: boolean;
   isSubscriberPublic: boolean;
   keywordMatchedTerms: string[];
+  contribution?: number | null;
+  contributionGrade: string;
+  engagementRate?: number | null;
+  performanceScore: number;
+  exposureScore: number;
+  isHotVideo: boolean;
+  recommendationReason: string;
   estimatedRevenueTotalText?: string | null;
   vphText?: string | null;
   badgeLabel?: string | null;

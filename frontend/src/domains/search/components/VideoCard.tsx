@@ -46,6 +46,10 @@ export function VideoCard({ card, keyword, isAnalyzeDisabled, onAnalyze, onExtra
         estimatedRevenueTotalText={card.estimatedRevenueTotalText}
         vphText={card.vphText}
       />
+      <p className="video-card-reason">{card.recommendationReason}</p>
+      <p className="video-card-score-line">
+        대박등급 {card.contributionGrade} · 성과도 {card.performanceScore.toFixed(1)} · 기회도 {card.exposureScore.toFixed(1)} {card.isHotVideo ? "🔥" : ""}
+      </p>
 
       <div className="video-card-actions">
         <a href={videoUrl} target="_blank" rel="noreferrer" className="video-open-button" aria-label={`${card.title} ${text.watchVideoAriaLabelSuffix}`}>

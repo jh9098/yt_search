@@ -81,6 +81,9 @@ export const SEARCH_UI_TEXT_KO: SearchUiText = {
         relevance: "관련도",
         views: "조회수",
         latest: "최신순",
+        recommended: "추천순",
+        performanceOnly: "성과도순",
+        opportunityOnly: "기회도순",
       },
       period: {
         "24h": "24시간",

@@ -81,6 +81,9 @@ export const SEARCH_UI_TEXT_EN: SearchUiText = {
         relevance: "Relevance",
         views: "Views",
         latest: "Latest",
+        recommended: "Recommended",
+        performanceOnly: "Performance only",
+        opportunityOnly: "Opportunity only",
       },
       period: {
         "24h": "24 hours",
