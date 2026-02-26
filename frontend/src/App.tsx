@@ -114,7 +114,7 @@ export function App() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<AnalysisErrorState | null>(null);
   const [loadingState, setLoadingState] = useState<AnalysisLoadingState>({
-    message: "분석을 준비 중입니다.",
+    message: searchUiLocale === "en" ? "Preparing analysis." : "분석을 준비 중입니다.",
   });
   const [shareMessage, setShareMessage] = useState<string | null>(null);
   const [popStateNoticeMessage, setPopStateNoticeMessage] = useState<string | null>(null);
@@ -262,7 +262,7 @@ export function App() {
       setStatus("loading");
       setError(null);
       setResult(null);
-      setLoadingState({ message: "분석을 준비 중입니다." });
+      setLoadingState({ message: searchUiLocale === "en" ? "Preparing analysis." : "분석을 준비 중입니다." });
 
       const sessionId = activeSessionRef.current;
 
@@ -574,6 +574,7 @@ export function App() {
           onClose={closeModal}
           onRetry={retryAnalysis}
           onKeywordClick={handleKeywordClick}
+          locale={searchUiLocale === "en" ? "en-US" : "ko-KR"}
         />
       ) : null}
     </main>

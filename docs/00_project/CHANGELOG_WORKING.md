@@ -1,3 +1,43 @@
+## 2026-03-22 (FE-12 analysis 모달 locale 문구 연결)
+### 오늘 목표
+- FE-11의 다음 세션 시작점에 따라 검색 외 UI 중 우선순위가 높은 analysis 모달 영역을 locale 리소스 기반으로 정리한다.
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/analysis/i18n/analysisUiText.types.ts` 추가로 analysis 모달 공통 문구 타입 정의
+- [x] `frontend/src/domains/analysis/i18n/locales/ko.ts`, `en.ts`, `analysisUiText.ts` 추가로 locale 리소스 + fallback(`ko`) 구현
+- [x] `AnalysisModal`, `AnalysisLoadingView`, `AnalysisSuccessView`, `AnalysisErrorView`에서 하드코딩 문구를 locale 리소스로 전환
+- [x] `App.tsx`에서 선택 locale을 `AnalysisModal`에 전달해 search locale과 analysis locale의 런타임 일관성 확보
+- [x] `analysisUiText.test.ts` 추가 및 관련 테스트/빌드 검증 완료
+- [x] `docs/01_manuals/frontend.md`, `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] 헤더/대본 모달(locale 미적용 영역)까지 전역 locale 확장
+
+### 변경/생성 파일
+- `frontend/src/domains/analysis/i18n/analysisUiText.types.ts`
+- `frontend/src/domains/analysis/i18n/analysisUiText.ts`
+- `frontend/src/domains/analysis/i18n/locales/ko.ts`
+- `frontend/src/domains/analysis/i18n/locales/en.ts`
+- `frontend/src/domains/analysis/i18n/analysisUiText.test.ts`
+- `frontend/src/domains/analysis/components/AnalysisModal.tsx`
+- `frontend/src/domains/analysis/components/AnalysisLoadingView.tsx`
+- `frontend/src/domains/analysis/components/AnalysisSuccessView.tsx`
+- `frontend/src/domains/analysis/components/AnalysisErrorView.tsx`
+- `frontend/src/domains/analysis/types.ts`
+- `frontend/src/App.tsx`
+- `docs/01_manuals/frontend.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. 헤더 제목/서브타이틀, 대본 추출 모달 문구를 locale 리소스로 이동할 범위를 문서에서 먼저 확정하고 단계적으로 적용한다.
+
+### 메모
+- 이번 변경은 프론트 locale 문구/렌더링 계층만 다뤄 네트워크 호출/저장소 조회 경로 변화가 없어 Firestore read 소모는 0회다.
+- locale 일관성을 확보해 오해를 유발하는 버튼/오류 문구를 줄였고, 추후 Firestore 연동 시 불필요 재시도(read 유발) 가능성을 낮췄다.
+
+---
+
 ## 2026-03-21 (FE-11 검색 UI runtime locale 상태 연결)
 ### 오늘 목표
 - FE-10의 다음 세션 시작점에 따라 `getSearchUiText(locale)`를 실제 런타임 locale 상태(사용자 선택/브라우저 언어)에 연결한다.

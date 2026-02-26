@@ -128,6 +128,11 @@ API 호출 전에 TypeScript 타입/인터페이스를 먼저 정의합니다.
 - locale 선택 UI에서 변경한 값은 `searchUiLocale.ts`를 통해 저장하고, 검색 도메인 컴포넌트에는 `searchUiText`를 props로 주입해 즉시 반영한다.
 - 정책/유틸(`searchErrorUiPolicy`, `popStateSyncPolicy`)도 동일 `searchUiText`를 인자로 받아 locale 일관성을 유지한다.
 
+### analysis modal locale 연결 규칙 (FE-12)
+- analysis 도메인 문구는 `domains/analysis/i18n/locales/{locale}.ts`로 분리하고 `analysisUiText.ts`에서 fallback(`ko`)을 처리한다.
+- `AnalysisModal`은 `locale` prop을 받아 `loading/success/error` 공통 버튼/섹션 문구를 동일 locale로 렌더링한다.
+- 날짜 포맷은 locale별 `toLocaleString`을 사용하고, 파싱 실패 시 locale별 fallback 문구를 노출한다.
+
 ### 결과 없음/부분 성공/완전 실패 문구 분리 규칙
 - `empty`: 데이터 부족/필드 부재 중심 문구 사용(시스템 오류 문구 금지).
 - `partial-success`: "일부 결과만 표시"를 명시하고 누락 범위를 안내.
