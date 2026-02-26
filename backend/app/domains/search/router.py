@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 from uuid import uuid4
 
 from fastapi import APIRouter, Body, Header, Query
@@ -44,7 +46,7 @@ from .transcript import (
 )
 
 router = APIRouter(prefix="/api/search", tags=["search"])
-
+logger = logging.getLogger(__name__)
 
 
 
@@ -73,6 +75,14 @@ def _build_transcript_response(
     _cookie_file_path = cookie_file_path.strip()
     _cookie_content = cookie_content.strip()
     language_priority = parse_language_priority(languages)
+
+    logger.info("Transcript requested: video_id=%s has_video_url=%s languages=%s cookie_path=%s has_cookie_content=%s",
+        video_id.strip(),
+        bool(video_url.strip()),
+        language_priority,
+        bool(_cookie_file_path),
+        bool(_cookie_content),
+    )
 
     try:
         result = extract_transcript_from_video(
@@ -108,6 +118,7 @@ def _build_transcript_response(
         )
         return JSONResponse(status_code=500, content=body)
     except Exception:
+        logger.exception("Unexpected transcript failure: video_id=%s video_url=%s", video_id.strip(), resolved_video_url)
         body = error_response(
             code="TRANSCRIPT_FETCH_FAILED",
             message="대본을 가져오는 중 오류가 발생했습니다.",

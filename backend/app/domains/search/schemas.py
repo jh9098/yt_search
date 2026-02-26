@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class SearchSortOption(str, Enum):
@@ -167,6 +167,14 @@ class TranscriptRequest(BaseModel):
     languages: str = Field(default="ko,en", alias="languages")
     cookie_file_path: str = Field(default="", alias="cookieFilePath")
     cookie_content: str = Field(default="", alias="cookieContent")
+
+    @field_validator("languages", mode="before")
+    @classmethod
+    def normalize_languages(cls, value: str | list[str] | None) -> str:
+        if isinstance(value, list):
+            normalized = [str(lang).strip() for lang in value if str(lang).strip()]
+            return ",".join(normalized) if normalized else "ko,en"
+        return str(value or "ko,en")
 
 
 class TranscriptSuccessResponse(BaseModel):

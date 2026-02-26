@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import logging
 from dataclasses import dataclass
 from urllib.parse import parse_qs, urlparse
 
@@ -12,6 +13,9 @@ from youtube_transcript_api import (
     YouTubeTranscriptApi,
 )
 from youtube_transcript_api.proxies import WebshareProxyConfig
+
+
+logger = logging.getLogger(__name__)
 
 
 class TranscriptDependencyError(RuntimeError):
@@ -37,8 +41,12 @@ class TranscriptResult:
 YTDLP_IMPORT_ERROR = ""
 
 
-def parse_language_priority(languages: str | None) -> list[str]:
-    raw_languages = [lang.strip() for lang in (languages or "").split(",")]
+def parse_language_priority(languages: str | list[str] | None) -> list[str]:
+    if isinstance(languages, list):
+        raw_languages = [str(lang).strip() for lang in languages]
+    else:
+        raw_languages = [lang.strip() for lang in (languages or "").split(",")]
+
     valid_languages = [lang for lang in raw_languages if lang]
     return valid_languages or ["ko", "en"]
 
@@ -70,12 +78,14 @@ def _build_transcript_api() -> YouTubeTranscriptApi:
     password = os.getenv("WEBSHARE_PASSWORD", "").strip()
 
     if username and password:
+        logger.info("Webshare proxy configured for transcript API")
         proxy_config = WebshareProxyConfig(
             proxy_username=username,
             proxy_password=password,
         )
         return YouTubeTranscriptApi(proxy_config=proxy_config)
 
+    logger.warning("Webshare proxy is not configured; transcript requests may be blocked")
     return YouTubeTranscriptApi()
 
 
