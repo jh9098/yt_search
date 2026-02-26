@@ -1,3 +1,40 @@
+## 2026-03-23 (FE-14 헤더 설정 패널 locale 분리)
+### 오늘 목표
+- FE-13 다음 세션 시작점에 따라 SearchLocaleSelector/ApiKeyManager/CookieFilePathManager 고정 문구를 locale 리소스로 이관한다.
+
+### 진행 내용 (완료)
+- [x] `appUiText` 타입/ko/en 리소스에 `localeSelector`, `apiKeyManager`, `cookieManager` 섹션 추가
+- [x] `SearchLocaleSelector`가 locale 라벨/옵션을 props(`text`)로 받아 하드코딩 없이 렌더링하도록 변경
+- [x] `ApiKeyManager`가 요약/버튼/도움말/placeholder를 locale 리소스로 렌더링하고, 카운트 문구를 locale 함수(`summaryRegistered`)로 처리
+- [x] `CookieFilePathManager`가 탭/입력/접근성 문구를 locale 리소스로 통합
+- [x] `App.tsx`에서 세 컴포넌트에 `appUiText` 하위 텍스트를 주입
+- [x] `npm test -- appUiText.test.ts`, `npm run build` 검증 완료
+- [x] `docs/01_manuals/frontend.md`, `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] 없음
+
+### 변경/생성 파일
+- `frontend/src/domains/search/i18n/appUiText.types.ts`
+- `frontend/src/domains/search/i18n/locales/appKo.ts`
+- `frontend/src/domains/search/i18n/locales/appEn.ts`
+- `frontend/src/domains/search/components/SearchLocaleSelector.tsx`
+- `frontend/src/domains/search/components/ApiKeyManager.tsx`
+- `frontend/src/domains/search/components/CookieFilePathManager.tsx`
+- `frontend/src/App.tsx`
+- `docs/01_manuals/frontend.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. 검색 패널/필터/보기모드 컴포넌트의 남은 고정 aria-label을 locale 리소스로 통합할 범위를 확정한다.
+
+### 메모
+- 이번 변경은 프론트 locale 텍스트/렌더링 계층만 수정했고 네트워크 요청/저장소 조회 플로우를 변경하지 않아 Firestore read 소모는 0회다.
+- 고정 문구를 locale 리소스로 통합해 잘못된 조작 안내로 인한 불필요 재시도 가능성을 줄였고, 추후 Firestore 연동 시 read 낭비 위험을 낮췄다.
+
+---
+
 ## 2026-03-22 (FE-13 헤더/대본 모달 locale 확장)
 ### 오늘 목표
 - FE-12의 다음 세션 시작점에 따라 헤더/대본 추출 모달 문구를 locale 리소스 기반으로 전환한다.

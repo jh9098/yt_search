@@ -14,6 +14,8 @@ describe("getAppUiText", () => {
 
     expect(text.appHeader.title).toBe("YouTube Idea Miner v2.0");
     expect(text.transcriptModal.closeButton).toBe("Close");
+    expect(text.apiKeyManager.openButton).toBe("Enter keys");
+    expect(text.cookieManager.pathTab).toBe("File path");
   });
 
   it("미지원 locale은 ko로 fallback한다", () => {

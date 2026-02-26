@@ -1,6 +1,41 @@
 import type { AppUiText } from "../appUiText.types";
 
 export const APP_UI_TEXT_KO: AppUiText = {
+  localeSelector: {
+    label: "검색 UI 언어",
+    options: {
+      ko: "한국어",
+      en: "English",
+    },
+  },
+  apiKeyManager: {
+    sectionAriaLabel: "유튜브 API 키 관리",
+    title: "YouTube API 키",
+    summaryEmpty: "등록된 API 키 없음",
+    summaryRegistered: (count: number) => `${count}개 등록됨`,
+    openButton: "키 입력",
+    closeButton: "입력창 닫기",
+    inputPlaceholder: "한 줄에 하나씩 API 키를 입력해 주세요. 쉼표(,)로 구분해도 됩니다.",
+    helpText: "여러 키를 등록하면, 앞의 키 한도가 소진됐을 때 다음 키로 자동 재시도합니다.",
+    saveButton: "저장",
+    clearButton: "모두 삭제",
+  },
+  cookieManager: {
+    sectionAriaLabel: "쿠키 설정",
+    title: "cookies_netscape.txt 설정",
+    summaryConfigured: "설정됨",
+    summaryNotConfigured: "미설정",
+    tabListAriaLabel: "쿠키 입력 방식 선택",
+    pathTab: "파일 경로 입력",
+    contentTab: "업로드/붙여넣기",
+    pathPlaceholder: "예) /Users/me/cookies_netscape.txt",
+    pathInputAriaLabel: "쿠키 파일 경로",
+    pathHelpText: "서버가 접근 가능한 로컬 경로를 입력해 주세요.",
+    uploadLabel: "cookies_netscape.txt 파일 업로드",
+    contentPlaceholder: "cookies_netscape.txt 내용을 그대로 붙여넣어 주세요",
+    contentAriaLabel: "쿠키 파일 내용",
+    contentHelpText: "보안상 브라우저 로컬 저장소에 저장됩니다. 공용 PC에서는 사용 후 삭제해 주세요.",
+  },
   appHeader: {
     title: "유튜브 소재 채굴기 v2.0",
     subtitle: "검색 결과에서 바로 AI 소재 분석을 실행할 수 있습니다.",

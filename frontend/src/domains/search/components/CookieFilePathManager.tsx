@@ -1,10 +1,12 @@
 import type { ChangeEvent } from "react";
+import type { AppUiText } from "../i18n/appUiText.types";
 import type { CookieInputMode } from "../types";
 
 type CookieFilePathManagerProps = {
   inputMode: CookieInputMode;
   filePathValue: string;
   contentValue: string;
+  text: AppUiText["cookieManager"];
   onModeChange: (mode: CookieInputMode) => void;
   onPathSave: (cookieFilePath: string) => void;
   onContentSave: (cookieContent: string) => void;
@@ -30,6 +32,7 @@ export function CookieFilePathManager({
   inputMode,
   filePathValue,
   contentValue,
+  text,
   onModeChange,
   onPathSave,
   onContentSave,
@@ -37,13 +40,13 @@ export function CookieFilePathManager({
   const hasValue = inputMode === "path" ? filePathValue.trim().length > 0 : contentValue.trim().length > 0;
 
   return (
-    <section className="api-key-manager" aria-label="쿠키 설정">
+    <section className="api-key-manager" aria-label={text.sectionAriaLabel}>
       <div className="api-key-manager-header">
-        <p className="api-key-manager-title">cookies_netscape.txt 설정</p>
-        <p className="api-key-manager-summary">{hasValue ? "설정됨" : "미설정"}</p>
+        <p className="api-key-manager-title">{text.title}</p>
+        <p className="api-key-manager-summary">{hasValue ? text.summaryConfigured : text.summaryNotConfigured}</p>
       </div>
 
-      <div className="cookie-mode-tabs" role="tablist" aria-label="쿠키 입력 방식 선택">
+      <div className="cookie-mode-tabs" role="tablist" aria-label={text.tabListAriaLabel}>
         <button
           type="button"
           role="tab"
@@ -53,7 +56,7 @@ export function CookieFilePathManager({
             onModeChange("path");
           }}
         >
-          파일 경로 입력
+          {text.pathTab}
         </button>
         <button
           type="button"
@@ -64,7 +67,7 @@ export function CookieFilePathManager({
             onModeChange("content");
           }}
         >
-          업로드/붙여넣기
+          {text.contentTab}
         </button>
       </div>
 
@@ -76,15 +79,15 @@ export function CookieFilePathManager({
             onChange={(event) => {
               onPathSave(event.target.value);
             }}
-            placeholder="예) /Users/me/cookies_netscape.txt"
-            aria-label="쿠키 파일 경로"
+            placeholder={text.pathPlaceholder}
+            aria-label={text.pathInputAriaLabel}
           />
-          <p className="api-key-manager-help">서버가 접근 가능한 로컬 경로를 입력해 주세요.</p>
+          <p className="api-key-manager-help">{text.pathHelpText}</p>
         </div>
       ) : (
         <div className="api-key-editor-wrap">
           <label className="cookie-upload-label">
-            <span>cookies_netscape.txt 파일 업로드</span>
+            <span>{text.uploadLabel}</span>
             <input
               type="file"
               accept=".txt,text/plain"
@@ -100,10 +103,10 @@ export function CookieFilePathManager({
               onContentSave(event.target.value);
             }}
             rows={8}
-            placeholder="cookies_netscape.txt 내용을 그대로 붙여넣어 주세요"
-            aria-label="쿠키 파일 내용"
+            placeholder={text.contentPlaceholder}
+            aria-label={text.contentAriaLabel}
           />
-          <p className="api-key-manager-help">보안상 브라우저 로컬 저장소에 저장됩니다. 공용 PC에서는 사용 후 삭제해 주세요.</p>
+          <p className="api-key-manager-help">{text.contentHelpText}</p>
         </div>
       )}
     </section>

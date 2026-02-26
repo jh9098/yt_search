@@ -1,6 +1,41 @@
 import type { AppUiText } from "../appUiText.types";
 
 export const APP_UI_TEXT_EN: AppUiText = {
+  localeSelector: {
+    label: "Search UI language",
+    options: {
+      ko: "한국어",
+      en: "English",
+    },
+  },
+  apiKeyManager: {
+    sectionAriaLabel: "YouTube API key manager",
+    title: "YouTube API key",
+    summaryEmpty: "No API keys saved",
+    summaryRegistered: (count: number) => `${count} keys saved`,
+    openButton: "Enter keys",
+    closeButton: "Close input",
+    inputPlaceholder: "Enter one API key per line. Comma-separated values are also supported.",
+    helpText: "When multiple keys are saved, the app retries with the next key after quota exhaustion.",
+    saveButton: "Save",
+    clearButton: "Clear all",
+  },
+  cookieManager: {
+    sectionAriaLabel: "Cookie settings",
+    title: "cookies_netscape.txt settings",
+    summaryConfigured: "Configured",
+    summaryNotConfigured: "Not configured",
+    tabListAriaLabel: "Select cookie input mode",
+    pathTab: "File path",
+    contentTab: "Upload/Paste",
+    pathPlaceholder: "e.g. /Users/me/cookies_netscape.txt",
+    pathInputAriaLabel: "Cookie file path",
+    pathHelpText: "Enter a local path accessible by the server.",
+    uploadLabel: "Upload cookies_netscape.txt",
+    contentPlaceholder: "Paste the raw cookies_netscape.txt content",
+    contentAriaLabel: "Cookie file content",
+    contentHelpText: "Saved in browser local storage for convenience. Remove it after use on shared devices.",
+  },
   appHeader: {
     title: "YouTube Idea Miner v2.0",
     subtitle: "Run AI content analysis directly from search results.",

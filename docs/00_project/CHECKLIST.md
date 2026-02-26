@@ -157,6 +157,13 @@
 
 ## I. 완료 로그 (요약)
 
+### 2026-03-23 (FE-14 헤더 설정 패널 locale 분리)
+- [x] `frontend/src/domains/search/i18n/appUiText.types.ts`, `locales/appKo.ts`, `locales/appEn.ts`에 localeSelector/apiKeyManager/cookieManager 섹션 추가
+- [x] `SearchLocaleSelector`, `ApiKeyManager`, `CookieFilePathManager`가 `appUiText` props 기반으로만 문구를 렌더링하도록 변경
+- [x] `App.tsx`에서 세 컴포넌트에 locale 텍스트를 주입해 런타임 locale 변경 시 즉시 반영되도록 연결
+- [x] `docs/01_manuals/frontend.md`, `docs/00_project/CHANGELOG_WORKING.md` 동기화
+- 메모: 이번 변경은 프론트 문구/상태 표현 계층만 수정하여 Firestore read 소모는 0회다. locale 일관성으로 잘못된 재시도/입력 오해를 줄여 추후 Firestore 연동 시 불필요 read 유발 가능성을 낮춘다.
+
 ### 2026-03-22 (FE-13 헤더/대본 모달 locale 확장)
 - [x] `frontend/src/domains/search/i18n/appUiText.types.ts`, `appUiText.ts`, `locales/appKo.ts`, `locales/appEn.ts` 추가로 앱 헤더/공통 메시지/대본 모달 문구 locale 리소스화
 - [x] `App.tsx`에서 헤더 제목/서브타이틀/할당량 라벨/공통 토스트/분석 준비 문구를 `appUiText` 기반으로 전환
