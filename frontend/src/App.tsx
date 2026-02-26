@@ -35,6 +35,7 @@ import {
 } from "./domains/search/cookiePathStorage";
 import { fetchVideoTranscript, SearchApiError } from "./domains/search/api/client";
 import { SearchLocaleSelector } from "./domains/search/components/SearchLocaleSelector";
+import { getAppUiText } from "./domains/search/i18n/appUiText";
 import { getSearchUiText, type SearchUiLocale } from "./domains/search/i18n/searchUiText";
 import { loadSearchUiLocale, saveSearchUiLocale } from "./domains/search/i18n/searchUiLocale";
 import type {
@@ -85,6 +86,7 @@ export function App() {
   const [userApiKeys, setUserApiKeys] = useState<string[]>(() => loadUserApiKeys());
   const [searchUiLocale, setSearchUiLocale] = useState<SearchUiLocale>(() => loadSearchUiLocale());
   const searchUiText = useMemo(() => getSearchUiText(searchUiLocale), [searchUiLocale]);
+  const appUiText = useMemo(() => getAppUiText(searchUiLocale), [searchUiLocale]);
 
   const handlePopStateQueryRestored = useCallback((restoredQuery: SearchQueryState) => {
     void runSearch(restoredQuery, filters, userApiKeys);
@@ -114,7 +116,7 @@ export function App() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<AnalysisErrorState | null>(null);
   const [loadingState, setLoadingState] = useState<AnalysisLoadingState>({
-    message: searchUiLocale === "en" ? "Preparing analysis." : "분석을 준비 중입니다.",
+    message: appUiText.common.analysisPreparing,
   });
   const [shareMessage, setShareMessage] = useState<string | null>(null);
   const [popStateNoticeMessage, setPopStateNoticeMessage] = useState<string | null>(null);
@@ -262,7 +264,7 @@ export function App() {
       setStatus("loading");
       setError(null);
       setResult(null);
-      setLoadingState({ message: searchUiLocale === "en" ? "Preparing analysis." : "분석을 준비 중입니다." });
+      setLoadingState({ message: appUiText.common.analysisPreparing });
 
       const sessionId = activeSessionRef.current;
 
@@ -303,7 +305,7 @@ export function App() {
         setStatus("error");
       }
     },
-    [applyStatusData, clearPollTimer, pollJobStatus, stopPolling],
+    [appUiText.common.analysisPreparing, applyStatusData, clearPollTimer, pollJobStatus, stopPolling],
   );
 
   useEffect(() => {
@@ -380,7 +382,7 @@ export function App() {
 
   const handleCopyShareUrl = async () => {
     const copied = await copyShareUrl();
-    setShareMessage(copied ? "URL이 복사되었습니다." : "URL 복사에 실패했습니다.");
+    setShareMessage(copied ? appUiText.common.copyUrlSuccess : appUiText.common.copyUrlFailure);
   };
 
   const handleSaveApiKeys = (nextApiKeys: string[]) => {
@@ -427,7 +429,7 @@ export function App() {
         if (caughtError instanceof SearchApiError) {
           setTranscriptErrorMessage(caughtError.message);
         } else {
-          setTranscriptErrorMessage("대본 추출 중 알 수 없는 오류가 발생했습니다.");
+          setTranscriptErrorMessage(appUiText.common.transcriptUnknownError);
         }
         setTranscriptStatus("error");
       });
@@ -453,13 +455,13 @@ export function App() {
     <main className="app-container">
       <header className="app-header">
         <div className="app-header-title-wrap">
-          <h1>유튜브 소재 채굴기 v2.0</h1>
-          <p className="app-subtitle">검색 결과에서 바로 AI 소재 분석을 실행할 수 있습니다.</p>
+          <h1>{appUiText.appHeader.title}</h1>
+          <p className="app-subtitle">{appUiText.appHeader.subtitle}</p>
         </div>
         <div className="app-header-tools">
           <SearchLocaleSelector locale={searchUiLocale} onChange={handleSearchUiLocaleChange} />
-          <div className="quota-indicator" aria-label="추정 할당량 잔량">
-            <p className="quota-title">추정 할당량 잔량</p>
+          <div className="quota-indicator" aria-label={appUiText.appHeader.quotaAriaLabel}>
+            <p className="quota-title">{appUiText.appHeader.quotaTitle}</p>
             <p className="quota-value">{estimatedQuotaLeft.toLocaleString()} / {quotaMax.toLocaleString()} pt</p>
             <progress value={estimatedQuotaLeft} max={quotaMax} />
           </div>
@@ -561,6 +563,7 @@ export function App() {
         status={transcriptStatus}
         result={transcriptResult}
         errorMessage={transcriptErrorMessage}
+        text={appUiText.transcriptModal}
         onClose={closeTranscriptModal}
       />
 

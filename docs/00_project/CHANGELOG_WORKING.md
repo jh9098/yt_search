@@ -1,3 +1,38 @@
+## 2026-03-22 (FE-13 헤더/대본 모달 locale 확장)
+### 오늘 목표
+- FE-12의 다음 세션 시작점에 따라 헤더/대본 추출 모달 문구를 locale 리소스 기반으로 전환한다.
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/search/i18n/appUiText.types.ts`, `appUiText.ts`, `locales/appKo.ts`, `locales/appEn.ts` 추가로 앱 공통 문구 locale 레이어 신설
+- [x] `App.tsx`에서 헤더 제목/서브타이틀/할당량 라벨, 분석 준비 문구, URL 복사 결과 문구, 대본 추출 unknown 에러 문구를 `appUiText`로 전환
+- [x] `TranscriptModal.tsx`가 locale 텍스트 props(`text`)를 받아 로딩/오류/필드 라벨을 렌더링하도록 변경
+- [x] `appUiText.test.ts` 신규 추가 + 관련 i18n 테스트/빌드 검증 완료
+- [x] `docs/01_manuals/frontend.md`, `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] 없음
+
+### 변경/생성 파일
+- `frontend/src/domains/search/i18n/appUiText.types.ts`
+- `frontend/src/domains/search/i18n/appUiText.ts`
+- `frontend/src/domains/search/i18n/locales/appKo.ts`
+- `frontend/src/domains/search/i18n/locales/appEn.ts`
+- `frontend/src/domains/search/i18n/appUiText.test.ts`
+- `frontend/src/domains/search/components/TranscriptModal.tsx`
+- `frontend/src/App.tsx`
+- `docs/01_manuals/frontend.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. SearchLocaleSelector/ApiKeyManager/CookieFilePathManager 내부 고정 문구를 locale 리소스로 분리할 범위를 문서에서 먼저 확정한다.
+
+### 메모
+- 이번 변경은 프론트 locale 텍스트/렌더링 경로만 수정했고 네트워크 요청/저장소 조회 플로우는 그대로라 Firestore read 소모는 0회다.
+- 문구를 locale 리소스로 통합해 잘못된 안내로 인한 불필요 재시도 가능성을 줄였고, 추후 Firestore 연동 시 read 낭비를 예방하는 기반을 강화했다.
+
+---
+
 ## 2026-03-22 (FE-12 analysis 모달 locale 문구 연결)
 ### 오늘 목표
 - FE-11의 다음 세션 시작점에 따라 검색 외 UI 중 우선순위가 높은 analysis 모달 영역을 locale 리소스 기반으로 정리한다.
