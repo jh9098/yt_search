@@ -104,4 +104,5 @@ export interface AnalysisModalProps {
   onRetry: () => void;
   isActionDisabled?: boolean;
   onKeywordClick?: (keyword: string) => void;
+  locale?: string;
 }

@@ -1,0 +1,29 @@
+export interface AnalysisUiText {
+  loadingTitle: string;
+  loadingPreparingMessage: string;
+  loadingFallbackMessage: string;
+  loadingCurrentStepLabel: string;
+  loadingProgressLabel: string;
+  completedTitle: string;
+  summarySectionTitle: string;
+  positiveSectionTitle: string;
+  weakSectionTitle: string;
+  contentIdeasTitle: string;
+  emptyContentIdeasMessage: string;
+  recommendedKeywordsTitle: string;
+  metaModelLabel: string;
+  metaAnalyzedAtLabel: string;
+  metaAnalysisBasisLabel: string;
+  metaUnknownInfoLabel: string;
+  metaAnalysisVersionLabel: string;
+  metaSchemaVersionLabel: string;
+  metaWarningLabel: string;
+  closeButtonLabel: string;
+  retryButtonLabel: string;
+  errorCodeLabel: string;
+  missingResultTitle: string;
+  missingResultMessage: string;
+  failedTitle: string;
+  failedMessage: string;
+  invalidDateFallbackMessage: string;
+}

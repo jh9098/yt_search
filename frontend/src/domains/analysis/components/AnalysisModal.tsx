@@ -1,3 +1,4 @@
+import { getAnalysisUiText } from "../i18n/analysisUiText";
 import { AnalysisErrorView } from "./AnalysisErrorView";
 import { AnalysisLoadingView } from "./AnalysisLoadingView";
 import { AnalysisSuccessView } from "./AnalysisSuccessView";
@@ -12,8 +13,10 @@ export function AnalysisModal({
   onRetry,
   isActionDisabled,
   onKeywordClick,
+  locale,
 }: AnalysisModalProps) {
   const disabled = isActionDisabled ?? status === "loading";
+  const analysisUiText = getAnalysisUiText(locale);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -23,6 +26,7 @@ export function AnalysisModal({
             isActionDisabled={disabled}
             onClose={onClose}
             loadingState={loadingState}
+            text={analysisUiText}
           />
         ) : null}
 
@@ -32,18 +36,21 @@ export function AnalysisModal({
               result={result}
               onClose={onClose}
               onKeywordClick={onKeywordClick ?? (() => undefined)}
+              text={analysisUiText}
+              locale={locale ?? "ko-KR"}
             />
           ) : (
             <AnalysisErrorView
               error={{
-                title: "결과 누락",
-                message: "분석 결과가 비어 있습니다. 다시 시도해 주세요.",
+                title: analysisUiText.missingResultTitle,
+                message: analysisUiText.missingResultMessage,
                 canRetry: true,
                 code: "ANALYSIS_OUTPUT_INVALID",
               }}
               isActionDisabled={disabled}
               onClose={onClose}
               onRetry={onRetry}
+              text={analysisUiText}
             />
           )
         ) : null}
@@ -52,14 +59,15 @@ export function AnalysisModal({
           <AnalysisErrorView
             error={
               error ?? {
-                title: "분석 실패",
-                message: "분석 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+                title: analysisUiText.failedTitle,
+                message: analysisUiText.failedMessage,
                 canRetry: true,
               }
             }
             isActionDisabled={disabled}
             onClose={onClose}
             onRetry={onRetry}
+            text={analysisUiText}
           />
         ) : null}
       </div>

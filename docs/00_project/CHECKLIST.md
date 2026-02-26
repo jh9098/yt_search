@@ -157,6 +157,12 @@
 
 ## I. 완료 로그 (요약)
 
+### 2026-03-22 (FE-12 analysis 모달 locale 문구 연결)
+- [x] `frontend/src/domains/analysis/i18n/*` 추가로 analysis 모달 문구 locale 리소스를 `ko/en`으로 분리
+- [x] `AnalysisModal`, `AnalysisLoadingView`, `AnalysisSuccessView`, `AnalysisErrorView`가 locale 기반 공통 문구를 사용하도록 연결
+- [x] `analysisUiText.test.ts`로 기본 locale/지원 locale/미지원 locale fallback 동작 고정
+- 메모: 이번 변경은 프론트 문구/렌더링 계층만 수정하여 Firestore read 소모는 0회다. locale 일관성으로 잘못된 재시도 유도 문구를 줄여 추후 Firestore 연동 시 불필요 read 위험을 낮춘다.
+
 ### 2026-03-21 (FE-11 검색 UI runtime locale 상태 연결)
 - [x] `searchUiLocale.ts` 추가로 locale 해석/저장(`localStorage`) 정책을 모듈화
 - [x] `App.tsx`에 locale 상태(`searchUiLocale`)와 선택 UI(`SearchLocaleSelector`)를 연결하고, 브라우저 언어 fallback을 적용
