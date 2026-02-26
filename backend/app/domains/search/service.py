@@ -3,6 +3,14 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from .client import YouTubeSearchClient
+from .scoring import (
+    classify_contribution_grade,
+    compute_contribution,
+    compute_engagement_rate,
+    compute_exposure_score,
+    compute_performance_score,
+    is_hot_video,
+)
 from .schemas import (
     SearchCorePreset,
     SearchDurationBucket,
@@ -68,13 +76,45 @@ def _collect_keyword_matches(keyword: str, title: str) -> list[str]:
     return matched
 
 
+def _normalize_scores(records: list[SearchVideoRecord], accessor: str) -> dict[str, float]:
+    values = [getattr(record, accessor) for record in records]
+    minimum = min(values)
+    maximum = max(values)
+
+    if minimum == maximum:
+        return {record.video_id: 100.0 for record in records}
+
+    result: dict[str, float] = {}
+    for record in records:
+        value = getattr(record, accessor)
+        normalized = ((value - minimum) / (maximum - minimum)) * 100.0
+        result[record.video_id] = normalized
+    return result
+
+
 def _sort_records(records: list[SearchVideoRecord], sort: SearchSortOption) -> list[SearchVideoRecord]:
+    if len(records) == 0:
+        return records
+
     if sort == SearchSortOption.SUBSCRIBER_ASC:
-        return sorted(records, key=lambda record: (record.subscriber_count, -record.view_count, record.title.lower()))
+        return sorted(records, key=lambda record: (record.subscriber_count, -record.view_count, -record.published_at.timestamp()))
     if sort == SearchSortOption.VIEWS:
-        return sorted(records, key=lambda record: record.view_count, reverse=True)
+        return sorted(records, key=lambda record: (record.view_count, record.published_at), reverse=True)
     if sort == SearchSortOption.LATEST:
         return sorted(records, key=lambda record: record.published_at, reverse=True)
+    if sort == SearchSortOption.PERFORMANCE_ONLY:
+        return sorted(records, key=lambda record: (record.performance_score, record.published_at), reverse=True)
+    if sort == SearchSortOption.OPPORTUNITY_ONLY:
+        return sorted(records, key=lambda record: (record.exposure_score, record.published_at), reverse=True)
+    if sort == SearchSortOption.RECOMMENDED:
+        normalized_performance = _normalize_scores(records, "performance_score")
+        normalized_exposure = _normalize_scores(records, "exposure_score")
+
+        def _hot_score(record: SearchVideoRecord) -> float:
+            return (0.45 * normalized_performance[record.video_id]) + (0.55 * normalized_exposure[record.video_id])
+
+        return sorted(records, key=lambda record: (_hot_score(record), record.published_at), reverse=True)
+
     return records
 
 
@@ -172,8 +212,8 @@ def _match_topic(topic: SearchTopicOption, title: str) -> bool:
     lowered = title.lower()
     topic_keywords: dict[SearchTopicOption, tuple[str, ...]] = {
         SearchTopicOption.SHOPPING: ("공구", "꿀템", "추천템", "리뷰"),
-        SearchTopicOption.CLIP: ("명장면", "짤", "하이라이트", "웃긴"),
-        SearchTopicOption.GAME: ("게임", "플레이", "공략", "업데이트"),
+        SearchTopicOption.CLIP: ("짤", "명장면", "하이라이트"),
+        SearchTopicOption.GAME: ("게임", "플레이", "공략"),
         SearchTopicOption.FOOD: ("먹방", "요리", "asmr", "레시피"),
         SearchTopicOption.ANIMAL: ("동물", "강아지", "고양이", "귀요미"),
         SearchTopicOption.KNOWLEDGE: ("지식", "상식", "1분", "공부"),
@@ -181,6 +221,7 @@ def _match_topic(topic: SearchTopicOption, title: str) -> bool:
         SearchTopicOption.SPORTS: ("스포츠", "운동", "헬스", "축구"),
         SearchTopicOption.ENTERTAINMENT: ("아이돌", "k-pop", "연예", "예능"),
         SearchTopicOption.OTHER: (),
+        SearchTopicOption.ALL: (),
     }
 
     keywords = topic_keywords.get(topic, ())
@@ -189,6 +230,12 @@ def _match_topic(topic: SearchTopicOption, title: str) -> bool:
         return not any(word in lowered for word in every_known)
 
     return any(word in lowered for word in keywords)
+
+
+def _build_recommendation_reason(record: SearchVideoRecord) -> str:
+    contribution_text = "N/A" if record.contribution is None else f"{record.contribution / 100.0:.2f}배"
+    engagement_text = "반응 데이터 비공개" if record.engagement_rate is None else f"반응 {record.engagement_rate:.2f}%"
+    return f"구독자 대비 조회수 {contribution_text} + {engagement_text} + 채널 경쟁도 낮음"
 
 
 def search_videos(
@@ -263,12 +310,22 @@ def search_videos(
         uploads_per_week = row.total_video_count / (channel_age_days / 7)
         grade = _compute_channel_grade(row.subscriber_count)
 
-        if row.is_subscriber_public and row.subscriber_count > 0:
-            performance_ratio = (row.view_count / row.subscriber_count) * 100
-        else:
-            performance_ratio = 0.0
+        contribution = compute_contribution(row.view_count, row.subscriber_count, row.is_subscriber_public)
+        contribution_grade = classify_contribution_grade(contribution)
+        engagement_rate = compute_engagement_rate(row.view_count, row.like_count, row.comment_count)
+        performance_score = compute_performance_score(contribution, engagement_rate, row.view_count)
+        exposure_score = compute_exposure_score(
+            keyword=keyword,
+            title=row.title,
+            subscriber_count=row.subscriber_count,
+            engagement_rate=engagement_rate,
+            total_video_count=row.total_video_count,
+            published_at=row.published_at,
+            now=now,
+        )
+        hot_video = is_hot_video(contribution, exposure_score)
 
-        if performance_ratio < min_performance:
+        if performance_score < min_performance:
             continue
 
         if not _match_core_preset(
@@ -299,6 +356,8 @@ def search_videos(
                     row.subscriber_count,
                     row.is_subscriber_public,
                 ),
+                like_count=row.like_count,
+                comment_count=row.comment_count,
                 channel_published_at=row.channel_published_at,
                 channel_published_date_text=_format_published_date_text(row.channel_published_at),
                 country_code=row.country_code,
@@ -315,11 +374,21 @@ def search_videos(
                 has_script=has_script,
                 is_subscriber_public=row.is_subscriber_public,
                 keyword_matched_terms=_collect_keyword_matches(keyword, row.title),
+                contribution=contribution,
+                contribution_grade=contribution_grade,
+                engagement_rate=engagement_rate,
+                performance_score=performance_score,
+                exposure_score=exposure_score,
+                is_hot_video=hot_video,
+                recommendation_reason="",
                 estimated_revenue_total_text=f"CPM {1 + (row.view_count % 3):,}원 기준 약 {int(row.view_count * ((1 + (row.view_count % 3)) / 1000)):,}원",
-                vph_text=f"{performance_ratio:.1f}%",
-                badge_label="고효율" if performance_ratio >= 200 else ("SHORTS" if is_short_form else None),
+                vph_text=f"{performance_score:.1f}",
+                badge_label="🔥 HOT" if hot_video else ("SHORTS" if is_short_form else None),
             )
         )
+
+    for record in records:
+        record.recommendation_reason = _build_recommendation_reason(record)
 
     sorted_records = _sort_records(records, sort)
     return sorted_records[:result_limit]

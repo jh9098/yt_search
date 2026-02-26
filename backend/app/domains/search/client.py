@@ -47,6 +47,8 @@ class YoutubeVideoRaw:
     published_at: datetime
     duration_seconds: int
     view_count: int
+    like_count: int
+    comment_count: int
     subscriber_count: int
     is_subscriber_public: bool
     country_code: str
@@ -184,6 +186,12 @@ class YouTubeSearchClient:
         if sort == SearchSortOption.LATEST:
             return "date"
         if sort == SearchSortOption.SUBSCRIBER_ASC:
+            return "relevance"
+        if sort in {
+            SearchSortOption.RECOMMENDED,
+            SearchSortOption.PERFORMANCE_ONLY,
+            SearchSortOption.OPPORTUNITY_ONLY,
+        }:
             return "relevance"
         return "relevance"
 
@@ -357,6 +365,8 @@ class YouTubeSearchClient:
 
             duration_seconds = _parse_iso8601_duration_to_seconds(str(content_details.get("duration", "")))
             view_count = _to_int(statistics.get("viewCount"))
+            like_count = _to_int(statistics.get("likeCount"))
+            comment_count = _to_int(statistics.get("commentCount"))
 
             channel_item = channel_map.get(channel_id, {})
             channel_statistics = channel_item.get("statistics") if isinstance(channel_item, dict) else {}
@@ -385,6 +395,8 @@ class YouTubeSearchClient:
                     published_at=published_at,
                     duration_seconds=duration_seconds,
                     view_count=view_count,
+                    like_count=like_count,
+                    comment_count=comment_count,
                     subscriber_count=subscriber_count,
                     is_subscriber_public=not hidden_subscriber_count,
                     country_code=country_code,

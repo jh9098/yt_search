@@ -21,6 +21,9 @@ const COLUMNS: Array<{ key: SearchTableSortKey; label: string }> = [
   { key: "uploadsPerWeek", label: "업로드 빈도" },
   { key: "countryCode", label: "국가" },
   { key: "channelGrade", label: "등급" },
+  { key: "performanceScore", label: "성과도" },
+  { key: "exposureScore", label: "기회도" },
+  { key: "isHotVideo", label: "핫" },
 ];
 
 function getSortValue(card: SearchResultCard, key: SearchTableSortKey): number | string {
@@ -49,6 +52,12 @@ function getSortValue(card: SearchResultCard, key: SearchTableSortKey): number |
       return card.countryCode;
     case "channelGrade":
       return card.channelGrade;
+    case "performanceScore":
+      return card.performanceScore;
+    case "exposureScore":
+      return card.exposureScore;
+    case "isHotVideo":
+      return card.isHotVideo ? 1 : 0;
     default:
       return card.title;
   }
@@ -118,6 +127,9 @@ export function SearchResultTable({ cards }: SearchResultTableProps) {
               <td>{card.uploadsPerWeekText}</td>
               <td>{card.countryCode}</td>
               <td>{card.channelGrade}</td>
+              <td>{card.performanceScore.toFixed(1)}</td>
+              <td>{card.exposureScore.toFixed(1)}</td>
+              <td>{card.isHotVideo ? "🔥" : "-"}</td>
             </tr>
           ))}
         </tbody>

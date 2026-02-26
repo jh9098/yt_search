@@ -8,7 +8,7 @@ import type {
   SearchSortOption,
 } from "../types";
 
-export const SORT_OPTION_VALUES: SearchSortOption[] = ["subscriberAsc", "relevance", "views", "latest"];
+export const SORT_OPTION_VALUES: SearchSortOption[] = ["subscriberAsc", "relevance", "views", "latest", "recommended", "performanceOnly", "opportunityOnly"];
 
 export const PERIOD_OPTION_VALUES: SearchPeriodOption[] = ["24h", "7d", "30d", "90d", "180d", "365d", "730d", "all"];
 

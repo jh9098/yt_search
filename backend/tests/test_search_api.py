@@ -36,6 +36,8 @@ class SearchApiContractTest(unittest.TestCase):
                     view_count_text="42만",
                     subscriber_count=173000,
                     subscriber_count_text="17.3만",
+                    like_count=1200,
+                    comment_count=230,
                     channel_published_at=datetime(2025, 1, 1, tzinfo=timezone.utc),
                     channel_published_date_text="2025-01-01",
                     country_code="KR",
@@ -52,6 +54,13 @@ class SearchApiContractTest(unittest.TestCase):
                     has_script=False,
                     is_subscriber_public=True,
                     keyword_matched_terms=["가족", "대화"],
+                    contribution=242.7,
+                    contribution_grade="Good",
+                    engagement_rate=0.34,
+                    performance_score=74.2,
+                    exposure_score=62.1,
+                    is_hot_video=False,
+                    recommendation_reason="구독자 대비 조회수 2.43배 + 반응 0.34% + 채널 경쟁도 낮음",
                     estimated_revenue_total_text=None,
                     vph_text=None,
                     badge_label="SHORTS",
@@ -101,6 +110,13 @@ class SearchApiContractTest(unittest.TestCase):
         self.assertIn("hasScript", first_item)
         self.assertIn("isSubscriberPublic", first_item)
         self.assertIn("keywordMatchedTerms", first_item)
+        self.assertIn("recommendationReason", first_item)
+        self.assertIn("isHotVideo", first_item)
+        self.assertIn("exposureScore", first_item)
+        self.assertIn("performanceScore", first_item)
+        self.assertIn("contributionGrade", first_item)
+        self.assertIn("commentCount", first_item)
+        self.assertIn("likeCount", first_item)
 
     def test_get_search_videos_returns_contract_error_when_query_missing(self) -> None:
         response = self.client.get(

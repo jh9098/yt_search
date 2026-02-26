@@ -12,6 +12,9 @@ class SearchSortOption(str, Enum):
     RELEVANCE = "relevance"
     VIEWS = "views"
     LATEST = "latest"
+    RECOMMENDED = "recommended"
+    PERFORMANCE_ONLY = "performanceOnly"
+    OPPORTUNITY_ONLY = "opportunityOnly"
 
 
 class SearchPeriodOption(str, Enum):
@@ -57,8 +60,6 @@ class SearchHoverMetric(str, Enum):
     ESTIMATED_REVENUE = "estimatedRevenue"
 
 
-
-
 class SearchTopicOption(str, Enum):
     ALL = "all"
     SHOPPING = "shopping"
@@ -71,6 +72,7 @@ class SearchTopicOption(str, Enum):
     SPORTS = "sports"
     ENTERTAINMENT = "entertainment"
     OTHER = "other"
+
 
 class SearchCorePreset(str, Enum):
     NONE = "none"
@@ -102,6 +104,8 @@ class SearchResultItem(BaseModel):
     view_count_text: str = Field(..., alias="viewCountText")
     subscriber_count: int = Field(..., alias="subscriberCount")
     subscriber_count_text: str = Field(..., alias="subscriberCountText")
+    like_count: int = Field(..., alias="likeCount")
+    comment_count: int = Field(..., alias="commentCount")
     channel_published_date_text: str = Field(..., alias="channelPublishedDateText")
     country_code: str = Field(..., alias="countryCode")
     total_video_count_text: str = Field(..., alias="totalVideoCountText")
@@ -113,6 +117,13 @@ class SearchResultItem(BaseModel):
     has_script: bool = Field(..., alias="hasScript")
     is_subscriber_public: bool = Field(..., alias="isSubscriberPublic")
     keyword_matched_terms: list[str] = Field(..., alias="keywordMatchedTerms")
+    contribution: float | None = None
+    contribution_grade: str = Field(..., alias="contributionGrade")
+    engagement_rate: float | None = Field(default=None, alias="engagementRate")
+    performance_score: float = Field(..., alias="performanceScore")
+    exposure_score: float = Field(..., alias="exposureScore")
+    is_hot_video: bool = Field(..., alias="isHotVideo")
+    recommendation_reason: str = Field(..., alias="recommendationReason")
     estimated_revenue_total_text: str | None = Field(default=None, alias="estimatedRevenueTotalText")
     vph_text: str | None = Field(default=None, alias="vphText")
     badge_label: str | None = Field(default=None, alias="badgeLabel")
@@ -175,6 +186,8 @@ class SearchVideoRecord(BaseModel):
     view_count_text: str
     subscriber_count: int
     subscriber_count_text: str
+    like_count: int
+    comment_count: int
     channel_published_at: datetime
     channel_published_date_text: str
     country_code: str
@@ -191,6 +204,13 @@ class SearchVideoRecord(BaseModel):
     has_script: bool
     is_subscriber_public: bool
     keyword_matched_terms: list[str]
+    contribution: float | None = None
+    contribution_grade: str
+    engagement_rate: float | None = None
+    performance_score: float
+    exposure_score: float
+    is_hot_video: bool
+    recommendation_reason: str
     estimated_revenue_total_text: str | None = None
     vph_text: str | None = None
     badge_label: str | None = None
