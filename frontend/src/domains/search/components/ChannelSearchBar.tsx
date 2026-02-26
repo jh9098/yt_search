@@ -1,3 +1,4 @@
+import type { SearchUiText } from "../i18n/searchUiText.types";
 import type { SearchTopicOption } from "../types";
 
 interface ChannelSearchBarProps {
@@ -7,6 +8,7 @@ interface ChannelSearchBarProps {
   onChannelChange: (value: string) => void;
   onTopicChange: (value: SearchTopicOption) => void;
   onSearch: () => void;
+  searchUiText: SearchUiText;
 }
 
 const TOPIC_OPTIONS: Array<{ value: SearchTopicOption; label: string }> = [
@@ -30,11 +32,12 @@ export function ChannelSearchBar({
   onChannelChange,
   onTopicChange,
   onSearch,
+  searchUiText,
 }: ChannelSearchBarProps) {
   return (
-    <div className="search-input-group" aria-label="채널명 검색 영역">
+    <div className="search-input-group" aria-label={searchUiText.channelSearch.sectionAriaLabel}>
       <label htmlFor="channel-search-input" className="search-label">
-        채널명 검색
+        {searchUiText.channelSearch.label}
       </label>
       <div className="search-input-row">
         <input
@@ -42,18 +45,18 @@ export function ChannelSearchBar({
           className="search-input"
           value={channel}
           onChange={(event) => onChannelChange(event.target.value)}
-          placeholder="예: 백호사연극장"
-          aria-label="채널명 입력"
+          placeholder={searchUiText.channelSearch.inputPlaceholder}
+          aria-label={searchUiText.channelSearch.inputAriaLabel}
         />
-        <button type="button" onClick={onSearch} disabled={isDisabled} aria-label="채널명 검색 실행">
-          채널 검색
+        <button type="button" onClick={onSearch} disabled={isDisabled} aria-label={searchUiText.channelSearch.submitButtonAriaLabel}>
+          {searchUiText.channelSearch.submitButtonLabel}
         </button>
         <select
           className="search-select"
           value={topic}
           disabled={isDisabled}
           onChange={(event) => onTopicChange(event.target.value as SearchTopicOption)}
-          aria-label="주제 선택"
+          aria-label={searchUiText.channelSearch.topicSelectAriaLabel}
         >
           {TOPIC_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>

@@ -482,7 +482,7 @@ export function App() {
         </div>
       </header>
 
-      <section className="search-panel" aria-label="탐색 검색 패널">
+      <section className="search-panel" aria-label={searchUiText.searchLayout.panelAriaLabel}>
         <KeywordSearchBar
           searchUiText={searchUiText}
           keyword={queryState.keyword}
@@ -510,10 +510,11 @@ export function App() {
             setQueryState((previous) => ({ ...previous, topic }));
           }}
           onSearch={handleChannelSearch}
+          searchUiText={searchUiText}
         />
       </section>
 
-      <section className="toolbar-row" aria-label="필터 및 보기 모드">
+      <section className="toolbar-row" aria-label={searchUiText.searchLayout.toolbarAriaLabel}>
         <FilterToolbar
           filters={filters}
           isDisabled={isSearchLoading}
@@ -524,6 +525,7 @@ export function App() {
             setFilters(DEFAULT_FILTERS);
             setShareMessage(null);
           }}
+          searchUiText={searchUiText}
         />
         <ViewModeToggle
           mode={viewMode}
@@ -531,10 +533,11 @@ export function App() {
           onChange={(nextMode) => {
             setViewMode(nextMode);
           }}
+          searchUiText={searchUiText}
         />
       </section>
 
-      <section className="search-section" aria-label="검색 결과">
+      <section className="search-section" aria-label={searchUiText.searchLayout.resultSectionAriaLabel}>
         <ResultSummaryBar
           searchUiText={searchUiText}
           summary={summary}

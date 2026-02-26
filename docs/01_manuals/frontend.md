@@ -124,6 +124,11 @@ API 호출 전에 TypeScript 타입/인터페이스를 먼저 정의합니다.
 - 지원하지 않는 locale 요청은 `DEFAULT_SEARCH_UI_LOCALE`로 fallback해 런타임 에러를 방지한다.
 - 기존 컴포넌트는 `SEARCH_UI_TEXT` 기본 export를 그대로 사용해도 동작하도록 호환성을 유지한다.
 
+### 검색 레이아웃/채널/뷰모드 locale 확장 규칙 (FE-15)
+- `App.tsx`의 검색 레이아웃 섹션(`search-panel`, `toolbar-row`, `search-section`) `aria-label`은 `searchUiText.searchLayout`에서 관리한다.
+- `ChannelSearchBar`, `FilterToolbar`, `ViewModeToggle`의 접근성 문구와 고정 버튼 문구는 `searchUiText` props 기반으로만 렌더링한다.
+- 컴포넌트 내부에서 aria/레이블 문자열 하드코딩을 추가하지 않고, 필요 시 `searchUiText.types.ts`에 키를 먼저 추가한다.
+
 ### 헤더 설정 패널 locale 확장 규칙 (FE-14)
 - `SearchLocaleSelector`, `ApiKeyManager`, `CookieFilePathManager`의 하드코딩 문구는 `appUiText` 하위 섹션(`localeSelector`, `apiKeyManager`, `cookieManager`)으로 관리한다.
 - 카운트 기반 문구(예: API 키 N개)는 locale 리소스 내부 함수(`summaryRegistered`)로 처리해 컴포넌트에서 문자열 조합을 금지한다.

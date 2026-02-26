@@ -1,3 +1,39 @@
+## 2026-03-23 (FE-15 검색 레이아웃/채널/뷰모드 locale 확장)
+### 오늘 목표
+- FE-14 다음 세션 시작점에 따라 검색 패널/필터/보기모드와 채널 검색 영역의 남은 고정 aria-label 문구를 locale 리소스로 통합한다.
+
+### 진행 내용 (완료)
+- [x] `searchUiText.types.ts`, `locales/ko.ts`, `locales/en.ts`에 `searchLayout`, `channelSearch`, `filterToolbar`, `viewMode` 키 추가
+- [x] `App.tsx`에서 `search-panel`, `toolbar-row`, `search-section` aria-label을 `searchUiText.searchLayout`으로 연결
+- [x] `ChannelSearchBar`, `FilterToolbar`, `ViewModeToggle`가 `searchUiText` props 기반으로 접근성/버튼 문구를 렌더링하도록 변경
+- [x] `searchUiText.test.ts`, `npm test -- searchUiText.test.ts`, `npm run build` 검증 완료
+- [x] `docs/01_manuals/frontend.md`, `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] FilterToolbar 내부 정렬/기간/필터 옵션 라벨까지 locale 리소스로 확장
+
+### 변경/생성 파일
+- `frontend/src/domains/search/i18n/searchUiText.types.ts`
+- `frontend/src/domains/search/i18n/locales/ko.ts`
+- `frontend/src/domains/search/i18n/locales/en.ts`
+- `frontend/src/domains/search/i18n/searchUiText.test.ts`
+- `frontend/src/domains/search/components/ChannelSearchBar.tsx`
+- `frontend/src/domains/search/components/FilterToolbar.tsx`
+- `frontend/src/domains/search/components/ViewModeToggle.tsx`
+- `frontend/src/App.tsx`
+- `docs/01_manuals/frontend.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. FilterToolbar의 정렬/기간/필터 옵션 라벨과 VideoGrid/VideoCard 계열 aria-label locale 범위를 FE-16로 확정한다.
+
+### 메모
+- 이번 변경은 프론트 locale 텍스트/접근성 라벨 계층만 수정했고 네트워크 요청/저장소 조회 플로우를 바꾸지 않아 Firestore read 소모는 0회다.
+- locale 일관성으로 잘못된 조작 안내를 줄여, 추후 Firestore 연동 시 불필요 재조회(read) 가능성을 낮췄다.
+
+---
+
 ## 2026-03-23 (FE-14 헤더 설정 패널 locale 분리)
 ### 오늘 목표
 - FE-13 다음 세션 시작점에 따라 SearchLocaleSelector/ApiKeyManager/CookieFilePathManager 고정 문구를 locale 리소스로 이관한다.

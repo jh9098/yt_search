@@ -1,21 +1,23 @@
+import type { SearchUiText } from "../i18n/searchUiText.types";
 import type { SearchViewMode } from "../types";
 
 interface ViewModeToggleProps {
   mode: SearchViewMode;
   isDisabled: boolean;
   onChange: (next: SearchViewMode) => void;
+  searchUiText: SearchUiText;
 }
 
-export function ViewModeToggle({ mode, isDisabled, onChange }: ViewModeToggleProps) {
+export function ViewModeToggle({ mode, isDisabled, onChange, searchUiText }: ViewModeToggleProps) {
   return (
-    <section className="view-mode-toggle" aria-label="보기 모드 전환">
+    <section className="view-mode-toggle" aria-label={searchUiText.viewMode.sectionAriaLabel}>
       <button
         type="button"
         className={mode === "grid" ? "view-mode-button is-active" : "view-mode-button"}
         disabled={isDisabled}
         onClick={() => onChange("grid")}
       >
-        그리드
+        {searchUiText.viewMode.gridButtonLabel}
       </button>
       <button
         type="button"
@@ -23,7 +25,7 @@ export function ViewModeToggle({ mode, isDisabled, onChange }: ViewModeTogglePro
         disabled={isDisabled}
         onClick={() => onChange("list")}
       >
-        리스트
+        {searchUiText.viewMode.listButtonLabel}
       </button>
     </section>
   );

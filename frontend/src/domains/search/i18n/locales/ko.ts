@@ -1,6 +1,11 @@
 import type { SearchUiText } from "../searchUiText.types";
 
 export const SEARCH_UI_TEXT_KO: SearchUiText = {
+  searchLayout: {
+    panelAriaLabel: "탐색 검색 패널",
+    toolbarAriaLabel: "필터 및 보기 모드",
+    resultSectionAriaLabel: "검색 결과",
+  },
   resultSummary: {
     sectionAriaLabel: "검색 결과 요약",
     resetButtonAriaLabel: "검색 조건 초기화",
@@ -41,5 +46,23 @@ export const SEARCH_UI_TEXT_KO: SearchUiText = {
       standard: "150개 (표준)",
       precise: "250개 (정밀)",
     },
+  },
+  channelSearch: {
+    sectionAriaLabel: "채널명 검색 영역",
+    label: "채널명 검색",
+    inputPlaceholder: "예: 백호사연극장",
+    inputAriaLabel: "채널명 입력",
+    submitButtonAriaLabel: "채널명 검색 실행",
+    submitButtonLabel: "채널 검색",
+    topicSelectAriaLabel: "주제 선택",
+  },
+  filterToolbar: {
+    sectionAriaLabel: "검색 필터 도구 모음",
+    resetButtonLabel: "필터 초기화",
+  },
+  viewMode: {
+    sectionAriaLabel: "보기 모드 전환",
+    gridButtonLabel: "그리드",
+    listButtonLabel: "리스트",
   },
 };

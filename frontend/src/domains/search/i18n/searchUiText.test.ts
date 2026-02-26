@@ -8,6 +8,7 @@ describe("getSearchUiText", () => {
 
     expect(DEFAULT_SEARCH_UI_LOCALE).toBe("ko");
     expect(text.keywordSearch.label).toBe("키워드 검색");
+    expect(text.searchLayout.panelAriaLabel).toBe("탐색 검색 패널");
   });
 
   it("지원 locale(en) 요청 시 해당 리소스를 반환한다", () => {
@@ -15,11 +16,13 @@ describe("getSearchUiText", () => {
 
     expect(text.keywordSearch.label).toBe("Keyword search");
     expect(text.resultSummary.statePrefix).toBe("State:");
+    expect(text.viewMode.gridButtonLabel).toBe("Grid");
   });
 
   it("미지원 locale은 기본 locale로 fallback한다", () => {
     const text = getSearchUiText("ja");
 
     expect(text.keywordSearch.label).toBe("키워드 검색");
+    expect(text.searchLayout.panelAriaLabel).toBe("탐색 검색 패널");
   });
 });

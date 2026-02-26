@@ -1,6 +1,11 @@
 import type { SearchUiText } from "../searchUiText.types";
 
 export const SEARCH_UI_TEXT_EN: SearchUiText = {
+  searchLayout: {
+    panelAriaLabel: "Search panel",
+    toolbarAriaLabel: "Filter and view mode",
+    resultSectionAriaLabel: "Search results",
+  },
   resultSummary: {
     sectionAriaLabel: "Search result summary",
     resetButtonAriaLabel: "Reset search filters",
@@ -41,5 +46,23 @@ export const SEARCH_UI_TEXT_EN: SearchUiText = {
       standard: "150 (standard)",
       precise: "250 (precise)",
     },
+  },
+  channelSearch: {
+    sectionAriaLabel: "Channel search section",
+    label: "Channel search",
+    inputPlaceholder: "e.g. Example Channel",
+    inputAriaLabel: "Channel name input",
+    submitButtonAriaLabel: "Run channel search",
+    submitButtonLabel: "Search channel",
+    topicSelectAriaLabel: "Topic selector",
+  },
+  filterToolbar: {
+    sectionAriaLabel: "Search filter toolbar",
+    resetButtonLabel: "Reset filters",
+  },
+  viewMode: {
+    sectionAriaLabel: "View mode switcher",
+    gridButtonLabel: "Grid",
+    listButtonLabel: "List",
   },
 };
