@@ -145,6 +145,12 @@ class SearchErrorResponse(BaseModel):
     meta: SearchResponseMeta
 
 
+class TranscriptSegmentData(BaseModel):
+    text: str
+    start: float
+    duration: float
+
+
 class TranscriptResultData(BaseModel):
     video_id: str = Field(..., alias="videoId")
     video_url: str = Field(..., alias="videoUrl")
@@ -152,11 +158,13 @@ class TranscriptResultData(BaseModel):
     language: str
     source: str
     transcript_text: str = Field(..., alias="transcriptText")
+    segments: list[TranscriptSegmentData] = Field(default_factory=list)
 
 
 class TranscriptRequest(BaseModel):
     video_id: str = Field(default="", alias="videoId")
     video_url: str = Field(default="", alias="videoUrl")
+    languages: str = Field(default="ko,en", alias="languages")
     cookie_file_path: str = Field(default="", alias="cookieFilePath")
     cookie_content: str = Field(default="", alias="cookieContent")
 

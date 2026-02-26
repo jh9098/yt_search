@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import os
-
 from uuid import uuid4
 
 from fastapi import APIRouter, Body, Header, Query
@@ -34,11 +32,15 @@ from .schemas import (
 )
 from .service import search_videos
 from .transcript import (
+    CouldNotRetrieveTranscript,
+    NoTranscriptFound,
+    RequestBlocked,
     TranscriptDependencyError,
+    TranscriptsDisabled,
     YTDLP_IMPORT_ERROR,
     build_transcript_health,
-    extract_transcript_from_video_url,
-    resolve_cookie_file_path,
+    extract_transcript_from_video,
+    parse_language_priority,
 )
 
 router = APIRouter(prefix="/api/search", tags=["search"])
@@ -50,6 +52,7 @@ def _build_transcript_response(
     *,
     video_id: str,
     video_url: str,
+    languages: str,
     cookie_file_path: str,
     cookie_content: str,
 ):
@@ -67,34 +70,42 @@ def _build_transcript_response(
         )
         return JSONResponse(status_code=400, content=body)
 
-    cookie_path = cookie_file_path.strip()
-    cookie_text = cookie_content.strip()
-
-    if not cookie_path and not cookie_text:
-        body = error_response(
-            code="COOKIEFILE_MISSING",
-            message="cookies 파일을 서버에서 찾지 못했습니다. (env YTDLP_COOKIEFILE 또는 search 폴더의 cookies.txt 확인)",
-            request_id=request_id,
-        )
-        body["meta"]["cwd"] = os.getcwd()
-        return JSONResponse(status_code=424, content=body)
+    _cookie_file_path = cookie_file_path.strip()
+    _cookie_content = cookie_content.strip()
+    language_priority = parse_language_priority(languages)
 
     try:
-        with resolve_cookie_file_path(
-            cookie_file_path=(cookie_path if cookie_path else None),
-            cookie_content=(cookie_text if cookie_text else None),
-        ) as resolved_cookie_file_path:
-            result = extract_transcript_from_video_url(
-                video_url=resolved_video_url,
-                cookie_file_path=resolved_cookie_file_path,
-            )
+        result = extract_transcript_from_video(
+            video_target=resolved_video_url,
+            languages=language_priority,
+        )
+    except (NoTranscriptFound, TranscriptsDisabled):
+        body = error_response(
+            code="TRANSCRIPT_NOT_FOUND",
+            message="자막이 없습니다. (자동 자막 포함)",
+            request_id=request_id,
+        )
+        return JSONResponse(status_code=404, content=body)
+    except RequestBlocked:
+        body = error_response(
+            code="TRANSCRIPT_REQUEST_BLOCKED",
+            message="YouTube 차단이 발생했습니다. WEBSHARE_USERNAME/WEBSHARE_PASSWORD 설정을 확인해 주세요.",
+            request_id=request_id,
+        )
+        return JSONResponse(status_code=429, content=body)
+    except CouldNotRetrieveTranscript as error:
+        body = error_response(
+            code="TRANSCRIPT_FETCH_FAILED",
+            message=str(error),
+            request_id=request_id,
+        )
+        return JSONResponse(status_code=400, content=body)
     except TranscriptDependencyError:
         body = error_response(
             code="TRANSCRIPT_DEPENDENCY_MISSING",
-            message=f"yt-dlp import 실패: {YTDLP_IMPORT_ERROR}",
+            message=f"youtube-transcript-api 설정 오류: {YTDLP_IMPORT_ERROR}",
             request_id=request_id,
         )
-        body["meta"]["hint"] = "Render requirements에 yt-dlp가 포함되어야 합니다."
         return JSONResponse(status_code=500, content=body)
     except Exception:
         body = error_response(
@@ -121,6 +132,7 @@ def _build_transcript_response(
         language=result.language,
         source=result.source,
         transcriptText=result.transcript_text,
+        segments=[segment.__dict__ for segment in result.segments],
     )
     body = success_response(data=data.model_dump(by_alias=True), request_id=request_id)
     return JSONResponse(status_code=200, content=body)
@@ -128,17 +140,19 @@ def _build_transcript_response(
 @router.get(
     "/transcript",
     response_model=TranscriptSuccessResponse,
-    responses={400: {"model": TranscriptErrorResponse}, 404: {"model": TranscriptErrorResponse}, 424: {"model": TranscriptErrorResponse}, 500: {"model": TranscriptErrorResponse}, 503: {"model": TranscriptErrorResponse}},
+    responses={400: {"model": TranscriptErrorResponse}, 404: {"model": TranscriptErrorResponse}, 429: {"model": TranscriptErrorResponse}, 500: {"model": TranscriptErrorResponse}, 503: {"model": TranscriptErrorResponse}},
 )
 def get_video_transcript(
     video_id: str = Query(default="", alias="videoId"),
     video_url: str = Query(default="", alias="videoUrl"),
+    languages: str = Query(default="ko,en", alias="languages"),
     cookie_file_path: str = Query(default="", alias="cookieFilePath"),
     cookie_content: str = Query(default="", alias="cookieContent"),
 ):
     return _build_transcript_response(
         video_id=video_id,
         video_url=video_url,
+        languages=languages,
         cookie_file_path=cookie_file_path,
         cookie_content=cookie_content,
     )
@@ -147,12 +161,13 @@ def get_video_transcript(
 @router.post(
     "/transcript",
     response_model=TranscriptSuccessResponse,
-    responses={400: {"model": TranscriptErrorResponse}, 404: {"model": TranscriptErrorResponse}, 424: {"model": TranscriptErrorResponse}, 500: {"model": TranscriptErrorResponse}, 503: {"model": TranscriptErrorResponse}},
+    responses={400: {"model": TranscriptErrorResponse}, 404: {"model": TranscriptErrorResponse}, 429: {"model": TranscriptErrorResponse}, 500: {"model": TranscriptErrorResponse}, 503: {"model": TranscriptErrorResponse}},
 )
 def post_video_transcript(payload: TranscriptRequest = Body(default_factory=TranscriptRequest)):
     return _build_transcript_response(
         video_id=payload.video_id,
         video_url=payload.video_url,
+        languages=payload.languages,
         cookie_file_path=payload.cookie_file_path,
         cookie_content=payload.cookie_content,
     )
