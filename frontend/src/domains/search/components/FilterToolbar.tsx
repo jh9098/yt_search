@@ -1,5 +1,4 @@
 import type {
-  SearchCorePreset,
   SearchDurationBucket,
   SearchFilterState,
   SearchHoverMetric,
@@ -10,6 +9,17 @@ import type {
 } from "../types";
 import type { SearchUiText } from "../i18n/searchUiText.types";
 import { applyCorePreset } from "../utils/corePreset";
+import {
+  CORE_PRESET_OPTION_VALUES,
+  DURATION_OPTION_VALUES,
+  HOVER_METRIC_OPTION_VALUES,
+  MIN_PERFORMANCE_OPTION_VALUES,
+  MIN_VIEW_OPTION_VALUES,
+  PERIOD_OPTION_VALUES,
+  SCRIPT_OPTION_VALUES,
+  SHORT_FORM_OPTION_VALUES,
+  SORT_OPTION_VALUES,
+} from "./filterToolbarOptions";
 
 interface FilterToolbarProps {
   filters: SearchFilterState;
@@ -19,95 +29,19 @@ interface FilterToolbarProps {
   searchUiText: SearchUiText;
 }
 
-const SORT_OPTIONS: Array<{ value: SearchSortOption; label: string }> = [
-  { value: "subscriberAsc", label: "구독자수(낮은순)" },
-  { value: "relevance", label: "관련도" },
-  { value: "views", label: "조회수" },
-  { value: "latest", label: "최신순" },
-];
-
-const PERIOD_OPTIONS: Array<{ value: SearchPeriodOption; label: string }> = [
-  { value: "24h", label: "24시간" },
-  { value: "7d", label: "7일" },
-  { value: "30d", label: "30일" },
-  { value: "90d", label: "90일" },
-  { value: "180d", label: "180일" },
-  { value: "365d", label: "1년" },
-  { value: "730d", label: "2년" },
-  { value: "all", label: "전체" },
-];
-
-const DURATION_OPTIONS: Array<{ value: SearchDurationBucket; label: string }> = [
-  { value: "all", label: "전체" },
-  { value: "under4m", label: "4분 미만" },
-  { value: "4to20m", label: "4~20분" },
-  { value: "over20m", label: "20분 초과" },
-];
-
-const SHORT_FORM_OPTIONS: Array<{ value: SearchShortFormType; label: string }> = [
-  { value: "all", label: "전체" },
-  { value: "shopping", label: "쇼핑(공구/꿀템)" },
-  { value: "clip", label: "짤(유명/명장면)" },
-  { value: "game", label: "게임(플레이/소식)" },
-  { value: "food", label: "요리/먹방(ASMR)" },
-  { value: "animal", label: "동물(귀요미)" },
-  { value: "knowledge", label: "지식/상식(1분공부)" },
-  { value: "beauty", label: "뷰티/패션(OOTD)" },
-  { value: "sports", label: "스포츠/운동(헬스)" },
-  { value: "entertainment", label: "연예/아이돌(K-pop)" },
-  { value: "other", label: "기타" },
-];
-
-const SCRIPT_OPTIONS: Array<{ value: SearchScriptType; label: string }> = [
-  { value: "all", label: "전체" },
-  { value: "scripted", label: "스크립트 있음" },
-  { value: "noScript", label: "스크립트 없음" },
-];
-
-const HOVER_METRIC_OPTIONS: Array<{ value: SearchHoverMetric; label: string }> = [
-  { value: "vidiqTrend", label: "조회추세(vidIQ)" },
-  { value: "estimatedRevenue", label: "예상수익확인" },
-];
-
-const MIN_VIEW_OPTIONS: Array<{ value: number; label: string }> = [
-  { value: 0, label: "전체" },
-  { value: 1_000, label: "1천+" },
-  { value: 10_000, label: "1만+" },
-  { value: 50_000, label: "5만+" },
-  { value: 100_000, label: "10만+" },
-  { value: 500_000, label: "50만+" },
-  { value: 1_000_000, label: "100만+" },
-];
-
-const MIN_PERFORMANCE_OPTIONS: Array<{ value: number; label: string }> = [
-  { value: 0, label: "제한없음" },
-  { value: 50, label: "50% 이상" },
-  { value: 100, label: "100% 이상(떡상)" },
-  { value: 200, label: "200% 이상(초대박)" },
-  { value: 300, label: "300% 이상(전설)" },
-];
-
-const CORE_PRESET_BUTTONS: Array<{ value: SearchCorePreset; label: string }> = [
-  { value: "newRapidGrowth", label: "신규 급성장" },
-  { value: "efficiencyMonster", label: "고효율 채널" },
-  { value: "fastRising", label: "고속 성장" },
-  { value: "krTrend", label: "한국 트렌드" },
-  { value: "globalTrend", label: "글로벌 트렌드" },
-];
-
 export function FilterToolbar({ filters, isDisabled, onChange, onReset, searchUiText }: FilterToolbarProps) {
   return (
     <section className="filter-toolbar" aria-label={searchUiText.filterToolbar.sectionAriaLabel}>
       <div className="core-preset-toolbar">
-        {CORE_PRESET_BUTTONS.map((preset) => (
+        {CORE_PRESET_OPTION_VALUES.map((presetValue) => (
           <button
-            key={preset.value}
+            key={presetValue}
             type="button"
             disabled={isDisabled}
-            className={filters.corePreset === preset.value ? "core-preset-button is-active" : "core-preset-button"}
-            onClick={() => onChange(applyCorePreset(filters, preset.value))}
+            className={filters.corePreset === presetValue ? "core-preset-button is-active" : "core-preset-button"}
+            onClick={() => onChange(applyCorePreset(filters, presetValue))}
           >
-            {preset.label}
+            {searchUiText.filterToolbar.options.corePreset[presetValue]}
           </button>
         ))}
         <button
@@ -116,79 +50,79 @@ export function FilterToolbar({ filters, isDisabled, onChange, onReset, searchUi
           className={filters.corePreset === "none" ? "core-preset-button is-active" : "core-preset-button"}
           onClick={() => onChange(applyCorePreset(filters, "none"))}
         >
-          프리셋 해제
+          {searchUiText.filterToolbar.options.clearPreset}
         </button>
       </div>
 
       <div className="filter-grid-fields">
         <div className="filter-group">
-          <label htmlFor="search-sort" className="filter-label">정렬</label>
+          <label htmlFor="search-sort" className="filter-label">{searchUiText.filterToolbar.labels.sort}</label>
           <select id="search-sort" className="filter-select" value={filters.sort} disabled={isDisabled} onChange={(event) => onChange({ ...filters, sort: event.target.value as SearchSortOption })}>
-            {SORT_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            {SORT_OPTION_VALUES.map((value) => <option key={value} value={value}>{searchUiText.filterToolbar.options.sort[value]}</option>)}
           </select>
         </div>
 
         <div className="filter-group">
-          <label htmlFor="search-period" className="filter-label">기간</label>
+          <label htmlFor="search-period" className="filter-label">{searchUiText.filterToolbar.labels.period}</label>
           <select id="search-period" className="filter-select" value={filters.period} disabled={isDisabled} onChange={(event) => onChange({ ...filters, period: event.target.value as SearchPeriodOption })}>
-            {PERIOD_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            {PERIOD_OPTION_VALUES.map((value) => <option key={value} value={value}>{searchUiText.filterToolbar.options.period[value]}</option>)}
           </select>
         </div>
 
         <div className="filter-group">
-          <label htmlFor="search-country" className="filter-label">국가 코드</label>
-          <input id="search-country" type="text" maxLength={2} placeholder="KR" className="filter-input" value={filters.country} disabled={isDisabled} onChange={(event) => onChange({ ...filters, country: event.target.value.toUpperCase() })} />
+          <label htmlFor="search-country" className="filter-label">{searchUiText.filterToolbar.labels.countryCode}</label>
+          <input id="search-country" type="text" maxLength={2} placeholder={searchUiText.filterToolbar.placeholders.countryCode} className="filter-input" value={filters.country} disabled={isDisabled} onChange={(event) => onChange({ ...filters, country: event.target.value.toUpperCase() })} />
         </div>
 
         <div className="filter-group">
-          <label htmlFor="search-min-views" className="filter-label">최소 조회수</label>
+          <label htmlFor="search-min-views" className="filter-label">{searchUiText.filterToolbar.labels.minViews}</label>
           <select id="search-min-views" className="filter-select" value={filters.minViews} disabled={isDisabled} onChange={(event) => onChange({ ...filters, minViews: Number(event.target.value) })}>
-            {MIN_VIEW_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            {MIN_VIEW_OPTION_VALUES.map((value) => <option key={value} value={value}>{searchUiText.filterToolbar.options.minViews[String(value)]}</option>)}
           </select>
         </div>
 
         <div className="filter-group">
-          <label htmlFor="search-max-subscribers" className="filter-label">최대 구독자 수</label>
+          <label htmlFor="search-max-subscribers" className="filter-label">{searchUiText.filterToolbar.labels.maxSubscribers}</label>
           <input id="search-max-subscribers" type="number" min={0} step={1000} className="filter-input" value={filters.maxSubscribers} disabled={isDisabled} onChange={(event) => onChange({ ...filters, maxSubscribers: Number(event.target.value) || 0 })} />
         </div>
 
         <div className="filter-group">
-          <label htmlFor="search-duration-bucket" className="filter-label">길이</label>
+          <label htmlFor="search-duration-bucket" className="filter-label">{searchUiText.filterToolbar.labels.duration}</label>
           <select id="search-duration-bucket" className="filter-select" value={filters.durationBucket} disabled={isDisabled} onChange={(event) => onChange({ ...filters, durationBucket: event.target.value as SearchDurationBucket })}>
-            {DURATION_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            {DURATION_OPTION_VALUES.map((value) => <option key={value} value={value}>{searchUiText.filterToolbar.options.duration[value]}</option>)}
           </select>
         </div>
 
         <div className="filter-group">
-          <label htmlFor="search-short-form" className="filter-label">숏폼 분류</label>
+          <label htmlFor="search-short-form" className="filter-label">{searchUiText.filterToolbar.labels.shortFormType}</label>
           <select id="search-short-form" className="filter-select" value={filters.shortFormType} disabled={isDisabled} onChange={(event) => onChange({ ...filters, shortFormType: event.target.value as SearchShortFormType })}>
-            {SHORT_FORM_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            {SHORT_FORM_OPTION_VALUES.map((value) => <option key={value} value={value}>{searchUiText.filterToolbar.options.shortFormType[value]}</option>)}
           </select>
         </div>
 
         <div className="filter-group">
-          <label htmlFor="search-script-type" className="filter-label">스크립트</label>
+          <label htmlFor="search-script-type" className="filter-label">{searchUiText.filterToolbar.labels.scriptType}</label>
           <select id="search-script-type" className="filter-select" value={filters.scriptType} disabled={isDisabled} onChange={(event) => onChange({ ...filters, scriptType: event.target.value as SearchScriptType })}>
-            {SCRIPT_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            {SCRIPT_OPTION_VALUES.map((value) => <option key={value} value={value}>{searchUiText.filterToolbar.options.scriptType[value]}</option>)}
           </select>
         </div>
 
         <div className="filter-group">
-          <label htmlFor="search-hover-metric" className="filter-label">마우스오버</label>
+          <label htmlFor="search-hover-metric" className="filter-label">{searchUiText.filterToolbar.labels.hoverMetric}</label>
           <select id="search-hover-metric" className="filter-select" value={filters.hoverMetric} disabled={isDisabled} onChange={(event) => onChange({ ...filters, hoverMetric: event.target.value as SearchHoverMetric })}>
-            {HOVER_METRIC_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            {HOVER_METRIC_OPTION_VALUES.map((value) => <option key={value} value={value}>{searchUiText.filterToolbar.options.hoverMetric[value]}</option>)}
           </select>
         </div>
 
         <div className="filter-group filter-group-checkbox">
-          <label htmlFor="search-subscriber-public-only" className="filter-label">구독자 공개 채널만</label>
+          <label htmlFor="search-subscriber-public-only" className="filter-label">{searchUiText.filterToolbar.labels.subscriberPublicOnly}</label>
           <input id="search-subscriber-public-only" type="checkbox" checked={filters.subscriberPublicOnly} disabled={isDisabled} onChange={(event) => onChange({ ...filters, subscriberPublicOnly: event.target.checked })} />
         </div>
 
         <div className="filter-group">
-          <label htmlFor="search-min-performance" className="filter-label">최소 성과지수</label>
+          <label htmlFor="search-min-performance" className="filter-label">{searchUiText.filterToolbar.labels.minPerformance}</label>
           <select id="search-min-performance" className="filter-select" value={filters.minPerformance} disabled={isDisabled} onChange={(event) => onChange({ ...filters, minPerformance: Number(event.target.value) })}>
-            {MIN_PERFORMANCE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            {MIN_PERFORMANCE_OPTION_VALUES.map((value) => <option key={value} value={value}>{searchUiText.filterToolbar.options.minPerformance[String(value)]}</option>)}
           </select>
         </div>
 

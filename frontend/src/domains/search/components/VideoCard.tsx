@@ -1,6 +1,7 @@
 import { VideoCardMetaRows } from "./VideoCardMetaRows";
 import { VideoCardThumbnail } from "./VideoCardThumbnail";
 import { VideoCardTitle } from "./VideoCardTitle";
+import type { SearchUiText } from "../i18n/searchUiText.types";
 import type { SearchHoverMetric, SearchResultCard } from "../types";
 
 interface VideoCardProps {
@@ -10,14 +11,16 @@ interface VideoCardProps {
   onAnalyze: (card: SearchResultCard) => void;
   onExtractTranscript: (card: SearchResultCard) => void;
   hoverMetric: SearchHoverMetric;
+  searchUiText: SearchUiText;
 }
 
-export function VideoCard({ card, keyword, isAnalyzeDisabled, onAnalyze, onExtractTranscript, hoverMetric }: VideoCardProps) {
+export function VideoCard({ card, keyword, isAnalyzeDisabled, onAnalyze, onExtractTranscript, hoverMetric, searchUiText }: VideoCardProps) {
   const videoUrl = `https://www.youtube.com/watch?v=${card.videoId}`;
+  const text = searchUiText.videoCard;
 
   return (
-    <article className="result-card" aria-label={`${card.title} 검색 결과 카드`}>
-      <a href={videoUrl} target="_blank" rel="noreferrer" className="video-card-link-wrap" aria-label={`${card.title} 영상 열기`}>
+    <article className="result-card" aria-label={`${card.title} ${text.resultCardAriaLabelSuffix}`}>
+      <a href={videoUrl} target="_blank" rel="noreferrer" className="video-card-link-wrap" aria-label={`${card.title} ${text.openVideoAriaLabelSuffix}`}>
         <VideoCardThumbnail
           thumbnailUrl={card.thumbnailUrl}
           title={card.title}
@@ -29,7 +32,7 @@ export function VideoCard({ card, keyword, isAnalyzeDisabled, onAnalyze, onExtra
         />
       </a>
 
-      <a href={videoUrl} target="_blank" rel="noreferrer" className="video-card-link-title" aria-label={`${card.title} 영상 열기`}>
+      <a href={videoUrl} target="_blank" rel="noreferrer" className="video-card-link-title" aria-label={`${card.title} ${text.openVideoAriaLabelSuffix}`}>
         <VideoCardTitle title={card.title} keyword={keyword} />
       </a>
 
@@ -45,25 +48,25 @@ export function VideoCard({ card, keyword, isAnalyzeDisabled, onAnalyze, onExtra
       />
 
       <div className="video-card-actions">
-        <a href={videoUrl} target="_blank" rel="noreferrer" className="video-open-button" aria-label={`${card.title} 영상 보기`}>
-          영상 보기
+        <a href={videoUrl} target="_blank" rel="noreferrer" className="video-open-button" aria-label={`${card.title} ${text.watchVideoAriaLabelSuffix}`}>
+          {text.watchVideoLabel}
         </a>
         <button
           type="button"
           className="video-open-button"
           onClick={() => onExtractTranscript(card)}
-          aria-label={`${card.title} 대본 추출`}
+          aria-label={`${card.title} ${text.extractTranscriptAriaLabelSuffix}`}
         >
-          대본 추출
+          {text.extractTranscriptLabel}
         </button>
         <button
           type="button"
           className="analyze-button"
           disabled={isAnalyzeDisabled}
           onClick={() => onAnalyze(card)}
-          aria-label={`${card.title} AI 소재 분석`}
+          aria-label={`${card.title} ${text.analyzeAriaLabelSuffix}`}
         >
-          AI 소재 분석
+          {text.analyzeLabel}
         </button>
       </div>
     </article>

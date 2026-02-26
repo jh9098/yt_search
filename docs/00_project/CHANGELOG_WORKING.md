@@ -1,3 +1,39 @@
+## 2026-03-24 (FE-16 필터 옵션/비디오 카드 locale 확장)
+### 오늘 목표
+- FE-15 다음 세션 시작점에 따라 FilterToolbar 옵션 라벨과 VideoGrid/VideoCard의 남은 하드코딩 문구를 locale 리소스로 통합한다.
+
+### 진행 내용 (완료)
+- [x] `searchUiText.types.ts`, `locales/ko.ts`, `locales/en.ts`에 `filterToolbar.labels/placeholders/options`, `videoGrid`, `videoCard` 키 확장
+- [x] `FilterToolbar` 하드코딩 텍스트를 locale 리소스로 치환하고 옵션 value 상수는 `filterToolbarOptions.ts`로 분리
+- [x] `VideoGrid` 로딩 문구와 `VideoCard` 버튼/aria-label 접미사를 locale 텍스트 기반으로 치환
+- [x] `searchUiText.test.ts`, `npm test -- searchUiText.test.ts`, `npm run build` 검증 완료
+- [x] `docs/01_manuals/frontend.md`, `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] FilterToolbar / VideoCard 컴포넌트 단위 렌더 테스트 추가
+
+### 변경/생성 파일
+- `frontend/src/domains/search/i18n/searchUiText.types.ts`
+- `frontend/src/domains/search/i18n/locales/ko.ts`
+- `frontend/src/domains/search/i18n/locales/en.ts`
+- `frontend/src/domains/search/components/filterToolbarOptions.ts`
+- `frontend/src/domains/search/components/FilterToolbar.tsx`
+- `frontend/src/domains/search/components/VideoGrid.tsx`
+- `frontend/src/domains/search/components/VideoCard.tsx`
+- `frontend/src/domains/search/i18n/searchUiText.test.ts`
+- `docs/01_manuals/frontend.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. FE-16 미완료 항목으로 `FilterToolbar`, `VideoCard` 렌더 테스트를 추가해 locale 키 누락/하드코딩 재유입을 자동 검출한다.
+
+### 메모
+- 이번 변경은 텍스트/접근성 라벨/i18n 리소스 계층만 수정했고 API 호출/저장소 조회 플로우를 건드리지 않아 Firestore read 소모는 0회다.
+- locale 일관성을 높여 사용자 오해 기반 재시도 가능성을 낮췄고, 추후 Firestore 연동 시 불필요 read 증가 위험을 줄인다.
+
+---
+
 ## 2026-03-23 (FE-15 검색 레이아웃/채널/뷰모드 locale 확장)
 ### 오늘 목표
 - FE-14 다음 세션 시작점에 따라 검색 패널/필터/보기모드와 채널 검색 영역의 남은 고정 aria-label 문구를 locale 리소스로 통합한다.

@@ -157,6 +157,13 @@
 
 ## I. 완료 로그 (요약)
 
+### 2026-03-24 (FE-16 필터 옵션/비디오 카드 locale 확장)
+- [x] `searchUiText.types.ts`, `locales/ko.ts`, `locales/en.ts`에 `filterToolbar.labels/placeholders/options`, `videoGrid`, `videoCard` 키 추가
+- [x] `FilterToolbar` 하드코딩 라벨/옵션 문구를 locale 리소스 기반으로 치환하고, `filterToolbarOptions.ts`로 value 상수를 분리
+- [x] `VideoGrid` 로딩 문구, `VideoCard` 버튼/aria-label 접미사 하드코딩을 locale 리소스로 치환
+- [x] `searchUiText.test.ts` 검증 케이스 확장 + `docs/01_manuals/frontend.md`, `docs/00_project/CHANGELOG_WORKING.md` 동기화
+- 메모: 이번 변경은 프론트 텍스트/접근성 계층만 수정하여 Firestore read 소모는 0회다. locale 일관성 강화로 잘못된 액션 유도와 재요청 가능성을 낮춰 추후 Firestore 연동 시 불필요 read 위험을 줄인다.
+
 ### 2026-03-23 (FE-15 검색 레이아웃/채널/뷰모드 locale 확장)
 - [x] `searchUiText.types.ts`, `locales/ko.ts`, `locales/en.ts`에 `searchLayout/channelSearch/filterToolbar/viewMode` 키 추가
 - [x] `App.tsx` 검색 섹션 `aria-label`(search-panel/toolbar-row/search-section)을 locale 리소스로 치환

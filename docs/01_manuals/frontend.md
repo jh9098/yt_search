@@ -129,6 +129,11 @@ API 호출 전에 TypeScript 타입/인터페이스를 먼저 정의합니다.
 - `ChannelSearchBar`, `FilterToolbar`, `ViewModeToggle`의 접근성 문구와 고정 버튼 문구는 `searchUiText` props 기반으로만 렌더링한다.
 - 컴포넌트 내부에서 aria/레이블 문자열 하드코딩을 추가하지 않고, 필요 시 `searchUiText.types.ts`에 키를 먼저 추가한다.
 
+### 필터 옵션/비디오 카드 locale 확장 규칙 (FE-16)
+- `FilterToolbar`의 라벨/placeholder/옵션 텍스트는 `searchUiText.filterToolbar`에서만 관리하고, 컴포넌트 내부 상수에는 값(value)만 둔다.
+- `VideoGrid` 로딩 문구와 `VideoCard` 버튼/aria-label 접미사는 `searchUiText.videoGrid`, `searchUiText.videoCard`로 분리해 locale 전환 시 일관되게 반영한다.
+- 신규 옵션 추가 시 `filterToolbarOptions.ts`의 value 목록과 locale 리소스를 함께 수정해 누락 키를 타입 단계에서 검출한다.
+
 ### 헤더 설정 패널 locale 확장 규칙 (FE-14)
 - `SearchLocaleSelector`, `ApiKeyManager`, `CookieFilePathManager`의 하드코딩 문구는 `appUiText` 하위 섹션(`localeSelector`, `apiKeyManager`, `cookieManager`)으로 관리한다.
 - 카운트 기반 문구(예: API 키 N개)는 locale 리소스 내부 함수(`summaryRegistered`)로 처리해 컴포넌트에서 문자열 조합을 금지한다.
