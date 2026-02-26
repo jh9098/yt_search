@@ -94,6 +94,28 @@ class TranscriptApiContractTest(unittest.TestCase):
         self.assertTrue(body["success"])
         self.assertEqual(body["data"]["videoId"], "post123xyz")
 
+    def test_post_video_transcript_accepts_languages_as_array(self) -> None:
+        captured_languages: dict[str, list[str]] = {"value": []}
+
+        def fake_extract(video_target: str, languages: list[str]):
+            captured_languages["value"] = languages
+            return TranscriptResult(
+                title="POST 배열 언어",
+                transcript_text="첫 줄",
+                language="ko",
+                source="subtitle",
+                segments=[TranscriptSegment(text="첫 줄", start=0.0, duration=1.0)],
+            )
+
+        with patch("backend.app.domains.search.router.extract_transcript_from_video", side_effect=fake_extract):
+            response = self.client.post(
+                "/api/search/transcript",
+                json={"videoId": "post123xyz", "languages": ["ko", "en"]},
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(captured_languages["value"], ["ko", "en"])
+
     def test_get_video_transcript_returns_not_found_when_no_caption(self) -> None:
         with patch("backend.app.domains.search.router.extract_transcript_from_video") as mocked_extract:
             mocked_extract.return_value = None
