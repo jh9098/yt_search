@@ -55,10 +55,52 @@ export type SearchUiText = {
   filterToolbar: {
     sectionAriaLabel: string;
     resetButtonLabel: string;
+    labels: {
+      sort: string;
+      period: string;
+      countryCode: string;
+      minViews: string;
+      maxSubscribers: string;
+      duration: string;
+      shortFormType: string;
+      scriptType: string;
+      hoverMetric: string;
+      subscriberPublicOnly: string;
+      minPerformance: string;
+    };
+    placeholders: {
+      countryCode: string;
+    };
+    options: {
+      sort: Record<string, string>;
+      period: Record<string, string>;
+      duration: Record<string, string>;
+      shortFormType: Record<string, string>;
+      scriptType: Record<string, string>;
+      hoverMetric: Record<string, string>;
+      minViews: Record<string, string>;
+      minPerformance: Record<string, string>;
+      corePreset: Record<string, string>;
+      clearPreset: string;
+    };
   };
   viewMode: {
     sectionAriaLabel: string;
     gridButtonLabel: string;
     listButtonLabel: string;
+  };
+  videoGrid: {
+    loadingTitle: string;
+    loadingSubtitle: string;
+  };
+  videoCard: {
+    resultCardAriaLabelSuffix: string;
+    openVideoAriaLabelSuffix: string;
+    watchVideoLabel: string;
+    watchVideoAriaLabelSuffix: string;
+    extractTranscriptLabel: string;
+    extractTranscriptAriaLabelSuffix: string;
+    analyzeLabel: string;
+    analyzeAriaLabelSuffix: string;
   };
 };
