@@ -459,17 +459,22 @@ export function App() {
           <p className="app-subtitle">{appUiText.appHeader.subtitle}</p>
         </div>
         <div className="app-header-tools">
-          <SearchLocaleSelector locale={searchUiLocale} onChange={handleSearchUiLocaleChange} />
+          <SearchLocaleSelector
+            locale={searchUiLocale}
+            text={appUiText.localeSelector}
+            onChange={handleSearchUiLocaleChange}
+          />
           <div className="quota-indicator" aria-label={appUiText.appHeader.quotaAriaLabel}>
             <p className="quota-title">{appUiText.appHeader.quotaTitle}</p>
             <p className="quota-value">{estimatedQuotaLeft.toLocaleString()} / {quotaMax.toLocaleString()} pt</p>
             <progress value={estimatedQuotaLeft} max={quotaMax} />
           </div>
-          <ApiKeyManager apiKeys={userApiKeys} onSave={handleSaveApiKeys} />
+          <ApiKeyManager apiKeys={userApiKeys} text={appUiText.apiKeyManager} onSave={handleSaveApiKeys} />
           <CookieFilePathManager
             inputMode={cookieInputMode}
             filePathValue={cookieFilePath}
             contentValue={cookieContent}
+            text={appUiText.cookieManager}
             onModeChange={handleCookieInputModeChange}
             onPathSave={handleSaveCookieFilePath}
             onContentSave={handleSaveCookieContent}

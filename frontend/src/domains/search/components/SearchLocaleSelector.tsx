@@ -1,20 +1,17 @@
+import type { AppUiText } from "../i18n/appUiText.types";
 import type { SearchUiLocale } from "../i18n/searchUiText";
 
 interface SearchLocaleSelectorProps {
   locale: SearchUiLocale;
+  text: AppUiText["localeSelector"];
   onChange: (locale: SearchUiLocale) => void;
 }
 
-const LOCALE_OPTIONS: Array<{ value: SearchUiLocale; label: string }> = [
-  { value: "ko", label: "한국어" },
-  { value: "en", label: "English" },
-];
-
-export function SearchLocaleSelector({ locale, onChange }: SearchLocaleSelectorProps) {
+export function SearchLocaleSelector({ locale, text, onChange }: SearchLocaleSelectorProps) {
   return (
     <div className="locale-selector-wrap">
       <label htmlFor="search-locale-select" className="locale-selector-label">
-        검색 UI 언어
+        {text.label}
       </label>
       <select
         id="search-locale-select"
@@ -22,11 +19,8 @@ export function SearchLocaleSelector({ locale, onChange }: SearchLocaleSelectorP
         value={locale}
         onChange={(event) => onChange(event.target.value as SearchUiLocale)}
       >
-        {LOCALE_OPTIONS.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
+        <option value="ko">{text.options.ko}</option>
+        <option value="en">{text.options.en}</option>
       </select>
     </div>
   );

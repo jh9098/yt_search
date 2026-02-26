@@ -124,6 +124,11 @@ API 호출 전에 TypeScript 타입/인터페이스를 먼저 정의합니다.
 - 지원하지 않는 locale 요청은 `DEFAULT_SEARCH_UI_LOCALE`로 fallback해 런타임 에러를 방지한다.
 - 기존 컴포넌트는 `SEARCH_UI_TEXT` 기본 export를 그대로 사용해도 동작하도록 호환성을 유지한다.
 
+### 헤더 설정 패널 locale 확장 규칙 (FE-14)
+- `SearchLocaleSelector`, `ApiKeyManager`, `CookieFilePathManager`의 하드코딩 문구는 `appUiText` 하위 섹션(`localeSelector`, `apiKeyManager`, `cookieManager`)으로 관리한다.
+- 카운트 기반 문구(예: API 키 N개)는 locale 리소스 내부 함수(`summaryRegistered`)로 처리해 컴포넌트에서 문자열 조합을 금지한다.
+- 접근성 텍스트(`aria-label`)와 placeholder도 locale 리소스에 포함해 언어 변경 시 누락을 방지한다.
+
 ### runtime locale 상태 연결 규칙 (FE-11)
 - 앱 시작 시 locale 우선순위는 `localStorage(사용자 선택) -> browser language -> DEFAULT_SEARCH_UI_LOCALE` 순서로 고정한다.
 - locale 선택 UI에서 변경한 값은 `searchUiLocale.ts`를 통해 저장하고, 검색 도메인 컴포넌트에는 `searchUiText`를 props로 주입해 즉시 반영한다.

@@ -1,21 +1,23 @@
 import { useMemo, useState } from "react";
+import type { AppUiText } from "../i18n/appUiText.types";
 import { parseApiKeys, serializeApiKeys } from "../apiKeyStorage";
 
 type ApiKeyManagerProps = {
   apiKeys: string[];
+  text: AppUiText["apiKeyManager"];
   onSave: (apiKeys: string[]) => void;
 };
 
-export function ApiKeyManager({ apiKeys, onSave }: ApiKeyManagerProps) {
+export function ApiKeyManager({ apiKeys, text, onSave }: ApiKeyManagerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [draft, setDraft] = useState(serializeApiKeys(apiKeys));
 
   const summaryText = useMemo(() => {
     if (apiKeys.length === 0) {
-      return "등록된 API 키 없음";
+      return text.summaryEmpty;
     }
-    return `${apiKeys.length}개 등록됨`;
-  }, [apiKeys.length]);
+    return text.summaryRegistered(apiKeys.length);
+  }, [apiKeys.length, text]);
 
   const handleSave = () => {
     const parsed = parseApiKeys(draft);
@@ -24,9 +26,9 @@ export function ApiKeyManager({ apiKeys, onSave }: ApiKeyManagerProps) {
   };
 
   return (
-    <section className="api-key-manager" aria-label="유튜브 API 키 관리">
+    <section className="api-key-manager" aria-label={text.sectionAriaLabel}>
       <div className="api-key-manager-header">
-        <p className="api-key-manager-title">YouTube API 키</p>
+        <p className="api-key-manager-title">{text.title}</p>
         <p className="api-key-manager-summary">{summaryText}</p>
       </div>
       <button
@@ -36,7 +38,7 @@ export function ApiKeyManager({ apiKeys, onSave }: ApiKeyManagerProps) {
           setIsOpen((previous) => !previous);
         }}
       >
-        {isOpen ? "입력창 닫기" : "키 입력"}
+        {isOpen ? text.closeButton : text.openButton}
       </button>
 
       {isOpen ? (
@@ -47,14 +49,12 @@ export function ApiKeyManager({ apiKeys, onSave }: ApiKeyManagerProps) {
             onChange={(event) => {
               setDraft(event.target.value);
             }}
-            placeholder="한 줄에 하나씩 API 키를 입력해 주세요. 쉼표(,)로 구분해도 됩니다."
+            placeholder={text.inputPlaceholder}
             rows={5}
           />
-          <p className="api-key-manager-help">
-            여러 키를 등록하면, 앞의 키 한도가 소진됐을 때 다음 키로 자동 재시도합니다.
-          </p>
+          <p className="api-key-manager-help">{text.helpText}</p>
           <div className="api-key-manager-actions">
-            <button type="button" onClick={handleSave}>저장</button>
+            <button type="button" onClick={handleSave}>{text.saveButton}</button>
             <button
               type="button"
               onClick={() => {
@@ -62,7 +62,7 @@ export function ApiKeyManager({ apiKeys, onSave }: ApiKeyManagerProps) {
                 onSave([]);
               }}
             >
-              모두 삭제
+              {text.clearButton}
             </button>
           </div>
         </div>
