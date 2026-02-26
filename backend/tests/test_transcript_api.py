@@ -6,7 +6,7 @@ from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 from backend.app.main import app
-from backend.app.domains.search.transcript import TranscriptResult
+from backend.app.domains.search.transcript import TranscriptResult, TranscriptSegment
 
 
 class TranscriptApiContractTest(unittest.TestCase):
@@ -14,18 +14,16 @@ class TranscriptApiContractTest(unittest.TestCase):
         self.client = TestClient(app)
 
     def test_get_video_transcript_success_contract(self) -> None:
-        with patch("backend.app.domains.search.router.extract_transcript_from_video_url") as mocked_extract:
+        with patch("backend.app.domains.search.router.extract_transcript_from_video") as mocked_extract:
             mocked_extract.return_value = TranscriptResult(
                 title="테스트 영상",
                 transcript_text="첫 줄\n둘째 줄",
                 language="ko",
                 source="subtitle",
+                segments=[TranscriptSegment(text="첫 줄", start=0.0, duration=1.0)],
             )
 
-            response = self.client.get(
-                "/api/search/transcript",
-                params={"videoId": "abc123xyz", "cookieContent": "# Netscape HTTP Cookie File"},
-            )
+            response = self.client.get("/api/search/transcript", params={"videoId": "abc123xyz"})
 
         self.assertEqual(response.status_code, 200)
         body = response.json()
@@ -34,65 +32,61 @@ class TranscriptApiContractTest(unittest.TestCase):
         self.assertIn("transcriptText", body["data"])
 
     def test_get_video_transcript_returns_error_when_target_missing(self) -> None:
-        response = self.client.get("/api/search/transcript", params={"cookieContent": "# Netscape HTTP Cookie File"})
+        response = self.client.get("/api/search/transcript")
 
         self.assertEqual(response.status_code, 400)
         body = response.json()
         self.assertFalse(body["success"])
         self.assertEqual(body["error"]["code"], "TRANSCRIPT_TARGET_REQUIRED")
 
-    def test_get_video_transcript_requires_cookie_when_missing(self) -> None:
-        response = self.client.get(
-            "/api/search/transcript",
-            params={"videoId": "abc123xyz"},
-        )
-
-        self.assertEqual(response.status_code, 424)
-        body = response.json()
-        self.assertFalse(body["success"])
-        self.assertEqual(body["error"]["code"], "COOKIEFILE_MISSING")
-
-
-    def test_get_video_transcript_uses_cookie_content_when_provided(self) -> None:
-        captured_cookie_path: dict[str, str | None] = {"value": None}
-
-        def fake_extract(video_url: str, cookie_file_path: str | None):
-            captured_cookie_path["value"] = cookie_file_path
-            return TranscriptResult(
-                title="쿠키 테스트",
+    def test_get_video_transcript_allows_request_without_cookie(self) -> None:
+        with patch("backend.app.domains.search.router.extract_transcript_from_video") as mocked_extract:
+            mocked_extract.return_value = TranscriptResult(
+                title="테스트 영상",
                 transcript_text="텍스트",
                 language="ko",
                 source="subtitle",
+                segments=[TranscriptSegment(text="텍스트", start=0.0, duration=1.0)],
+            )
+            response = self.client.get("/api/search/transcript", params={"videoId": "abc123xyz"})
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_video_transcript_passes_languages_priority(self) -> None:
+        captured_languages: dict[str, list[str]] = {"value": []}
+
+        def fake_extract(video_target: str, languages: list[str]):
+            captured_languages["value"] = languages
+            return TranscriptResult(
+                title="언어 테스트",
+                transcript_text="텍스트",
+                language="ko",
+                source="subtitle",
+                segments=[TranscriptSegment(text="텍스트", start=0.0, duration=1.0)],
             )
 
-        with patch("backend.app.domains.search.router.extract_transcript_from_video_url", side_effect=fake_extract):
+        with patch("backend.app.domains.search.router.extract_transcript_from_video", side_effect=fake_extract):
             response = self.client.get(
                 "/api/search/transcript",
-                params={
-                    "videoId": "abc123xyz",
-                    "cookieContent": "# Netscape HTTP Cookie File\n.youtube.com\tTRUE\t/\tFALSE\t0\tSID\tvalue",
-                },
+                params={"videoId": "abc123xyz", "languages": "ko,en"},
             )
 
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(captured_cookie_path["value"])
-
+        self.assertEqual(captured_languages["value"], ["ko", "en"])
 
     def test_post_video_transcript_uses_body_payload_contract(self) -> None:
-        with patch("backend.app.domains.search.router.extract_transcript_from_video_url") as mocked_extract:
+        with patch("backend.app.domains.search.router.extract_transcript_from_video") as mocked_extract:
             mocked_extract.return_value = TranscriptResult(
                 title="POST 테스트",
                 transcript_text="첫 줄",
                 language="ko",
                 source="subtitle",
+                segments=[TranscriptSegment(text="첫 줄", start=0.0, duration=1.0)],
             )
 
             response = self.client.post(
                 "/api/search/transcript",
-                json={
-                    "videoId": "post123xyz",
-                    "cookieContent": "# Netscape HTTP Cookie File\n.youtube.com\tTRUE\t/\tFALSE\t0\tSID\tvalue",
-                },
+                json={"videoId": "post123xyz", "languages": "ko,en"},
             )
 
         self.assertEqual(response.status_code, 200)
@@ -101,12 +95,9 @@ class TranscriptApiContractTest(unittest.TestCase):
         self.assertEqual(body["data"]["videoId"], "post123xyz")
 
     def test_get_video_transcript_returns_not_found_when_no_caption(self) -> None:
-        with patch("backend.app.domains.search.router.extract_transcript_from_video_url") as mocked_extract:
+        with patch("backend.app.domains.search.router.extract_transcript_from_video") as mocked_extract:
             mocked_extract.return_value = None
-            response = self.client.get(
-                "/api/search/transcript",
-                params={"videoId": "no_caption_id", "cookieContent": "# Netscape HTTP Cookie File"},
-            )
+            response = self.client.get("/api/search/transcript", params={"videoId": "no_caption_id"})
 
         self.assertEqual(response.status_code, 404)
         body = response.json()
@@ -119,8 +110,8 @@ class TranscriptApiContractTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         body = response.json()
         self.assertTrue(body["ok"])
-        self.assertIn("yt_dlp_import_ok", body)
-        self.assertIn("cookie_found", body)
+        self.assertIn("proxy", body)
+        self.assertIn("proxy_configured", body)
 
 
 if __name__ == "__main__":
