@@ -8,6 +8,7 @@ import type {
   SearchShortFormType,
   SearchSortOption,
 } from "../types";
+import type { SearchUiText } from "../i18n/searchUiText.types";
 import { applyCorePreset } from "../utils/corePreset";
 
 interface FilterToolbarProps {
@@ -15,6 +16,7 @@ interface FilterToolbarProps {
   isDisabled: boolean;
   onChange: (next: SearchFilterState) => void;
   onReset: () => void;
+  searchUiText: SearchUiText;
 }
 
 const SORT_OPTIONS: Array<{ value: SearchSortOption; label: string }> = [
@@ -93,9 +95,9 @@ const CORE_PRESET_BUTTONS: Array<{ value: SearchCorePreset; label: string }> = [
   { value: "globalTrend", label: "글로벌 트렌드" },
 ];
 
-export function FilterToolbar({ filters, isDisabled, onChange, onReset }: FilterToolbarProps) {
+export function FilterToolbar({ filters, isDisabled, onChange, onReset, searchUiText }: FilterToolbarProps) {
   return (
-    <section className="filter-toolbar" aria-label="검색 필터 도구 모음">
+    <section className="filter-toolbar" aria-label={searchUiText.filterToolbar.sectionAriaLabel}>
       <div className="core-preset-toolbar">
         {CORE_PRESET_BUTTONS.map((preset) => (
           <button
@@ -190,7 +192,7 @@ export function FilterToolbar({ filters, isDisabled, onChange, onReset }: Filter
           </select>
         </div>
 
-        <button type="button" onClick={onReset} disabled={isDisabled} className="filter-reset-button">필터 초기화</button>
+        <button type="button" onClick={onReset} disabled={isDisabled} className="filter-reset-button">{searchUiText.filterToolbar.resetButtonLabel}</button>
       </div>
     </section>
   );

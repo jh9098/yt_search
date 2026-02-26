@@ -157,6 +157,13 @@
 
 ## I. 완료 로그 (요약)
 
+### 2026-03-23 (FE-15 검색 레이아웃/채널/뷰모드 locale 확장)
+- [x] `searchUiText.types.ts`, `locales/ko.ts`, `locales/en.ts`에 `searchLayout/channelSearch/filterToolbar/viewMode` 키 추가
+- [x] `App.tsx` 검색 섹션 `aria-label`(search-panel/toolbar-row/search-section)을 locale 리소스로 치환
+- [x] `ChannelSearchBar`, `FilterToolbar`, `ViewModeToggle`이 `searchUiText` props 기반 문구를 사용하도록 전환
+- [x] `searchUiText.test.ts`에 신규 locale 키 검증 추가, `docs/01_manuals/frontend.md`, `docs/00_project/CHANGELOG_WORKING.md` 동기화
+- 메모: 이번 변경은 프론트 텍스트/접근성 라벨 계층만 수정하여 Firestore read 소모는 0회다. locale 일관성으로 잘못된 검색 액션 유도 가능성을 줄여 추후 Firestore 연동 시 불필요 read 위험을 낮춘다.
+
 ### 2026-03-23 (FE-14 헤더 설정 패널 locale 분리)
 - [x] `frontend/src/domains/search/i18n/appUiText.types.ts`, `locales/appKo.ts`, `locales/appEn.ts`에 localeSelector/apiKeyManager/cookieManager 섹션 추가
 - [x] `SearchLocaleSelector`, `ApiKeyManager`, `CookieFilePathManager`가 `appUiText` props 기반으로만 문구를 렌더링하도록 변경

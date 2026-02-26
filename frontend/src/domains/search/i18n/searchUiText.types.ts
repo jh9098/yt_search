@@ -1,4 +1,9 @@
 export type SearchUiText = {
+  searchLayout: {
+    panelAriaLabel: string;
+    toolbarAriaLabel: string;
+    resultSectionAriaLabel: string;
+  };
   resultSummary: {
     sectionAriaLabel: string;
     resetButtonAriaLabel: string;
@@ -37,5 +42,23 @@ export type SearchUiText = {
       standard: string;
       precise: string;
     };
+  };
+  channelSearch: {
+    sectionAriaLabel: string;
+    label: string;
+    inputPlaceholder: string;
+    inputAriaLabel: string;
+    submitButtonAriaLabel: string;
+    submitButtonLabel: string;
+    topicSelectAriaLabel: string;
+  };
+  filterToolbar: {
+    sectionAriaLabel: string;
+    resetButtonLabel: string;
+  };
+  viewMode: {
+    sectionAriaLabel: string;
+    gridButtonLabel: string;
+    listButtonLabel: string;
   };
 };
