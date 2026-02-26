@@ -77,15 +77,25 @@ def _build_transcript_api() -> YouTubeTranscriptApi:
     username = os.getenv("WEBSHARE_USERNAME", "").strip()
     password = os.getenv("WEBSHARE_PASSWORD", "").strip()
 
-    if username and password:
-        logger.info("Webshare proxy configured for transcript API")
-        proxy_config = WebshareProxyConfig(
-            proxy_username=username,
-            proxy_password=password,
-        )
-        return YouTubeTranscriptApi(proxy_config=proxy_config)
+    logger.info(
+        f"[PROXY DEBUG] WEBSHARE_USERNAME 존재? {bool(username)} | 길이 {len(username)} | 앞 10자: {username[:10] if username else 'None'}"
+    )
+    logger.info(f"[PROXY DEBUG] WEBSHARE_PASSWORD 존재? {bool(password)} | 길이 {len(password)}")
 
-    logger.warning("Webshare proxy is not configured; transcript requests may be blocked")
+    if username and password:
+        effective_username = username if username.endswith(("-rotate", "-us", "-country-us")) else f"{username}-rotate"
+
+        logger.info(f"✅ Webshare Proxy 활성화 완료 (effective: {effective_username}, 미국 IP 우선)")
+
+        return YouTubeTranscriptApi(
+            proxy_config=WebshareProxyConfig(
+                proxy_username=effective_username,
+                proxy_password=password,
+                filter_ip_locations=["us", "ca", "gb"],
+            )
+        )
+
+    logger.error("❌ Webshare 환경변수가 없습니다!")
     return YouTubeTranscriptApi()
 
 
