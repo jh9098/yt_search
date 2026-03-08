@@ -103,4 +103,24 @@ export type SearchUiText = {
     analyzeLabel: string;
     analyzeAriaLabelSuffix: string;
   };
+  searchResultTable: {
+    tableAriaLabel: string;
+    columns: {
+      title: string;
+      channelName: string;
+      publishedDateText: string;
+      viewCount: string;
+      subscriberCount: string;
+      channelPublishedDateText: string;
+      totalVideoCount: string;
+      subscriptionRate: string;
+      annualSubscriberGrowth: string;
+      uploadsPerWeek: string;
+      countryCode: string;
+      channelGrade: string;
+      performanceScore: string;
+      exposureScore: string;
+      isHotVideo: string;
+    };
+  };
 };

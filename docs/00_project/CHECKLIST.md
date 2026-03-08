@@ -17,6 +17,15 @@
 
 ---
 
+
+### 2026-03-08 (FE-18 VideoGrid/SearchResultTable locale 접근성 렌더 테스트 확장)
+- [x] `searchUiText.types.ts`, `locales/ko.ts`, `locales/en.ts`에 `searchResultTable` locale 키를 추가해 테이블 aria-label/컬럼명을 리소스화
+- [x] `SearchResultTable`이 locale props(`searchUiText`) 기반으로 aria-label/컬럼 텍스트를 렌더링하도록 변경
+- [x] `VideoGrid.test.tsx`, `SearchResultTable.test.tsx`를 추가해 리스트/그리드 전환 시 locale 접근성 렌더 회귀를 고정
+- [x] 중복 fixture를 `searchResultCard.fixture.ts`로 분리해 테스트 유지보수성 개선
+- [x] `npm test -- VideoGrid.test.tsx SearchResultTable.test.tsx VideoCard.test.tsx searchUiText.test.ts`, `npm run build` 검증
+- 메모: 이번 변경은 프론트 렌더링/테스트/문서 계층만 수정하여 Firestore read 소모는 0회다. 리스트/그리드 전환 회귀를 고정해 잘못된 UI 상태로 인한 불필요 재요청 가능성을 낮춰, 추후 Firestore 연동 시 read 낭비 위험을 줄인다.
+
 ## A. 세팅 / 문서 하니스 (문서 작성은 완료, 개발은 미시작)
 - [x] `AGENT.md` 초안 작성
 - [x] `SKILLS.md` 초안 작성

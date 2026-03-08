@@ -75,7 +75,7 @@ export function VideoGrid({
   }
 
   if (viewMode === "list") {
-    return <SearchResultTable cards={cards} />;
+    return <SearchResultTable cards={cards} searchUiText={searchUiText} />;
   }
 
   return (

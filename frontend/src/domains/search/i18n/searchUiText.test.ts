@@ -11,6 +11,7 @@ describe("getSearchUiText", () => {
     expect(text.searchLayout.panelAriaLabel).toBe("탐색 검색 패널");
     expect(text.filterToolbar.labels.sort).toBe("정렬");
     expect(text.videoCard.watchVideoLabel).toBe("영상 보기");
+    expect(text.searchResultTable.tableAriaLabel).toBe("검색 결과 테이블");
   });
 
   it("지원 locale(en) 요청 시 해당 리소스를 반환한다", () => {
@@ -21,6 +22,7 @@ describe("getSearchUiText", () => {
     expect(text.viewMode.gridButtonLabel).toBe("Grid");
     expect(text.filterToolbar.labels.sort).toBe("Sort");
     expect(text.videoCard.watchVideoLabel).toBe("Watch video");
+    expect(text.searchResultTable.columns.title).toBe("Title");
   });
 
   it("미지원 locale은 기본 locale로 fallback한다", () => {
@@ -29,5 +31,6 @@ describe("getSearchUiText", () => {
     expect(text.keywordSearch.label).toBe("키워드 검색");
     expect(text.searchLayout.panelAriaLabel).toBe("탐색 검색 패널");
     expect(text.videoGrid.loadingTitle).toBe("데이터를 분석하고 있습니다...");
+    expect(text.searchResultTable.columns.title).toBe("제목");
   });
 });

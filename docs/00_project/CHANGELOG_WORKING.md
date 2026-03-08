@@ -1,3 +1,43 @@
+## 2026-03-08 (FE-18 VideoGrid/SearchResultTable locale 접근성 렌더 테스트 확장)
+### 오늘 목표
+- FE-17 다음 세션 시작점에 따라 `VideoGrid`/`SearchResultTable` locale 접근성 렌더 테스트를 확장해 리스트/그리드 전환 회귀를 고정한다.
+
+### 진행 내용 (완료)
+- [x] `searchUiText.types.ts`, `locales/ko.ts`, `locales/en.ts`에 `searchResultTable` locale 키(테이블 aria-label/컬럼명)를 추가
+- [x] `SearchResultTable` 하드코딩 테이블 라벨/컬럼명을 locale props 기반 렌더링으로 전환
+- [x] `VideoGrid` 리스트 모드에서 locale props를 `SearchResultTable`로 전달하도록 연결
+- [x] `VideoGrid.test.tsx`, `SearchResultTable.test.tsx` 추가로 리스트/그리드 전환 + locale 접근성 문자열 회귀 고정
+- [x] `searchResultCard.fixture.ts` 생성 후 `VideoCard.test.tsx`와 공유해 테스트 fixture 중복 제거
+- [x] `npm test -- VideoGrid.test.tsx SearchResultTable.test.tsx VideoCard.test.tsx searchUiText.test.ts`, `npm run build` 검증 완료
+- [x] `docs/01_manuals/frontend.md`, `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] 없음
+
+### 변경/생성 파일
+- `frontend/src/domains/search/components/VideoGrid.tsx`
+- `frontend/src/domains/search/components/SearchResultTable.tsx`
+- `frontend/src/domains/search/components/VideoGrid.test.tsx`
+- `frontend/src/domains/search/components/SearchResultTable.test.tsx`
+- `frontend/src/domains/search/components/searchResultCard.fixture.ts`
+- `frontend/src/domains/search/components/VideoCard.test.tsx`
+- `frontend/src/domains/search/i18n/searchUiText.types.ts`
+- `frontend/src/domains/search/i18n/locales/ko.ts`
+- `frontend/src/domains/search/i18n/locales/en.ts`
+- `frontend/src/domains/search/i18n/searchUiText.test.ts`
+- `docs/01_manuals/frontend.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. `ViewModeToggle` + `useSearchQueryState` 통합 테스트를 추가해 URL 쿼리(`view=list|grid`)와 실제 렌더 모드 일치 회귀를 고정한다.
+
+### 메모
+- 이번 변경은 프론트 렌더링/테스트/문서만 수정했고 API 호출/저장소 조회 로직은 건드리지 않아 Firestore read 소모는 0회다.
+- 리스트/그리드 전환 회귀를 자동화해 잘못된 상태 복구를 위한 불필요 재검색 가능성을 낮춰, 추후 Firestore 연동 시 read 낭비 위험을 줄인다.
+
+---
+
 ## 2026-03-08 (FE-17 FilterToolbar/VideoCard locale 렌더 테스트 보강)
 ### 오늘 목표
 - FE-16 미완료 항목으로 남아 있던 `FilterToolbar`, `VideoCard` 컴포넌트 렌더 테스트를 추가해 locale 키 누락/하드코딩 재유입을 자동 검출한다.
