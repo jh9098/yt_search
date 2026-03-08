@@ -134,6 +134,11 @@ API 호출 전에 TypeScript 타입/인터페이스를 먼저 정의합니다.
 - 테스트는 `getSearchUiText("en")` 기준으로 실행해 하드코딩 한국어 재유입을 조기에 감지한다.
 - locale 키 추가/수정 시 `searchUiText.test.ts`와 컴포넌트 렌더 테스트를 함께 갱신한다.
 
+### VideoGrid/SearchResultTable locale 접근성 회귀 규칙 (FE-18)
+- `SearchResultTable`의 테이블 `aria-label`과 컬럼 헤더는 `searchUiText.searchResultTable`에서만 관리하고, 컴포넌트 하드코딩을 금지한다.
+- `VideoGrid`의 `viewMode=list` 분기는 `SearchResultTable`에 동일 locale props를 전달해야 하며, 전달 누락 시 테스트로 즉시 실패하도록 유지한다.
+- 리스트/그리드 전환 회귀는 `VideoGrid.test.tsx`에서 두 모드 모두 검증하고, 테이블 접근성 문자열(`aria-label`) 포함 여부를 함께 검사한다.
+
 ### 필터 옵션/비디오 카드 locale 확장 규칙 (FE-16)
 - `FilterToolbar`의 라벨/placeholder/옵션 텍스트는 `searchUiText.filterToolbar`에서만 관리하고, 컴포넌트 내부 상수에는 값(value)만 둔다.
 - `VideoGrid` 로딩 문구와 `VideoCard` 버튼/aria-label 접미사는 `searchUiText.videoGrid`, `searchUiText.videoCard`로 분리해 locale 전환 시 일관되게 반영한다.

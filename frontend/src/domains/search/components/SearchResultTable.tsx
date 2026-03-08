@@ -1,30 +1,14 @@
 import { useMemo, useState } from "react";
+import type { SearchUiText } from "../i18n/searchUiText.types";
 import type { SearchResultCard, SearchTableSortKey } from "../types";
 import { truncateText } from "../utils/text";
 
 interface SearchResultTableProps {
   cards: SearchResultCard[];
+  searchUiText: SearchUiText;
 }
 
 type SortDirection = "asc" | "desc";
-
-const COLUMNS: Array<{ key: SearchTableSortKey; label: string }> = [
-  { key: "title", label: "제목" },
-  { key: "channelName", label: "채널" },
-  { key: "publishedDateText", label: "영상 게시일" },
-  { key: "viewCount", label: "조회수" },
-  { key: "subscriberCount", label: "구독자" },
-  { key: "channelPublishedDateText", label: "채널 개설일" },
-  { key: "totalVideoCount", label: "총 영상 수" },
-  { key: "subscriptionRate", label: "구독률" },
-  { key: "annualSubscriberGrowth", label: "연간 성장" },
-  { key: "uploadsPerWeek", label: "업로드 빈도" },
-  { key: "countryCode", label: "국가" },
-  { key: "channelGrade", label: "등급" },
-  { key: "performanceScore", label: "성과도" },
-  { key: "exposureScore", label: "기회도" },
-  { key: "isHotVideo", label: "핫" },
-];
 
 function getSortValue(card: SearchResultCard, key: SearchTableSortKey): number | string {
   switch (key) {
@@ -63,9 +47,36 @@ function getSortValue(card: SearchResultCard, key: SearchTableSortKey): number |
   }
 }
 
-export function SearchResultTable({ cards }: SearchResultTableProps) {
+export function SearchResultTable({ cards, searchUiText }: SearchResultTableProps) {
   const [sortKey, setSortKey] = useState<SearchTableSortKey>("subscriberCount");
   const [direction, setDirection] = useState<SortDirection>("asc");
+
+  const columns: Array<{ key: SearchTableSortKey; label: string }> = useMemo(
+    () => [
+      { key: "title", label: searchUiText.searchResultTable.columns.title },
+      { key: "channelName", label: searchUiText.searchResultTable.columns.channelName },
+      { key: "publishedDateText", label: searchUiText.searchResultTable.columns.publishedDateText },
+      { key: "viewCount", label: searchUiText.searchResultTable.columns.viewCount },
+      { key: "subscriberCount", label: searchUiText.searchResultTable.columns.subscriberCount },
+      {
+        key: "channelPublishedDateText",
+        label: searchUiText.searchResultTable.columns.channelPublishedDateText,
+      },
+      { key: "totalVideoCount", label: searchUiText.searchResultTable.columns.totalVideoCount },
+      { key: "subscriptionRate", label: searchUiText.searchResultTable.columns.subscriptionRate },
+      {
+        key: "annualSubscriberGrowth",
+        label: searchUiText.searchResultTable.columns.annualSubscriberGrowth,
+      },
+      { key: "uploadsPerWeek", label: searchUiText.searchResultTable.columns.uploadsPerWeek },
+      { key: "countryCode", label: searchUiText.searchResultTable.columns.countryCode },
+      { key: "channelGrade", label: searchUiText.searchResultTable.columns.channelGrade },
+      { key: "performanceScore", label: searchUiText.searchResultTable.columns.performanceScore },
+      { key: "exposureScore", label: searchUiText.searchResultTable.columns.exposureScore },
+      { key: "isHotVideo", label: searchUiText.searchResultTable.columns.isHotVideo },
+    ],
+    [searchUiText],
+  );
 
   const sortedCards = useMemo(() => {
     const copied = [...cards];
@@ -99,10 +110,10 @@ export function SearchResultTable({ cards }: SearchResultTableProps) {
 
   return (
     <div className="result-table-wrap">
-      <table className="result-table" aria-label="검색 결과 테이블">
+      <table className="result-table" aria-label={searchUiText.searchResultTable.tableAriaLabel}>
         <thead>
           <tr>
-            {COLUMNS.map((column) => (
+            {columns.map((column) => (
               <th key={column.key}>
                 <button type="button" className="table-sort-button" onClick={() => handleSort(column.key)}>
                   {column.label}
@@ -115,7 +126,16 @@ export function SearchResultTable({ cards }: SearchResultTableProps) {
         <tbody>
           {sortedCards.map((card) => (
             <tr key={card.videoId}>
-              <td title={card.title}><a href={`https://www.youtube.com/watch?v=${card.videoId}`} target="_blank" rel="noreferrer" className="table-video-link">{truncateText(card.title, 30)}</a></td>
+              <td title={card.title}>
+                <a
+                  href={`https://www.youtube.com/watch?v=${card.videoId}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="table-video-link"
+                >
+                  {truncateText(card.title, 30)}
+                </a>
+              </td>
               <td title={card.channelName}>{truncateText(card.channelName, 15)}</td>
               <td>{card.publishedDateText}</td>
               <td>{card.viewCountText}</td>
