@@ -374,3 +374,10 @@
 - [x] `backend/tests/test_search_api.py`에 quota/rate-limit/upstream unavailable/upstream error 계약 테스트 4건 추가
 - [x] 검색 에러코드별 상태코드(503/502)와 고정 사용자 메시지 일치 여부 검증
 - 메모: 테스트 보강 작업으로 런타임 로직/저장소 경로는 변경하지 않았고 Firestore read는 0회. 추후 Firestore 연동 시에도 에러 응답 계약이 고정돼 재시도 분기 오작동으로 인한 불필요 read 증가 위험을 줄임.
+
+
+### 2026-03-08 (FE-17 FilterToolbar/VideoCard locale 렌더 테스트 보강)
+- [x] `frontend/src/domains/search/components/FilterToolbar.test.tsx` 추가로 locale 라벨/옵션 렌더링을 고정
+- [x] `frontend/src/domains/search/components/VideoCard.test.tsx` 추가로 액션 라벨/aria-label locale 렌더링을 고정
+- [x] `docs/01_manuals/frontend.md`, `docs/00_project/CHANGELOG_WORKING.md` 동기화
+- 메모: 테스트/문서 보강 작업으로 런타임 API 호출·저장소 경로는 변경하지 않아 Firestore read 소모는 0회다. 컴포넌트 회귀 검증을 고정해 locale 누락으로 인한 오작동 재요청(추후 Firestore read 증가) 위험을 낮췄다.
