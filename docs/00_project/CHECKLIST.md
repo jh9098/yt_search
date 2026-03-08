@@ -18,6 +18,14 @@
 ---
 
 
+### 2026-03-08 (FE-19 ViewModeToggle/useSearchQueryState URL 동기화 통합 테스트)
+- [x] `frontend/src/domains/search/components/ViewModeToggle.useSearchQueryState.integration.test.tsx` 추가로 `view=list|grid` URL과 렌더 모드 일치 회귀를 고정
+- [x] `grid -> list` 토글 클릭 시 `window.location.search`가 `?view=list`로 동기화되는지 검증
+- [x] `list -> grid` 복귀 시 기본값 정책에 따라 `view` 쿼리가 제거되는지 검증
+- [x] `frontend` 테스트 런타임에 `jsdom` devDependency 추가
+- [x] `npm test -- ViewModeToggle.useSearchQueryState.integration.test.tsx VideoGrid.test.tsx SearchResultTable.test.tsx`, `npm run build` 검증
+- 메모: 이번 변경은 테스트/문서 및 테스트 런타임 의존성만 다뤘고 런타임 API/저장소 로직을 건드리지 않아 Firestore read 소모는 0회다. URL-뷰모드 정합성 회귀를 자동화해 추후 Firestore 연동 시 잘못된 상태 복구를 위한 불필요 read 유발 위험을 낮춘다.
+
 ### 2026-03-08 (FE-18 VideoGrid/SearchResultTable locale 접근성 렌더 테스트 확장)
 - [x] `searchUiText.types.ts`, `locales/ko.ts`, `locales/en.ts`에 `searchResultTable` locale 키를 추가해 테이블 aria-label/컬럼명을 리소스화
 - [x] `SearchResultTable`이 locale props(`searchUiText`) 기반으로 aria-label/컬럼 텍스트를 렌더링하도록 변경

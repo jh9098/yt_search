@@ -1,3 +1,35 @@
+## 2026-03-08 (FE-19 ViewModeToggle/useSearchQueryState URL 동기화 통합 테스트)
+### 오늘 목표
+- FE-18 다음 세션 시작점에 따라 `ViewModeToggle` + `useSearchQueryState` 통합 테스트를 추가해 URL 쿼리(`view=list|grid`)와 실제 렌더 모드 일치 회귀를 고정한다.
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/search/components/ViewModeToggle.useSearchQueryState.integration.test.tsx` 추가 (`jsdom` 환경)
+- [x] `view=list` 초기 URL 파싱 시 토글 활성 상태/렌더 모드 일치 검증
+- [x] 토글 클릭 시 렌더 모드와 URL 쿼리 동기화 검증 (`list -> ?view=list`, `grid -> 기본값이라 쿼리 제거`)
+- [x] `frontend` devDependency에 `jsdom` 추가로 브라우저 이벤트 기반 통합 테스트 실행 환경 구성
+- [x] `npm test -- ViewModeToggle.useSearchQueryState.integration.test.tsx VideoGrid.test.tsx SearchResultTable.test.tsx`, `npm run build` 검증 완료
+- [x] `docs/01_manuals/frontend.md`, `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] 없음
+
+### 변경/생성 파일
+- `frontend/src/domains/search/components/ViewModeToggle.useSearchQueryState.integration.test.tsx`
+- `frontend/package.json`
+- `frontend/package-lock.json`
+- `docs/01_manuals/frontend.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. popstate 이벤트에서 `view`만 바뀌는 경우(쿼리 동일)에도 `App`의 실제 리스트/그리드 렌더가 즉시 동기화되는 통합 시나리오를 추가해 히스토리 내비게이션 회귀를 확장 고정한다.
+
+### 메모
+- 이번 변경은 테스트/문서 계층과 테스트 런타임 의존성(`jsdom`)만 수정했고 API 호출/저장소 조회 로직은 건드리지 않아 Firestore read 소모는 0회다.
+- URL↔뷰모드 불일치를 자동 검출하도록 고정해 잘못된 모드 복구를 위한 불필요 재검색 가능성을 낮춰, 추후 Firestore 연동 시 read 낭비 위험을 줄인다.
+
+---
+
 ## 2026-03-08 (FE-18 VideoGrid/SearchResultTable locale 접근성 렌더 테스트 확장)
 ### 오늘 목표
 - FE-17 다음 세션 시작점에 따라 `VideoGrid`/`SearchResultTable` locale 접근성 렌더 테스트를 확장해 리스트/그리드 전환 회귀를 고정한다.

@@ -139,6 +139,11 @@ API 호출 전에 TypeScript 타입/인터페이스를 먼저 정의합니다.
 - `VideoGrid`의 `viewMode=list` 분기는 `SearchResultTable`에 동일 locale props를 전달해야 하며, 전달 누락 시 테스트로 즉시 실패하도록 유지한다.
 - 리스트/그리드 전환 회귀는 `VideoGrid.test.tsx`에서 두 모드 모두 검증하고, 테이블 접근성 문자열(`aria-label`) 포함 여부를 함께 검사한다.
 
+### ViewModeToggle/useSearchQueryState URL 동기화 통합 규칙 (FE-19)
+- `view` URL 쿼리(`list|grid`)와 실제 토글 활성 상태/렌더 모드는 항상 1:1로 일치해야 하며, 회귀는 통합 테스트로 고정한다.
+- 기본 모드(`grid`)는 공유 URL 최소화를 위해 `view` 쿼리를 제거하는 정책을 유지하고, 테스트에서 `list -> grid` 전환 시 쿼리 제거를 검증한다.
+- 통합 테스트는 `ViewModeToggle.useSearchQueryState.integration.test.tsx`에서 `jsdom` 환경으로 실행해 버튼 클릭과 `window.location.search` 동기화를 함께 확인한다.
+
 ### 필터 옵션/비디오 카드 locale 확장 규칙 (FE-16)
 - `FilterToolbar`의 라벨/placeholder/옵션 텍스트는 `searchUiText.filterToolbar`에서만 관리하고, 컴포넌트 내부 상수에는 값(value)만 둔다.
 - `VideoGrid` 로딩 문구와 `VideoCard` 버튼/aria-label 접미사는 `searchUiText.videoGrid`, `searchUiText.videoCard`로 분리해 locale 전환 시 일관되게 반영한다.
