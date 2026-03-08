@@ -1,3 +1,32 @@
+## 2026-03-08 (FE-17 FilterToolbar/VideoCard locale 렌더 테스트 보강)
+### 오늘 목표
+- FE-16 미완료 항목으로 남아 있던 `FilterToolbar`, `VideoCard` 컴포넌트 렌더 테스트를 추가해 locale 키 누락/하드코딩 재유입을 자동 검출한다.
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/search/components/FilterToolbar.test.tsx` 추가: 영문 locale 기준 라벨/옵션 렌더링 검증
+- [x] `frontend/src/domains/search/components/VideoCard.test.tsx` 추가: 액션 버튼 라벨/aria-label locale 렌더링 검증
+- [x] `npm test -- FilterToolbar.test.tsx VideoCard.test.tsx searchUiText.test.ts`, `npm run build` 검증 완료
+- [x] `docs/01_manuals/frontend.md`, `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] 없음
+
+### 변경/생성 파일
+- `frontend/src/domains/search/components/FilterToolbar.test.tsx`
+- `frontend/src/domains/search/components/VideoCard.test.tsx`
+- `docs/01_manuals/frontend.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. `VideoGrid`/`SearchResultTable`에도 locale 기반 접근성 문자열 렌더 테스트를 확장해 리스트/그리드 전환 회귀를 고정한다.
+
+### 메모
+- 이번 변경은 테스트/문서만 다뤘고 런타임 네트워크 호출/저장소 조회 로직은 변경하지 않아 Firestore read 소모는 0회다.
+- locale 회귀 테스트를 추가해 문구 누락으로 인한 잘못된 재시도/재조회 가능성을 줄여, 추후 Firestore 연동 시 불필요 read 증가 위험을 낮춘다.
+
+---
+
 ## 2026-03-24 (FE-16 필터 옵션/비디오 카드 locale 확장)
 ### 오늘 목표
 - FE-15 다음 세션 시작점에 따라 FilterToolbar 옵션 라벨과 VideoGrid/VideoCard의 남은 하드코딩 문구를 locale 리소스로 통합한다.
