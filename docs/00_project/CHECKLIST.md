@@ -18,6 +18,14 @@
 ---
 
 
+### 2026-03-08 (FE-20 popstate view-only App 렌더 동기화 통합 시나리오)
+- [x] `frontend/src/domains/search/components/ViewModeToggle.useSearchQueryState.integration.test.tsx`에 popstate에서 `query` 동일 + `view` 변경 케이스 추가
+- [x] `?q=focus&view=list` -> popstate `?q=focus` 전환 시 `viewMode`가 `list -> grid`로 즉시 동기화되는지 검증
+- [x] 동일 시나리오에서 query 텍스트는 유지되고 실제 렌더 분기(`app-list-view/app-grid-view`)가 즉시 전환되는지 확인
+- [x] `frontend/src/domains/search/utils/popStateSyncPolicy.test.ts`에 view-only 변경 시 `shouldApplyState=true`, `shouldTriggerSearch=false` 정책 케이스 추가
+- [x] `npm test -- ViewModeToggle.useSearchQueryState.integration.test.tsx popStateSyncPolicy.test.ts`, `npm run build` 검증
+- 메모: 이번 변경은 프론트 테스트/문서 계층만 다뤘고 런타임 API/저장소 조회 로직을 변경하지 않아 Firestore read 소모는 0회다. 또한 query 동일 popstate에서 재조회 없이 렌더만 동기화하도록 회귀를 고정해 추후 Firestore 연동 시 불필요 read를 줄인다.
+
 ### 2026-03-08 (FE-19 ViewModeToggle/useSearchQueryState URL 동기화 통합 테스트)
 - [x] `frontend/src/domains/search/components/ViewModeToggle.useSearchQueryState.integration.test.tsx` 추가로 `view=list|grid` URL과 렌더 모드 일치 회귀를 고정
 - [x] `grid -> list` 토글 클릭 시 `window.location.search`가 `?view=list`로 동기화되는지 검증

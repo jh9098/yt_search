@@ -11,7 +11,9 @@ import { ViewModeToggle } from "./ViewModeToggle";
 
 function IntegrationHarness() {
   const searchUiText = getSearchUiText("en");
-  const { viewMode, setViewMode } = useSearchQueryState();
+  const { queryState, viewMode, setViewMode } = useSearchQueryState();
+
+  const isListMode = viewMode === "list";
 
   return (
     <div>
@@ -21,7 +23,9 @@ function IntegrationHarness() {
         onChange={setViewMode}
         searchUiText={searchUiText}
       />
+      <output data-testid="current-query-keyword">{queryState.keyword}</output>
       <output data-testid="current-view-mode">{viewMode}</output>
+      {isListMode ? <section data-testid="app-list-view" /> : <section data-testid="app-grid-view" />}
     </div>
   );
 }
@@ -98,6 +102,30 @@ describe("ViewModeToggle + useSearchQueryState 통합", () => {
     expect(modeText?.textContent).toBe("list");
     expect(window.location.search).toBe("?view=list");
     expect(listButton.className).toContain("is-active");
+
+    unmountHarness(rendered);
+  });
+
+  it("popstate에서 query는 같고 view만 바뀌면 App 실제 렌더가 즉시 동기화된다", () => {
+    const rendered = renderHarness("?q=focus&view=list");
+    const modeText = rendered.container.querySelector('[data-testid="current-view-mode"]');
+    const queryText = rendered.container.querySelector('[data-testid="current-query-keyword"]');
+
+    expect(modeText?.textContent).toBe("list");
+    expect(queryText?.textContent).toBe("focus");
+    expect(rendered.container.querySelector('[data-testid="app-list-view"]')).not.toBeNull();
+    expect(rendered.container.querySelector('[data-testid="app-grid-view"]')).toBeNull();
+
+    act(() => {
+      window.history.replaceState(null, "", `${window.location.pathname}?q=focus`);
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+
+    expect(window.location.search).toBe("?q=focus");
+    expect(queryText?.textContent).toBe("focus");
+    expect(modeText?.textContent).toBe("grid");
+    expect(rendered.container.querySelector('[data-testid="app-grid-view"]')).not.toBeNull();
+    expect(rendered.container.querySelector('[data-testid="app-list-view"]')).toBeNull();
 
     unmountHarness(rendered);
   });
