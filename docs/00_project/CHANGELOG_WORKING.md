@@ -1,3 +1,34 @@
+## 2026-03-08 (FE-20 popstate view-only App 렌더 동기화 통합 시나리오)
+### 오늘 목표
+- FE-19 다음 세션 시작점에 따라 popstate에서 query는 같고 view만 달라지는 히스토리 이동 시 `App` 실제 렌더(리스트/그리드)가 즉시 동기화되는 통합 시나리오를 추가하고, CHANGELOG 다음 시작점으로 기록 완료.
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/search/components/ViewModeToggle.useSearchQueryState.integration.test.tsx`에 popstate view-only 변경 통합 시나리오 추가
+- [x] `?q=focus&view=list` 상태에서 popstate `?q=focus`로 이동 시 `viewMode`가 즉시 `list -> grid`로 전환되는지 검증
+- [x] 동일 케이스에서 query(`q=focus`) 유지 + 실제 렌더 분기(`app-list-view`/`app-grid-view`) 즉시 동기화 확인
+- [x] `frontend/src/domains/search/utils/popStateSyncPolicy.test.ts`에 view-only 변경 시 상태 반영만 수행(`shouldApplyState=true`, `shouldTriggerSearch=false`) 정책 테스트 추가
+- [x] `npm test -- ViewModeToggle.useSearchQueryState.integration.test.tsx popStateSyncPolicy.test.ts`, `npm run build` 검증 완료
+- [x] `docs/01_manuals/frontend.md`, `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] 없음
+
+### 변경/생성 파일
+- `frontend/src/domains/search/components/ViewModeToggle.useSearchQueryState.integration.test.tsx`
+- `frontend/src/domains/search/utils/popStateSyncPolicy.test.ts`
+- `docs/01_manuals/frontend.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. `useSearchQueryState` 통합 하네스를 `App` 경량 하네스로 확장해 popstate 시 검색 결과 재조회 트리거(`onPopStateQueryRestored`)가 query 변경에만 발생하는지 검증한다.
+
+### 메모
+- 이번 변경은 프론트 테스트/문서 계층만 수정했고 API 호출/저장소 조회 로직은 변경하지 않아 Firestore read 소모는 0회다.
+- query 동일 popstate에서 데이터 재조회 없이 view만 동기화하도록 회귀를 고정해, 추후 Firestore 연동 시 불필요 read 낭비를 줄일 수 있다.
+
+---
+
 ## 2026-03-08 (FE-19 ViewModeToggle/useSearchQueryState URL 동기화 통합 테스트)
 ### 오늘 목표
 - FE-18 다음 세션 시작점에 따라 `ViewModeToggle` + `useSearchQueryState` 통합 테스트를 추가해 URL 쿼리(`view=list|grid`)와 실제 렌더 모드 일치 회귀를 고정한다.

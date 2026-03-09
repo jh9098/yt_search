@@ -64,6 +64,22 @@ describe("evaluatePopStateSync", () => {
     expect(decision.shouldTriggerSearch).toBe(false);
     expect(decision.shouldShowRestoredNotice).toBe(false);
   });
+
+  it("query가 같고 view만 변경되면 상태는 반영하지만 재조회/안내는 생략한다", () => {
+    const decision = evaluatePopStateSync({
+      parsedQueryState: { keyword: "same", channel: "chan", topic: "all", resultLimit: 250 },
+      parsedViewMode: "list",
+      currentQueryState: { keyword: "same", channel: "chan", topic: "all", resultLimit: 250 },
+      currentViewMode: "grid",
+      autoSearchOnPopState: true,
+    });
+
+    expect(decision.hasQueryChanged).toBe(false);
+    expect(decision.hasViewModeChanged).toBe(true);
+    expect(decision.shouldApplyState).toBe(true);
+    expect(decision.shouldTriggerSearch).toBe(false);
+    expect(decision.shouldShowRestoredNotice).toBe(false);
+  });
 });
 
 
