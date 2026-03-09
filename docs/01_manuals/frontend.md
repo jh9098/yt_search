@@ -149,6 +149,11 @@ API 호출 전에 TypeScript 타입/인터페이스를 먼저 정의합니다.
 - 이 경우는 데이터 조건이 같으므로 자동 재조회는 발생하지 않아야 하며, view 상태 변경만 처리한다.
 - 회귀 테스트는 `ViewModeToggle.useSearchQueryState.integration.test.tsx`에서 popstate 이벤트를 직접 발생시켜 URL/query/view/실제 렌더 분기를 동시에 검증한다.
 
+### App 경량 하네스 popstate 재조회 트리거 규칙 (FE-21)
+- `autoSearchOnPopState=true` 환경에서도 popstate에서 query(`q/channel/topic/limit`)가 동일하면 `onPopStateQueryRestored`를 호출하지 않는다.
+- query가 변경된 경우에만 callback을 호출해 재조회 트리거를 보장한다.
+- 회귀 테스트는 `App.useSearchQueryState.popstate.integration.test.tsx`에서 view-only 변경(0회)과 query 변경(1회)을 함께 검증한다.
+
 ### 필터 옵션/비디오 카드 locale 확장 규칙 (FE-16)
 - `FilterToolbar`의 라벨/placeholder/옵션 텍스트는 `searchUiText.filterToolbar`에서만 관리하고, 컴포넌트 내부 상수에는 값(value)만 둔다.
 - `VideoGrid` 로딩 문구와 `VideoCard` 버튼/aria-label 접미사는 `searchUiText.videoGrid`, `searchUiText.videoCard`로 분리해 locale 전환 시 일관되게 반영한다.

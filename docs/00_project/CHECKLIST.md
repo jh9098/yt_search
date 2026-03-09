@@ -18,6 +18,14 @@
 ---
 
 
+### 2026-03-09 (FE-21 App 경량 하네스 popstate 재조회 트리거 안전장치 통합 테스트)
+- [x] `frontend/src/domains/search/components/App.useSearchQueryState.popstate.integration.test.tsx` 신규 추가
+- [x] `useSearchQueryState`를 App 경량 하네스에 연결해 `onPopStateQueryRestored` 호출 횟수를 계측
+- [x] popstate view-only 변경(`?q=focus&view=list` -> `?q=focus`)에서는 callback이 호출되지 않는지 검증
+- [x] popstate query 변경(`?q=focus` -> `?q=next`)에서만 callback이 1회 호출되는지 검증
+- [x] `npm test -- App.useSearchQueryState.popstate.integration.test.tsx ViewModeToggle.useSearchQueryState.integration.test.tsx popStateSyncPolicy.test.ts`, `npm run build` 검증
+- 메모: 이번 변경은 프론트 테스트/문서 계층만 수정했고 런타임 API/저장소 조회 로직은 변경하지 않아 Firestore read 소모는 0회다. query 변경시에만 재조회 트리거가 발생하도록 회귀를 고정해 추후 Firestore 연동 시 불필요 read를 예방한다.
+
 ### 2026-03-08 (FE-20 popstate view-only App 렌더 동기화 통합 시나리오)
 - [x] `frontend/src/domains/search/components/ViewModeToggle.useSearchQueryState.integration.test.tsx`에 popstate에서 `query` 동일 + `view` 변경 케이스 추가
 - [x] `?q=focus&view=list` -> popstate `?q=focus` 전환 시 `viewMode`가 `list -> grid`로 즉시 동기화되는지 검증

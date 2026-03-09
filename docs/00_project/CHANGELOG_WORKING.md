@@ -1,3 +1,33 @@
+## 2026-03-09 (FE-21 App 경량 하네스 popstate 재조회 트리거 안전장치 통합 테스트)
+### 오늘 목표
+- FE-20 다음 세션 시작점에 따라 `useSearchQueryState`를 App 경량 하네스와 연결하고, popstate 시 `onPopStateQueryRestored`가 query 변경에서만 호출되는 회귀를 통합 테스트로 고정한다.
+
+### 진행 내용 (완료)
+- [x] `frontend/src/domains/search/components/App.useSearchQueryState.popstate.integration.test.tsx` 신규 추가 (`jsdom` 환경)
+- [x] 하네스 내부에서 `onPopStateQueryRestored` 호출 횟수/복구 keyword를 상태로 기록해 observable assertion 포인트 구성
+- [x] view-only popstate 변경(`?q=focus&view=list` -> `?q=focus`)에서는 callback 미호출(0회 유지) 검증
+- [x] query popstate 변경(`?q=focus` -> `?q=next`)에서 callback 1회 호출 + 복구 keyword 동기화 검증
+- [x] `npm test -- App.useSearchQueryState.popstate.integration.test.tsx ViewModeToggle.useSearchQueryState.integration.test.tsx popStateSyncPolicy.test.ts`, `npm run build` 검증 완료
+- [x] `docs/01_manuals/frontend.md`, `docs/00_project/CHECKLIST.md`, `docs/00_project/CHANGELOG_WORKING.md` 업데이트
+
+### 진행 내용 (미완료)
+- [ ] 없음
+
+### 변경/생성 파일
+- `frontend/src/domains/search/components/App.useSearchQueryState.popstate.integration.test.tsx`
+- `docs/01_manuals/frontend.md`
+- `docs/00_project/CHECKLIST.md`
+- `docs/00_project/CHANGELOG_WORKING.md`
+
+### 다음 세션 시작점 (가장 먼저 할 일)
+1. `useSearchQueryState`의 popstate 재조회 callback 계약을 topic/channel/resultLimit 쿼리 변경 케이스까지 확장 검증해 필터 변화 회귀를 고정한다.
+
+### 메모
+- 이번 변경은 테스트/문서 계층만 수정했고 API 호출/저장소 조회 로직은 변경하지 않아 Firestore read 소모는 0회다.
+- query 변경에서만 재조회 트리거가 동작함을 자동 검증해, 향후 Firestore 연동 시 view-only 히스토리 이동에서 발생할 수 있는 불필요 read 낭비를 줄인다.
+
+---
+
 ## 2026-03-08 (FE-20 popstate view-only App 렌더 동기화 통합 시나리오)
 ### 오늘 목표
 - FE-19 다음 세션 시작점에 따라 popstate에서 query는 같고 view만 달라지는 히스토리 이동 시 `App` 실제 렌더(리스트/그리드)가 즉시 동기화되는 통합 시나리오를 추가하고, CHANGELOG 다음 시작점으로 기록 완료.
